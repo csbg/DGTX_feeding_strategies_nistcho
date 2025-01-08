@@ -8,6 +8,8 @@ library(RColorBrewer)
 
 samples_table <- read_csv("analysis/overview_pngase_merged.csv")
 
+samples_table <- samples_table[-1:-3,]
+
 # load abundances using a for loop  ---------------------------------------
 
 abundance_data <- NULL
@@ -100,9 +102,7 @@ abundance_data_averaged <- abundance_data %>%
   mutate(modcom_name = factor(modcom_name, levels = c("3xHex","2xHex","1xHex","none"))) %>%
   {.}
 
-save(abundance_data,
-     abundance_data_averaged,
-     file = "analysis/2_nglycans_quantification/2_2_pngaseF_cpb/pngase_cpb_output_tables/abundance_data_cpb_pngase.RData")
+
 
 # plot bar chart ----------------------------------------------------------
 
@@ -166,8 +166,13 @@ abundance_data_br_averaged <- abundance_data %>%
             error = sd(frac_ab)) %>%
   mutate(modcom_name = factor(modcom_name, levels = c("3xHex","2xHex","1xHex","none"))) %>%
   mutate(condition_tp = paste(condition,timepoint, sep = "_")) %>%
-  # mutate(condition_tp = factor(condition_tp, levels = c("G_240","G_120", "C_240","C_120","B_240", "B_120","A_264", "A_120"))) %>%
+  mutate(condition_tp = factor(condition_tp, levels = c("F_264","F_120", "E_264", "E_120", "D_264", "D_120", "G_240","G_120", "C_240","C_120","B_264", "B_120","A_264", "A_120"))) %>%
   {.}
+
+save(abundance_data,
+     abundance_data_averaged,
+     abundance_data_br_averaged,
+     file = paste0("analysis/abundance_data_","pngase",".RData"))
 
 color_mapping_abcdefg <- c(
   "A_120" = "#EE3377",
@@ -176,18 +181,19 @@ color_mapping_abcdefg <- c(
   "B_264" = "#56B4E9",
   "C_120" = "#009E73",
   "C_240" = "#009E73",
+  "C_264" = "#009E73",
   "G_120" = "#ffd800",
   "G_240" = "#ffd800",
   "D_120" = "#CC79A7",
-  "D_240" = "#CC79A7",
+  "D_264" = "#CC79A7",
   "E_120" = "#EE7631",
-  "E_240" = "#EE7631",
+  "E_264" = "#EE7631",
   "F_120" = "#0072B2",
-  "F_240" = "#0072B2"
+  "F_264" = "#0072B2"
 )
 
 abundance_data_br_averaged %>%
-  filter(timepoint %in% "264") %>%
+  filter(timepoint %in% c("264", "240")) %>%
   ggplot(aes(modcom_name, frac_abundance)) +
   geom_col(
     aes(y = frac_abundance, fill = condition_tp),
@@ -209,11 +215,13 @@ abundance_data_br_averaged %>%
   xlab("") +
   ylim(0, 100) +
   ylab("fractional abundance (%)") +
-  labs(title = "Hexosylation of the intact mAb") +
+  labs(title = "Hexosylation of the intact mAb - 240 h & 264 h timepoint") +
   geom_hline(yintercept = 0, linewidth = .35) +
   coord_flip() +
   theme_bw() +
-  guides(fill = guide_legend(ncol = 3)) + 
+  guides(fill = guide_legend(nrow = 1,
+                             reverse = TRUE)
+         ) + 
   theme(text = element_text(size = 9, 
                             face = "bold",
                             family = "sans"),
@@ -230,7 +238,7 @@ abundance_data_br_averaged %>%
         panel.grid.minor = element_blank(),
   )
 
-ggsave(filename = "figures/hexosylation_bias_tp264.png",    
+ggsave(filename = "figures/hexosylation_bias_tp240_tp264.png",    
        height = 8.89,
        width = 8.89,
        units = "cm",
