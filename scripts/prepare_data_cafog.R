@@ -6,7 +6,7 @@ library(fs)
 
 # load abundance data -----------------------------------------------------
 
-load("analysis/abundance_data_sample.RData")
+load("analysis/abundance_data_none.RData")
 
 glycosylation <-  abundance_data_averaged  
 
