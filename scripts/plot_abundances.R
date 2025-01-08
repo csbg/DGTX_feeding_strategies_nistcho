@@ -55,6 +55,7 @@ if (pngase == "none") {
 }
 
 abundance_data_averaged <- abundance_data %>% 
+  filter(acquisition_number != "519.mzML") %>% #seems to be an outlier
   group_by(modcom_name, condition_br_tp) %>%
   summarise(frac_abundance = mean(frac_ab),
             error = sd(frac_ab)) %>%
@@ -122,8 +123,8 @@ plot_vertical_barplot <- function(data_to_plot,
 }
 
 plot_vertical_barplot(abundance_data_averaged, 
-                      condition = "[AB]",
-                      timepoint = "264") 
+                      condition = "[D]",
+                      timepoint = "120") 
 
 
 # mirror plots --------------------------------------------------------------
@@ -138,7 +139,7 @@ tp_120 <- data %>%
 
 tp_264 <- data %>%
   filter(grepl(condition, condition_br_tp)) %>%
-  filter(grepl("264", condition_br_tp)) %>%
+  filter(grepl("240", condition_br_tp)) %>%
   rename(frac_abundance_264 = frac_abundance,error_264 = error) %>% 
   select(frac_abundance_264,error_264) %>%
   mutate(frac_abundance_264 = -frac_abundance_264)
@@ -150,11 +151,12 @@ table_wider <- tp_120 %>%
 return(table_wider)
 }
 
-abcg_wider <- make_wider_table(data = abundance_data_averaged, condition = "[ABCG]")
+ab_wider <- make_wider_table(data = abundance_data_averaged, condition = "[AB]")
+cg_wider <- make_wider_table(data = abundance_data_averaged, condition = "[CG]")
 def_wider <- make_wider_table(data = abundance_data_averaged, condition = "[DEF]")
 
 #plot mirror plot
-ggplot(abcg_wider, aes(x = modcom_name)) +
+ggplot(cg_wider, aes(x = modcom_name)) +
   geom_col(aes(y = frac_abundance_264, fill = condition_br), position = position_dodge(width = 0.9)) +
   geom_col(aes(y = frac_abundance_120, fill = condition_br), position = position_dodge(width = 0.9)) +
   geom_errorbar(
@@ -201,7 +203,7 @@ ggplot(abcg_wider, aes(x = modcom_name)) +
         panel.grid.minor = element_blank(),
   ) 
 
-ggsave(filename = paste0("figures/frac_ab_mirror_barplot_ABCG.png"),    
+ggsave(filename = paste0("figures/frac_ab_mirror_barplot_CG.png"),    
        height = 160,
        width = 160,
        units = "mm",
