@@ -57,7 +57,7 @@ cs_rt_data <- read_csv("data/rt_seconds.csv") %>%
   filter(pngase %in% !!pngase) %>% # !! operator (pronounced "bang-bang") to evaluate the variable pngase inside the filter() function
   select(sample_name, rt_start, rt_end, scan_number_start, scan_number_end, rt_start_sec, rt_end_sec)
 
-if (pngase == "none") {
+if (pngase == "pngase") {
   cs_rt_data <- cs_rt_data[-1:-2,]
 }
 
@@ -178,7 +178,7 @@ calculate_abundance <- function(mzml_full_path,
 
 ## apply custom function to dfr --------------------------------------------
 
-pwalk(data_merged[1:10,], calculate_abundance, .progress = TRUE)
+pwalk(data_merged[76:129,], calculate_abundance, .progress = TRUE)
 pwalk(data_merged[67:72,], calculate_abundance, .progress = TRUE)
 
 pwalk(data_merged, calculate_abundance, .progress = TRUE)
