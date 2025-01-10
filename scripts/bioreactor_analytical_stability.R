@@ -37,6 +37,28 @@ fb2_fb4 <- corr_abundance_data %>%
          condition_br_tp_anbatch = paste(condition_br_tp, analytical_batch, sep = "_"))
 
 whole_dataset <- rbind(fb2, fb2_fb4)
+  
+# data matrix for further analysis with limma ------------------------------
+subset_dataset <- whole_dataset %>%
+  mutate(condition_br_tp_batch_anbatch = paste(condition_br_tp, fed_batch,analytical_batch, sep = "_")) %>%
+  slice(1:480, 661:720)
+
+
+data.matrix <- subset_dataset %>%
+  select(glycoform1, corr_abundance, condition_br_tp_batch_anbatch) %>%
+  pivot_wider(values_from = corr_abundance,
+              names_from = condition_br_tp_batch_anbatch) %>%
+  column_to_rownames('glycoform1') %>%
+  as.matrix()
+
+meta <- tibble(sample_name = colnames(data.matrix)) %>%
+  separate(col = sample_name,
+           into = c('condition', 'br', 'timepoint','fed_batch','analytical_batch'),
+           sep = "_",
+           remove = FALSE
+  )
+
+save(data.matrix, meta, file = "analysis/matrix_meta_all_br.RData")
 
 # Biological replicate stability ------------------------------------------
 # To compare biological stability of samples from condition A-B-C

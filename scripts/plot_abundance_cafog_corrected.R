@@ -47,31 +47,40 @@ save(corr_abundance_data, file = "analysis/corr_abundance_data.RData")
 load("analysis/corr_abundance_data.RData")
 
 # prepare data for differential analysis ----------------------------------
+#Add more meta information on biological and analytical batches
+fb2_fb4 <- corr_abundance_data %>%
+  separate(
+    condition_br_tp,
+    into = c("condition", "biological_replicate",  "timepoint"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  mutate(
+    fed_batch = case_when(
+      condition  %in% c("A", "B", "C", "G") ~ "fb4",
+      TRUE ~ "fb2"  # Handle unmatched cases
+    ),
+    analytical_batch = "Dec24") %>%
+  mutate(condition_br_tp_batch = paste(condition_br_tp, fed_batch, sep = "_"),
+         condition_br_tp_anbatch = paste(condition_br_tp, analytical_batch, sep = "_"))
 
-data.matrix <- corr_abundance_data %>%
-  select(glycoform1, corr_abundance, condition_br_tp) %>%
+data.matrix <- fb2_fb4 %>%
+  mutate(condition_br_tp_batch_anbatch = paste(condition_br_tp, fed_batch,analytical_batch, sep = "_")) %>%
+  select(glycoform1, corr_abundance, condition_br_tp_batch_anbatch) %>%
   pivot_wider(values_from = corr_abundance,
-              names_from = condition_br_tp) %>%
+              names_from = condition_br_tp_batch_anbatch) %>%
   column_to_rownames('glycoform1') %>%
   as.matrix()
 
 meta <- tibble(sample_name = colnames(data.matrix)) %>%
   separate(col = sample_name,
-           into = c('condition', 'br', 'timepoint'),
+           into = c('condition', 'br', 'timepoint','fed_batch','analytical_batch'),
            sep = "_",
            remove = FALSE
           )
 
-save(data.matrix, meta, file = "analysis/matrix_meta.RData")
+save(data.matrix, meta, file = "analysis/matrix_meta_three_br.RData")
 
-data.matrix_tosave <- data.matrix %>% 
-  as.data.frame() %>%
-  mutate(modcom = rownames(data.matrix)) 
-
-write_csv(data.matrix_tosave, 
-          file = "analysis/corr_abundance_data_matrix.csv")
-WriteXLS(x = data.matrix_tosave,
-         ExcelFileName = "analysis/corr_abundance_data_matrix.xls")
 # prepare data for mirror plots -------------------------------------------------
 
 make_wider_table <- function(data,
