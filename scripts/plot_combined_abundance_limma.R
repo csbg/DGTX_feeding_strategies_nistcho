@@ -27,13 +27,6 @@ glycoforms_order <- c("none/G0F",
                       "G1F/G2F",
                       "G2F/G2F")
 
-#set the same scale for logFC
-min_logfc <- -max(abs(res_twoConditions_oneTimepoint$logFC))
-max_logfc <- max(abs(res_twoConditions_oneTimepoint$logFC))
-
-# max(-log10(res_twoConditions_oneTimepoint$adj.P.Val))
-max_pval <- round(max(-log10(res_twoConditions_oneTimepoint$adj.P.Val)))
-min_pval <- 0
 
 # Define the colors
 color_mapping_condition <- c(
@@ -53,6 +46,15 @@ plot_composite <- function(abundance_data,
                            stats_data,
                            feeding_condition,
                            stats_coefficients){
+  
+  #set the same scale for logFC
+  min_logfc <- -max(abs(stats_data$logFC))
+  max_logfc <- max(abs(stats_data$logFC))
+  
+  # set the same scale for pval
+  max_pval <- round(max(-log10(stats_data$adj.P.Val)))
+  min_pval <- 0
+  
   #subset abundance data
   clr_corr_abundance <- as.data.frame(abundance_data) %>%
     mutate(glycoform1 = rownames(as.data.frame(abundance_data))) %>%
@@ -66,7 +68,6 @@ plot_composite <- function(abundance_data,
     filter(condition %in% feeding_condition) %>%
     mutate(glycoform1 = factor(glycoform1, levels = glycoforms_order))
   
-  
   #subset limma results
   res_contr2 <- stats_data %>%
     filter(coef %in% stats_coefficients) %>%
@@ -75,25 +76,37 @@ plot_composite <- function(abundance_data,
              into = c("condition1", "condition2", "timepoint"),
              sep = "_") 
   
-  # plot clr fractional abundance
-  frac_ab_col <- ggplot(clr_corr_abundance,aes(x = timepoint, y = corr_abundance, colour = condition)) +
-    geom_point(shape = 21, size = 2, stroke = 0.5,  position = position_jitter(w = 0.1, h = 0)) +
+  # plot clr fractional abundance color
+  frac_ab_col <- ggplot(clr_corr_abundance, aes(x = timepoint, y = corr_abundance, colour = condition)) +
+    geom_point(shape = 21, size = 2, stroke = 0.5, position = position_jitter(w = 0.25, h = 0)) +
     facet_wrap(~glycoform1, nrow = 1) +
-    scale_color_manual(values = color_mapping_condition,
-                       breaks = names(color_mapping_condition)) +
+    scale_color_manual(values = color_mapping_condition, breaks = names(color_mapping_condition)) +
+    labs(x = "", y = "CLR fractional abundance") +
+    theme_bw() +
+    theme(text = element_text(size = 10, family = "sans"),
+          axis.text = element_text(colour = "black"),
+          panel.grid.major.x = element_blank(),
+          strip.background = element_blank())
+  
+  # plot clr fractional abundance shape
+  frac_ab_shape <- ggplot(clr_corr_abundance,aes(x = timepoint, y = corr_abundance, shape = condition)) +
+    geom_point(size = 2, stroke = 0.5,  position = position_jitter(w = 0.25, h = 0)) +
+    facet_wrap(~glycoform1, nrow = 1) +
+    scale_shape_manual(values = c(1, 5)) +
     labs(x = "", y = "CLR fractional abundance") +
     theme_bw() +
     theme(text = element_text(size = 10, 
-                              # face = "bold", 
                               family = "sans"),
           axis.text = element_text(colour = "black",),
           panel.grid.major.x = element_blank(),
-          strip.background = element_blank()) 
+          strip.background = element_blank())
   
-  # plot clr fractional abundance
-  frac_ab_shape <- ggplot(clr_corr_abundance,aes(x = timepoint, y = corr_abundance, shape = condition)) +
-    geom_point(size = 2, stroke = 0.5,  position = position_jitter(w = 0.1, h = 0)) +
+  # plot clr fractional abundance color & shape
+  frac_ab_col_shape <- ggplot(clr_corr_abundance,aes(x = timepoint, y = corr_abundance, shape = condition, colour = condition)) +
+    geom_point(size = 2, stroke = 0.5,  position = position_jitter(w = 0.25, h = 0)) +
     facet_wrap(~glycoform1, nrow = 1) +
+    scale_color_manual(values = color_mapping_condition,
+                       breaks = names(color_mapping_condition)) +
     scale_shape_manual(values = c(1, 5)) +
     labs(x = "", y = "CLR fractional abundance") +
     theme_bw() +
@@ -114,7 +127,8 @@ plot_composite <- function(abundance_data,
                           limits = c(min_logfc,max_logfc)) +
     scale_size_continuous(limits = c(min_pval,max_pval)) +
     scale_x_discrete(position = "top") +
-    labs(x = "", y = paste0(feeding_condition[1]," vs ", feeding_condition[2])) +
+    # labs(x = "", y = paste0(feeding_condition[1]," vs ", feeding_condition[2])) +
+    labs(x = "", y = stats_coefficients) +
     theme_bw() +
     theme(text = element_text(size = 10, 
                               family = "sans"),
@@ -152,17 +166,22 @@ plot_composite <- function(abundance_data,
          units = "mm",
          dpi = 600)
   
+  ggarrange(frac_ab_col_shape,limma_dotplot,
+            heights = c(0.75,0.25),
+            ncol = 1,
+            align = "v") 
+  
+  ggsave(filename = paste0("figures/statistical_analysis/combined_plots/condition_effects_",feeding_condition[1],"_",feeding_condition[2],"_color__shape.png"), 
+         height = 110,
+         width = 210,
+         units = "mm",
+         dpi = 600)
   
 }
 
 plot_composite(abundance_data = clr_data.matrix,
                stats_data = res_twoConditions_oneTimepoint,
                feeding_condition = c("B", "A"),
-               stats_coefficients = c( "B_A_120", "B_A_264"))
-
-plot_composite(abundance_data = clr_data.matrix,
-               stats_data = res_twoConditions_oneTimepoint,
-               feeding_condition = c("A", "A"),
                stats_coefficients = c( "B_A_120", "B_A_264"))
 
 plot_composite(abundance_data = clr_data.matrix,
@@ -199,3 +218,78 @@ plot_composite(abundance_data = clr_data.matrix,
                stats_data = res_twoConditions_oneTimepoint,
                feeding_condition = c("C", "G"),
                stats_coefficients = c( "C_G_120", "C_G_240"))
+
+#timepoint effects
+
+plot_composite(abundance_data = clr_data.matrix,
+               stats_data = res_withinCondition_timepoint,
+               feeding_condition = c("A", "A"),
+               stats_coefficients = c("A_264_vs_120"))
+
+plot_composite(abundance_data = clr_data.matrix,
+               stats_data = res_withinCondition_timepoint,
+               feeding_condition = c("B", "B"),
+               stats_coefficients = c("B_264_vs_120"))
+
+plot_composite(abundance_data = clr_data.matrix,
+               stats_data = res_withinCondition_timepoint,
+               feeding_condition = c("C", "C"),
+               stats_coefficients = c("C_240_vs_120"))
+
+plot_composite(abundance_data = clr_data.matrix,
+               stats_data = res_withinCondition_timepoint,
+               feeding_condition = c("G", "G"),
+               stats_coefficients = c("G_240_vs_120"))
+
+plot_composite(abundance_data = clr_data.matrix,
+               stats_data = res_withinCondition_timepoint,
+               feeding_condition = c("D", "D"),
+               stats_coefficients = c("D_264_vs_120"))
+
+plot_composite(abundance_data = clr_data.matrix,
+               stats_data = res_withinCondition_timepoint,
+               feeding_condition = c("E", "E"),
+               stats_coefficients = c("E_264_vs_120"))
+
+plot_composite(abundance_data = clr_data.matrix,
+               stats_data = res_withinCondition_timepoint,
+               feeding_condition = c("F", "F"),
+               stats_coefficients = c("F_264_vs_120"))
+
+
+
+# # playing around ----------------------------------------------------------
+# 
+# 
+# #subset abundance data
+# clr_corr_abundance <- as.data.frame(clr_data.matrix) %>%
+#   mutate(glycoform1 = rownames(as.data.frame(clr_data.matrix))) %>%
+#   pivot_longer(cols = -glycoform1,
+#                values_to = "corr_abundance",
+#                names_to = "condition_br_tp_batch_anbatch") %>%
+#   separate(condition_br_tp_batch_anbatch, 
+#            into = c("condition", "br", "timepoint","fed_batch","analytical_batch"),
+#            sep = "_") %>%
+#   mutate(condition_tp = paste(condition, timepoint, sep = "_")) %>% 
+#   filter(condition %in% c("B", "A")) %>%
+#   mutate(glycoform1 = factor(glycoform1, levels = glycoforms_order))
+# # Compute the mean for each condition, glycoform1, and timepoint
+# mean_data <- clr_corr_abundance %>%
+#   group_by(glycoform1, condition, timepoint) %>%
+#   summarise(mean_abundance = mean(corr_abundance, na.rm = TRUE), .groups = "drop") %>%
+#   mutate(condition_tp = paste(condition, timepoint, sep = "_"))
+# 
+# # Create the plot
+# frac_ab_col <- ggplot(clr_corr_abundance, aes(x = timepoint, y = corr_abundance, colour = condition)) +
+#   geom_point(shape = 21, size = 2, stroke = 0.5, position = position_jitter(w = 0.25, h = 0)) +
+#   geom_point(data = mean_data, aes(x = timepoint, y = mean_abundance, colour = condition)) +
+#   facet_wrap(~glycoform1, nrow = 1) +
+#   scale_color_manual(values = color_mapping_condition, breaks = names(color_mapping_condition)) +
+#   labs(x = "", y = "CLR fractional abundance") +
+#   theme_bw() +
+#   theme(text = element_text(size = 10, family = "sans"),
+#         axis.text = element_text(colour = "black"),
+#         panel.grid.major.x = element_blank(),
+#         strip.background = element_blank())
+#   
+#   plot(frac_ab_col)
