@@ -87,6 +87,32 @@ meta <- tibble(sample_name = colnames(data.matrix)) %>%
 
 save(data.matrix, meta, file = "analysis/matrix_meta_triplicates_br.RData")
 
+# subset only Dec 2024 measurements (FB4 A B C G and FB2 D E F) + FB2 C 264 hours
+fb2 %>%
+  filter(condition %in% "C",
+         timepoint %in% "264")
+
+subset_dataset <- rbind(fb2 %>% filter(condition %in% "C",timepoint %in% "264"), fb2_fb4) %>%
+  mutate(condition_br_tp_batch_anbatch = paste(condition_br_tp, 
+                                               fed_batch,
+                                               analytical_batch, 
+                                               sep = "_"))
+data.matrix <- subset_dataset %>%
+  select(glycoform1, corr_abundance, condition_br_tp_batch_anbatch) %>%
+  pivot_wider(values_from = corr_abundance,
+              names_from = condition_br_tp_batch_anbatch) %>%
+  column_to_rownames('glycoform1') %>%
+  as.matrix()
+
+meta <- tibble(sample_name = colnames(data.matrix)) %>%
+  separate(col = sample_name,
+           into = c('condition', 'br', 'timepoint','fed_batch','analytical_batch'),
+           sep = "_",
+           remove = FALSE
+  )
+
+save(data.matrix, meta, file = "analysis/matrix_meta_triplicates_br_c264.RData")
+
 # Biological replicate stability ------------------------------------------
 # To compare biological stability of samples from condition A-B-C
 plot_biological_stability <- function(dataset,
