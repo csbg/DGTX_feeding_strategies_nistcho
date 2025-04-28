@@ -26,7 +26,7 @@ library(tidyverse)
 
 # define analysis of pngase F digested or not digested data ---------------
 
-pngase <- "pngase" # "none"
+pngase <- "none" # "none"
 
 # constants ---------------------------------------------------------------
 
@@ -57,9 +57,9 @@ cs_rt_data <- read_csv("data/rt_seconds.csv") %>%
   filter(pngase %in% !!pngase) %>% # !! operator (pronounced "bang-bang") to evaluate the variable pngase inside the filter() function
   select(sample_name, rt_start, rt_end, scan_number_start, scan_number_end, rt_start_sec, rt_end_sec)
 
-if (pngase == "pngase") {
-  cs_rt_data <- cs_rt_data[-1:-2,]
-}
+# if (pngase == "pngase") {
+#   cs_rt_data <- cs_rt_data[-1:-2,]
+# }
 
 # merge df and cs_rt_data ------------------------------------------------
 
@@ -67,7 +67,7 @@ data_merged <- df %>%
   left_join(cs_rt_data, by = "sample_name") 
 
 write_csv(data_merged, 
-          paste0("analysis/overview_",pngase,"_merged.csv"))
+          paste0("analysis/overview_",pngase,"_merged_2.csv"))
 
 # define PTMs -------------------------------------------------------------
 
@@ -177,8 +177,11 @@ calculate_abundance <- function(mzml_full_path,
 }
 
 ## apply custom function to dfr --------------------------------------------
+data_merged_subset <- data_merged %>%
+  filter(str_detect(sample_name, pattern = "_G_4_246"))
 
-pwalk(data_merged[76:129,], calculate_abundance, .progress = TRUE)
+
+pwalk(data_merged_subset, calculate_abundance, .progress = TRUE)
 pwalk(data_merged[67:72,], calculate_abundance, .progress = TRUE)
 
 pwalk(data_merged, calculate_abundance, .progress = TRUE)
