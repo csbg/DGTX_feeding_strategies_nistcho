@@ -1,6 +1,5 @@
 # required packages -------------------------------------------------------
 library(tidyverse)
-library(ggpattern)
 library(readxl)
 library(readr)
 library(ggpubr)
@@ -125,6 +124,7 @@ print(results)
 # Perform the left join
 IVCD_phases <- IVCD %>%
   left_join(phase_determination, by = c("TP"))
+
 
 
 
@@ -298,7 +298,6 @@ ggsave("results/qp_phases_FB2+4_sorted.pdf",
 
 
 # prepare data for statistics ---------------------------------------------
-
 
 # for checking siginificanes we need individual replicates, not averaged data
 
@@ -571,30 +570,30 @@ ggplot(averaged_data_d, aes(x = Condition, y = Mean_Rate)) +
     y = "qp (pg/cell/d)",
     title = "Cell Specific Productivity (qp)"
   ) +
-  theme_bw() +
+  theme_classic() +
   theme(
-    plot.title = element_text(size = 8, face = "bold", hjust = 0.5),
-    plot.subtitle = element_text(size = 8, hjust = 0.5),
-    axis.title.x = element_text(size = 8, color = "black", face = "bold"),
-    axis.text.x = element_text(size = 8, color = "black"),
-    axis.title.y = element_text(size = 8, color = "black", face = "bold"),
-    axis.text.y = element_text(size = 8, color = "black"),
+    plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    axis.title.x = element_text(size = 12, color = "black", face = "bold"),
+    axis.text.x = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black", face = "bold"),
+    axis.text.y = element_text(size = 12, color = "black"),
     legend.position = "none",
     legend.direction = "vertical",
-    legend.title = element_text(size = 8, face = "bold"),
-    legend.text = element_text(size = 8, hjust = 0.5),
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 12, hjust = 0.5),
     legend.box = "vertical",
     legend.box.just = "center",
     legend.spacing = unit(0.5, "cm"),
-    strip.background = element_rect(fill = "transparent"),
-    strip.text.x = element_text(face = "bold", size = 8)
-  ) +
+    strip.background = element_rect(fill = "transparent", color = "white"),
+    strip.text.x = element_text(face = "bold", size = 12)
+    ) +
   facet_wrap(~Phase) +
   # Add p-value annotations with significance markers
   stat_pvalue_manual(
     significance_data_phase,
     label = "Significance",
-    step.increase = 0.08,
+    step.increase = 0.13,
     label.size = 3,
     size = 1
   )
