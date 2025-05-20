@@ -1,6 +1,3 @@
-
-#20250120
-
 library(tidyverse)
 library(ggpubr)
 library(ggrepel)
@@ -9,8 +6,8 @@ library(here)
 
 # load data ------------------------------------------------------------
 
-df <- read.csv(df, here("data", "20241112_vicell_sum.csv"))
-avg_df <- read.csv(df_avg, here("data", "20241112_vicell_avg.csv"))
+df <- read.csv(here("data", "vicell_sum.csv"))
+avg_df <- read.csv(here("data", "vicell_avg.csv"))
 
 Condition_colors <- c(
   "A" = "#ee3377",
@@ -33,6 +30,9 @@ avg_df$Condition <- recode(avg_df$Condition,
                             "F" = "HIP+",
                             "G" = "LoG")
 
+# Set the display order of Condition to match the color_palette
+avg_df <- avg_df %>%
+  mutate(Condition = factor(Condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
 
 # vcd
 vcd <- avg_df %>%

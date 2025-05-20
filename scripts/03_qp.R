@@ -453,7 +453,6 @@ print(interaction_filtered)
 write.csv(interaction_filtered, here("results/20241120_interaction_significancies_CSP.csv"))
 
 
-
 # Filter the interaction_filtered dataframe to keep only Phase interactions
 significance_data_phase <- interaction_filtered %>%
   filter(Interaction_Type == "Condition") %>%
@@ -468,9 +467,6 @@ significance_data_phase <- interaction_filtered %>%
 
 averaged_data_d <- averaged_data %>%
   mutate(Mean_Rate = Mean_Rate * 24, SE_Rate = SE_Rate * 24)
-
-
-
 
 write.csv(averaged_data_d, here("results/averaged_data_CSP.csv"))
 
