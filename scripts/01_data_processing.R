@@ -13,4 +13,40 @@ df <- rbind(Vicell_data_fb2, Vicell_data_fb4)
 
 df$ID <- paste(df$Date, df$Batch,df$Condition, df$TP, df$Replicate,sep = "_")
 
-write.csv(df, here("data", "20241112_vicell_sum.csv"))
+write.csv(df, here("data", "vicell_sum.csv"))
+
+
+# average data ------------------------------------------------------------
+df <- df %>%
+    filter(!(TP == "TP10" & Condition %in% "G")) %>%
+    filter(!(TP == "TP1_2")) %>%
+    filter(!(TP == "TP1_3")) %>%
+    
+
+# remove Condition A,B,C & Replicate 1,2,3
+
+conditions_to_remove <- c("A", "B", "C")
+replicates_to_remove <- c("R1", "R2", "R3")
+
+# Filter out rows where Condition is in conditions_to_remove and Replicate is in replicates_to_remove
+df_filtered <- df[!(df$Condition %in% conditions_to_remove & df$Replicate %in% replicates_to_remove), ]
+
+
+# calculate average data
+avg_df <- df_filtered %>%
+    group_by(Condition, TP) %>%
+    summarise(
+        mean_vcd = mean(Total_VCD, na.rm = TRUE),
+        se_vcd = sd(Total_VCD, na.rm = TRUE) / sqrt(n()),
+        mean_hours = mean(Hours, na.rm = TRUE),
+        se_hours = sd(Hours, na.rm = TRUE) / sqrt(n()),
+        mean_dia = mean(Average_diameter, na.rm = TRUE),
+        se_dia = sd(Average_diameter, na.rm = TRUE) / sqrt(n()),
+        mean_via = mean(Viability, na.rm = TRUE),
+        se_via = sd(Viability, na.rm = TRUE) / sqrt(n())
+    ) %>%
+    mutate(is_last = ifelse(mean_hours == max(mean_hours), TRUE, FALSE))
+
+
+# write averafe csv
+write.csv(avg_df, here("data", "vicell_avg.csv"), row.names = FALSE)
