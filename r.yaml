@@ -16,3 +16,5 @@ dependencies:
   - r-reshape2
   - r-irkernel
   - r-tidyplots
+  - r-pheatmap
+  - bioconductor-complexheatmap
