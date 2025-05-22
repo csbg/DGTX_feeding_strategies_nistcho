@@ -144,3 +144,102 @@ write_csv(gi_stats_wider,
           file = "analysis/galactosylation_index.csv")
   
 
+# glycation index ---------------------------------------------------------
+glycation_data <- read_csv("analysis/FB4_abundance_glycation.csv")
+
+
+# Function to count glucose from glycation names
+count_glucose <- function(glycation) {
+  case_when(
+    grepl("1xHex", glycation) ~ 1,
+    grepl("2xHex", glycation) ~ 2,
+    grepl("3xHex", glycation) ~ 3,
+    TRUE ~ 0
+  )
+}
+
+# Split into two glycans and count galactose residues
+glycation_data <- glycation_data %>%
+  mutate(
+    glu = sapply(modcom_name, count_glucose),
+    denominator_glu = 3,
+    # denominator_glu = case_when(
+    #   grepl("none", modcom_name) ~ 3,
+    #   TRUE ~ 3),
+    total_glu = glu * frac_abundance,
+    # total_sites = denominator_glu * frac_abundance
+  ) %>%
+  separate(condition_br_tp, sep = "_", into = c("condition","br","tp"), remove = FALSE)
+
+# Calculate GI per condition_br_tp
+gi_summary <- glycation_data %>%
+  group_by(condition_br_tp) %>%
+  summarise(
+    total_glu = sum(total_glu, na.rm = TRUE),
+    # total_sites = sum(total_sites, na.rm = TRUE)
+  ) %>%
+  mutate(
+    glycation_index = (total_glu / 3) 
+  ) %>%
+  separate(condition_br_tp, sep = "_", into = c("condition","br","tp"),remove = FALSE) %>%
+  mutate(time_group = if_else(tp == 120, "120", "240_264"))
+
+# Print the summary table
+print(gi_summary)
+# Compute mean and standard deviation
+
+# Calculate summary stats per condition and timepoint
+gi_stats <- gi_summary %>%
+  group_by(condition, tp) %>%
+  summarise(
+    mean_GI = mean(glycation_index),
+    sd_GI = sd(glycation_index),
+    .groups = "drop"
+  ) %>%
+  mutate(time_group = if_else(tp == 120, "120", "240_264"))
+
+color_mapping_condition <- c(
+  "A" = "#EE3377",
+  "B" = "#56B4E9",
+  "C" = "#009E73",
+  "G" = "#ffd800",
+  "D" = "#CC79A7",
+  "E" = "#EE7631",
+  "F" = "#0072B2"
+)
+
+ggplot() +
+  geom_jitter(data = gi_summary, aes(x = condition, y = glycation_index, color = condition), width = 0.2, size = 2.5) +
+  geom_point(data = gi_stats, aes(x = condition, y = mean_GI), color = "black", size = 3, alpha = 0.5) +
+  geom_errorbar(
+    data = gi_stats,
+    aes(x = condition, ymin = mean_GI - sd_GI, ymax = mean_GI + sd_GI),
+    width = 0.2,
+    color = "black", 
+    alpha = 0.5
+  ) +
+  facet_wrap(~ time_group, ncol = 1) +
+  scale_color_manual(values = color_mapping_condition, 
+                     breaks = names(color_mapping_condition)) +
+  ylim(0,7.5) +
+  labs(x = "", y = "Glycation index (%)") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+ggsave(filename = "figures/galactosylation_index.png",
+       width = 100,
+       height = 150,
+       units = "mm",
+       dpi = 600,
+       bg = "white")
+
+ggplot(data = gi_stats) +
+  geom_point(aes(x = as.numeric(tp), y = mean_GI, color = condition)) +
+  scale_color_manual(values = color_mapping_condition, 
+                     breaks = names(color_mapping_condition)) +
+  ylim(0,30) +
+  xlim(100, 280)
