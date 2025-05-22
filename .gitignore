@@ -8,3 +8,5 @@ staging/
 *.pdf
 *.csv
 *.png
+*.svg
+*.xlsx
