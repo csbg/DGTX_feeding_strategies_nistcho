@@ -182,7 +182,16 @@ gi_summary <- glycation_data %>%
     glycation_index = (total_glu / 3) 
   ) %>%
   separate(condition_br_tp, sep = "_", into = c("condition","br","tp"),remove = FALSE) %>%
-  mutate(time_group = if_else(tp == 120, "120", "240_264"))
+  mutate(time_group = if_else(tp == 120, "120", "240_264")) %>%
+  mutate(condition = case_when(
+    condition == "A" ~ "STD",
+    condition == "B" ~ "STD+",
+    condition == "G" ~ "LoG",
+    condition == "C" ~ "LoG+",
+    condition == "D" ~ "HiF",
+    condition == "E" ~ "HIP",
+    condition == "F" ~ "HIP+")
+  ) 
 
 # Print the summary table
 print(gi_summary)
@@ -198,14 +207,16 @@ gi_stats <- gi_summary %>%
   ) %>%
   mutate(time_group = if_else(tp == 120, "120", "240_264"))
 
+
+
 color_mapping_condition <- c(
-  "A" = "#EE3377",
-  "B" = "#56B4E9",
-  "C" = "#009E73",
-  "G" = "#ffd800",
-  "D" = "#CC79A7",
-  "E" = "#EE7631",
-  "F" = "#0072B2"
+  "STD" = "#EE3377",
+  "STD+" = "#56B4E9",
+  "LoG+" = "#009E73",
+  "LoG" = "#ffd800",
+  "HiF" = "#CC79A7",
+  "HIP" = "#EE7631",
+  "HIP+" = "#0072B2"
 )
 
 ggplot() +
@@ -230,16 +241,20 @@ ggplot() +
     panel.grid.major.x = element_blank()
   )
 
-ggsave(filename = "figures/galactosylation_index.png",
-       width = 100,
-       height = 150,
-       units = "mm",
-       dpi = 600,
-       bg = "white")
 
 ggplot(data = gi_stats) +
   geom_point(aes(x = as.numeric(tp), y = mean_GI, color = condition)) +
+  geom_line(aes(x = as.numeric(tp), y = mean_GI, color = condition, group = condition)) +
   scale_color_manual(values = color_mapping_condition, 
                      breaks = names(color_mapping_condition)) +
-  ylim(0,30) +
-  xlim(100, 280)
+  ylim(0,7.5) +
+  labs(x = "Time point [hours]", y = "Glycation index [%]") +
+  xlim(100, 280) +
+  theme_bw()
+
+ggsave(filename = "figures/glycation_index.png",
+       width = 100,
+       height = 80,
+       units = "mm",
+       dpi = 600,
+       bg = "white")
