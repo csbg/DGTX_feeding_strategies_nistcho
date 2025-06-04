@@ -24,13 +24,12 @@ corr_abundance_data <- corr_abundance_data %>%
     g2 = sub(".*/", "", glycoform1),
     g1_gal = sapply(g1, count_galactose),
     g2_gal = sapply(g2, count_galactose),
-    denominator_g1 = 2,
+    # denominator_g1 = 2,
+    denominator_g1 = case_when(
+      grepl("none", g1) ~ 0,
+      TRUE ~ 2
+    ),
     denominator_g2 = 2,
-    # denominator_g1 = case_when(
-    #   grepl("A1", g1) ~ 1,
-    #   grepl("A2", g1) ~ 2,
-    #   TRUE ~ 0
-    # ),
     # denominator_g2 = case_when(
     #   grepl("A1", g2) ~ 1,
     #   grepl("A2", g2) ~ 2,
@@ -147,6 +146,23 @@ write_csv(gi_stats_wider,
 # glycation index ---------------------------------------------------------
 glycation_data <- read_csv("analysis/FB4_abundance_glycation.csv")
 
+# Check if frac_abundance sums to 1 for each replicate
+abundance_sums <- glycation_data %>%
+  group_by(condition_br_tp) %>%
+  summarise(total_abundance = sum(frac_abundance)) %>%
+  ungroup()
+#checked, all abundances sum to 100 
+
+sanity_check <- glycation_data %>%
+  group_by(condition_br_tp) %>%
+  summarise(
+    max_possible_glu = sum(3 * frac_abundance),  # 3 is max glu per antibody
+    total_glu = sum(glu * frac_abundance)
+  ) %>%
+  mutate(percent = total_glu / max_possible_glu * 100) %>%
+  arrange(desc(percent))
+
+#checked that all percent are below 100
 
 # Function to count glucose from glycation names
 count_glucose <- function(glycation) {
@@ -169,18 +185,18 @@ glycation_data <- glycation_data %>%
     total_glu = glu * frac_abundance,
     # total_sites = denominator_glu * frac_abundance
   ) %>%
-  separate(condition_br_tp, sep = "_", into = c("condition","br","tp"), remove = FALSE)
+  separate(condition_br_tp, sep = "_", into = c("condition","br","tp"), remove = FALSE) 
 
 # Calculate GI per condition_br_tp
 gi_summary <- glycation_data %>%
   group_by(condition_br_tp) %>%
   summarise(
-    total_glu = sum(total_glu, na.rm = TRUE),
-    # total_sites = sum(total_sites, na.rm = TRUE)
+    total_glu = sum(glu * frac_abundance, na.rm = TRUE),
+    total_sites = sum(denominator_glu * frac_abundance, na.rm = TRUE)
   ) %>%
   mutate(
-    glycation_index = (total_glu / 3) 
-  ) %>%
+    glycation_index = (total_glu / total_sites) * 100
+  )%>%
   separate(condition_br_tp, sep = "_", into = c("condition","br","tp"),remove = FALSE) %>%
   mutate(time_group = if_else(tp == 120, "120", "240_264")) %>%
   mutate(condition = case_when(
@@ -247,7 +263,7 @@ ggplot(data = gi_stats) +
   geom_line(aes(x = as.numeric(tp), y = mean_GI, color = condition, group = condition)) +
   scale_color_manual(values = color_mapping_condition, 
                      breaks = names(color_mapping_condition)) +
-  ylim(0,7.5) +
+  # ylim(0,7.5) +
   labs(x = "Time point [hours]", y = "Glycation index [%]") +
   xlim(100, 280) +
   theme_bw()
