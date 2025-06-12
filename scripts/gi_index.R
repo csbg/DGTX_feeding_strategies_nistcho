@@ -210,18 +210,18 @@ ggsave(filename = "figures/galactosylation_index.png",
 # make wider table --------------------------------------------------------
 gi_stats_wider <- gi_stats %>% 
   mutate(
-    across(starts_with("mean_GI"), ~ round(.x, 0)),
+    across(starts_with("mean_GI"), ~ round(.x, 2)),
     across(starts_with("sd_GI"), ~ round(.x, 2))
   ) %>%
-  mutate(condition = case_when(
-    condition == "A" ~ "STD",
-    condition == "B" ~ "STD+",
-    condition == "G" ~ "LoG",
-    condition == "C" ~ "LoG+",
-    condition == "D" ~ "HiF",
-    condition == "E" ~ "HIP",
-    condition == "F" ~ "HIP+")
-  ) %>%
+  # mutate(condition = case_when(
+  #   condition == "A" ~ "STD",
+  #   condition == "B" ~ "STD+",
+  #   condition == "G" ~ "LoG",
+  #   condition == "C" ~ "LoG+",
+  #   condition == "D" ~ "HiF",
+  #   condition == "E" ~ "HIP",
+  #   condition == "F" ~ "HIP+")
+  # ) %>%
   select(condition,time_group, mean_GI, sd_GI) %>%
   pivot_wider(values_from = c(mean_GI, sd_GI), 
                          names_from = time_group,
@@ -314,6 +314,32 @@ gi_stats <- gi_summary %>%
   mutate(time_group = if_else(tp == 120, "exponential", "stationary"))
 
 
+# make wider table --------------------------------------------------------
+gi_stats_wider <- gi_stats %>% 
+  mutate(
+    across(starts_with("mean_GI"), ~ round(.x, 2)),
+    across(starts_with("sd_GI"), ~ round(.x, 2))
+  ) %>%
+  # mutate(condition = case_when(
+  #   condition == "A" ~ "STD",
+  #   condition == "B" ~ "STD+",
+  #   condition == "G" ~ "LoG",
+  #   condition == "C" ~ "LoG+",
+  #   condition == "D" ~ "HiF",
+  #   condition == "E" ~ "HIP",
+  #   condition == "F" ~ "HIP+")
+  # ) %>%
+  select(condition,time_group, mean_GI, sd_GI) %>%
+  pivot_wider(values_from = c(mean_GI, sd_GI), 
+              names_from = time_group,
+              names_glue = "{.value}_{time_group}") %>%
+  mutate(condition_abrev = factor(condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+"))) %>%
+  arrange(condition)
+
+write_csv(gi_stats_wider,
+          file = "analysis/glycation_index.csv")
+
+# plot glycation index ----------------------------------------------------
 
 color_mapping_condition <- c(
   "STD" = "#EE3377",
