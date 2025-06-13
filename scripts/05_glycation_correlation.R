@@ -393,3 +393,161 @@ corr <- pheatmap::pheatmap(cor_matrix,
 
 # Save the plot
 save_pheatmap_pdf(corr, here("results/heatmap_correlation.pdf"))
+
+# glycation index 
+# make dotplot for merged_df have facet wrap on Hour and shape = modification type, color = Condition
+ggplot(merged_df, aes(x = cum_glc_g.L, y = frac_abundance, color = Condition, shape = modcom_name)) +
+  geom_point(size = 2) +
+  facet_wrap(~Hour) + # Facet by Hour
+  labs(
+    title = "Glycation vs Cumulative Glucose",
+    x = "Cumulative Glucose (g/L)",
+    y = "Fractional Abundance of Modifications"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+
+
+ggsave(
+  filename = here("results/glycation_vs_glucose_dotplot.png"),
+  width = 10,
+  height = 8,
+  dpi = 300
+)
+
+library(tidyplots)
+
+filtered_abundance_glycation <- filtered_abundance_glycation %>%
+  mutate(Condition = recode(Condition,
+    "A" = "STD",
+    "B" = "STD+",
+    "C" = "LoG+",
+    "D" = "HiF",
+    "E" = "HIP",
+    "F" = "HIP+",
+    "G" = "LoG"
+  ))
+
+# split filtered into exponential and stationary phase df
+exp_filtered_glycation <- filtered_abundance_glycation %>%
+  filter(Hour <= 120) # Exponential phase
+
+
+a <- exp_filtered_glycation |>
+  tidyplot(x = Condition, y = frac_abundance, color = modcom_name) |>
+  add_barstack_relative() |>
+  add_title("Exponential Phase") |>
+  adjust_size(
+    width = 125,
+    height = 135
+  ) |>
+  adjust_font(
+    fontsize = 10
+  )
+
+
+# split filtered into exponential and stationary phase df
+sta_filtered_glycation <- filtered_abundance_glycation %>%
+  filter(Hour >= 240) # Stationary phase
+
+
+b <- sta_filtered_glycation |>
+  tidyplot(x = Condition, y = frac_abundance, color = modcom_name) |>
+  add_barstack_relative() |>
+  add_title("Stationary Phase") |>
+  adjust_size(
+    width = 125,
+    height = 135
+  )|>
+  adjust_font(
+    fontsize = 10
+  )
+
+
+
+ggarrange(a, b,
+  labels = c("(a)", "(b)"),
+  common.legend = TRUE, legend = "bottom"
+)
+
+ggsave(
+  filename = here("results/glycation_barplot_exponential_stationary.png"),
+  width = 15,
+  height = 8,
+  dpi = 300,
+  bg = "white"
+)
+
+
+# load glycation index data and rename tp column to Hour
+glycation_index <- read.csv(here("data/glycation_index.csv"))
+
+glycation_index <- dplyr::rename(glycation_index, Hour = tp)
+glycation_index <- dplyr::rename(glycation_index, Condition = condition)
+
+
+
+# average cumulative glucose for each condition
+average_cum_glc <- cum_sum_glc %>%
+  group_by(Condition, Hour) %>%
+  summarise(
+    avg_cum_glc = mean(cum_glc_g.L, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# create new column time_group with exponential and stationary phase
+average_cum_glc <- average_cum_glc %>%
+  mutate(
+    time_group = case_when(
+      Hour <= 120 ~ "exponential",
+      Hour > 120 ~ "stationary"
+    )
+  )
+
+# rename condition to match glycation index
+average_cum_glc <- average_cum_glc %>%
+  mutate(Condition = recode(Condition,
+    "A" = "STD",
+    "B" = "STD+",
+    "C" = "LoG+",
+    "D" = "HiF",
+    "E" = "HIP",
+    "F" = "HIP+",
+    "G" = "LoG"
+  ))
+
+# merge dfs
+merged_glycation_index <- merge(glycation_index, average_cum_glc, by = c("Condition", "Hour", "time_group"))
+
+# plot glycation index vs cumulative glucose
+ggplot(merged_glycation_index, aes(x = time_group, y = mean_GI, color = Condition)) +
+  geom_point(size = 2) +
+  #geom_errorbar(aes(ymin = mean_GI - sd_GI, ymax = mean_GI + sd_GI), width = 0.8) +
+  labs(
+    title = "Glycation Index vs Average Cumulative Glucose",
+    x = "Average Cumulative Glucose (g/L)",
+    y = "Glycation Index"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+
+ggsave(
+  filename = here("results/glycation_index_vs_avg_cum_glc.png"),
+  width = 10,
+  height = 8,
+  dpi = 300
+)
