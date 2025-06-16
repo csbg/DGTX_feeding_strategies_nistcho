@@ -31,7 +31,8 @@ mutate(condition_abrev = case_when(
   condition == "E" ~ "HIP",
   condition == "F" ~ "HIP+")
 ) %>%
-  mutate(condition_abrev = factor(condition_abrev, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
+  mutate(condition_abrev = factor(condition_abrev, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+"))) %>%
+  mutate(condition_abrev_tp = paste(condition_abrev, timepoint, sep = "_"))
 
 meta_120 <- meta %>% filter(timepoint == "120")
 meta_264 <- meta %>% filter(timepoint %in% c("240","264"))
@@ -431,87 +432,16 @@ ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new.png",
          plot = hull_plot, 
          width = 6, height = 5, bg = "white", dpi = 300)
 
+
+# renaming conditions A-F with the new names in the colnames of da --------
+
+# replacements <- c("A_" = "STD_", "B_" = "STD+_", "C_" = "LoG_",
+#                   "G_" = "LoG+_", "D_" = "HiF_", "E_" = "HIP_", "F_" = "HIP+_")
+# for (prefix in names(replacements)) {
+#   colnames(clr_data.matrix) <- sub(paste0("^", prefix), replacements[prefix], colnames(clr_data.matrix))
+# }
 # plot heatmap of Spearman correlations ------------------------------------
 # function to calculate spearman correlations and plot as heatmap
-spearman_correlations <- function(data = data.matrix,
-                                  meta_data){
-  
-  cor_sp <- cor(data,method = "spearman")
-  print(paste0("min value of correlation is ", round(min(cor_sp),4)))
-  
-  BASE_TEXT_SIZE_PT <- 9
-  ht_opt(
-    simple_anno_size = unit(1.5, "mm"),
-    COLUMN_ANNO_PADDING = unit(1, "pt"),
-    DENDROGRAM_PADDING = unit(1, "pt"),
-    HEATMAP_LEGEND_PADDING = unit(1, "mm"),
-    ROW_ANNO_PADDING = unit(1, "pt"),
-    TITLE_PADDING = unit(2, "mm"),
-    heatmap_row_title_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-    heatmap_row_names_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-    heatmap_column_title_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-    heatmap_column_names_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-    # legend_labels_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-    legend_title_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-    legend_border = FALSE
-  )
-  
-  f2 <- colorRamp2(
-    seq(min(cor_sp), 1, length = 9),
-    rev(c("#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", 
-      "#fc4e2a", "#e31a1c", "#bd0026", "#800026")),
-    space = "RGB"
-  )
-  
-  ha = HeatmapAnnotation(
-    condition = meta_data$condition,
-    timepoint = meta_data$timepoint,
-    # fed_batch = meta_data$fed_batch,
-    # analytical_batch = meta_data$analytical_batch,
-    col = list(
-              # analytical_batch = c("Jun24" = "#fdc086",
-              #                       "Dec24" = "#ffff99",
-              #                       "Apr25" = "#386cb0"),
-              #  fed_batch = c("fb2" = "#7fc97f",
-              #                "fb4" = "#beaed4"
-              #                ),
-               timepoint = c("120" = "#fde0dd",
-                             "240" = "#fa9fb5",
-                             "264" = "#c51b8a"
-                             ),
-               condition = c(
-                 "A" = "#EE3377",
-                 "B" = "#56B4E9",
-                 "C" = "#009E73",
-                 "G" = "#ffd800",
-                 "D" = "#CC79A7",
-                 "E" = "#EE7631",
-                 "F" = "#0072B2"
-               )
-    ),
-    gp = gpar(col = "black")
-    # annotation_legend_gp = gpar(fontsize = 9) 
-  )
-  
-  cor_sp[cor_sp == 1] <- NA
-  ht <- Heatmap(cor_sp,
-          name = "correlations",
-          na_col = "grey",
-          col = f2,
-          top_annotation = ha,
-          column_labels = meta_data$condition_tp,
-          # row_labels = meta_data$condition_tp
-          show_row_names = FALSE,
-          # show_column_names = FALSE,
-          show_row_dend = FALSE
-          )
-  
-  # draw(ht, annotation_legend_side = "bottom")
-  draw(ht)
-  
-}
-
-
 spearman_correlations <- function(data,
                                   meta_data,
                                   annotation_legend_side = "bottom",
@@ -558,7 +488,7 @@ spearman_correlations <- function(data,
   
   # Annotations
   ha <- HeatmapAnnotation(
-    condition = meta_data$condition,
+    condition = meta_data$condition_abrev,
     timepoint = meta_data$timepoint,
     gap = unit(1, "mm"),  # <-- controls vertical spacing between annotation tracks
     col = list(
@@ -566,8 +496,8 @@ spearman_correlations <- function(data,
                     "240" = "#fa9fb5",
                     "264" = "#c51b8a"),
       condition = c(
-        "A" = "#EE3377", "B" = "#56B4E9", "C" = "#009E73", "D" = "#CC79A7",
-        "E" = "#EE7631", "F" = "#0072B2", "G" = "#ffd800"
+        "STD" = "#EE3377", "STD+" = "#56B4E9", "LoG" = "#009E73", "HiF" = "#CC79A7",
+        "HIP" = "#EE7631", "HIP+" = "#0072B2", "LoG+" = "#ffd800"
       )
     ),
     annotation_legend_param = list(
@@ -585,7 +515,7 @@ spearman_correlations <- function(data,
     na_col = "grey",
     col = f2,
     top_annotation = ha,
-    column_labels = meta_data$condition_tp,
+    column_labels = meta_data$condition_abrev_tp,
     show_row_names = show_row_names,
     show_column_names = show_column_names,
     cluster_rows = cluster_rows,
