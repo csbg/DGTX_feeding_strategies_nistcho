@@ -18,3 +18,5 @@ dependencies:
   - r-tidyplots
   - r-pheatmap
   - bioconductor-complexheatmap
+  - r-pracma
+  
