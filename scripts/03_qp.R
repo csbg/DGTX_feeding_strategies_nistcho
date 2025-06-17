@@ -419,7 +419,8 @@ interaction_comparisons <- tukey_results$`Condition:Phase`
 print(interaction_comparisons)
 
 # Assuming interaction_comparisons is a matrix or a similar structure
-interaction <- as.data.frame(interaction_comparisons)%>%
+interaction <- 
+(interaction_comparisons)%>%
   rownames_to_column("Comparison")
 
 

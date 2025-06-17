@@ -42,9 +42,9 @@ vcd <- avg_df %>%
   geom_point(size = 1) +
   geom_errorbar(aes(ymin = mean_vcd - se_vcd, ymax = mean_vcd + se_vcd, color = Condition), width = 3, na.rm = TRUE) +
   labs(
-    x = "Time [Hours]",
-    y = "Viable Cell Density [x10^6 vc/mL]",
-    title = "Viable Cell Density"
+    x = "Culture duration [h]",
+    y = "Viable cell density [x10^6 vc/mL]",
+    title = "Viable cell density"
   ) +
   geom_text_repel(
     data = filter(avg_df, is_last),
@@ -85,7 +85,7 @@ vcd <- avg_df %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)    
     ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 24))
+  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 48))
 
 plot(vcd)
 
@@ -104,7 +104,7 @@ via <- avg_df %>%
   geom_point(size = 1) +
   geom_errorbar(aes(ymin = mean_via - se_via, ymax = mean_via + se_via, color = Condition), width = 3, na.rm = TRUE) +
   labs(
-    x = "Time [Hours]",
+    x = "Culture duration [h]",
     y = "Viability [%]",
     title = "Viability"
   ) +
@@ -147,7 +147,7 @@ via <- avg_df %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 24)) +
+  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 48)) +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 10))
 
 plot(via)
@@ -209,7 +209,7 @@ titer <- titer_avg %>%
   geom_point(size = 1) +
   geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer, color = Condition), width = 3, na.rm = TRUE) +
   labs(
-    x = "Time [Hours]",
+    x = "Culture duration [h]",
     y = "Titer [µg/mL]",
     title = "Titer"
   ) +
@@ -330,50 +330,28 @@ ggsave("results/titer_lactate_timecourse.pdf",
 )
 
 
-# calculate total cells
-
-# read df with total cell
-total_cells_fb2 <- read.csv(here("data", "2025_Vicell_data_fb2.csv"))
-total_cells_fb4 <- read.csv(here("data", "2025_Vicell_data_fb4.csv"))
-
-# remove conditions, A, B, C from fb2
-total_cells_fb2 <- total_cells_fb2 %>%
-  filter(!Condition %in% c("A", "B", "C"))
-
-# merge fb2 and fb4
-total_cells <- bind_rows(total_cells_fb2, total_cells_fb4) 
-
-# rename conditions
-total_cells <- total_cells %>%
-  mutate(Condition = recode(Condition,
-    "A" = "STD",
-    "B" = "STD+",
-    "C" = "LoG+",
-    "D" = "HiF",
-    "E" = "HIP",
-    "F" = "HIP+",
-    "G" = "LoG"
-  )) %>%
-  mutate(Condition = factor(Condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
-
-# average and calculate SE for total cells
-total_cells_avg <- total_cells %>%
-  group_by(Condition, TP) %>%
-  summarise(
-    mean_total_cells = mean(Total_Cells),
-    se_total_cells = sd(Total_Cells) / sqrt(n()),
-    mean_hours = mean(Hours),
-    .groups = "drop")
-
-# plot
-ggplot(total_cells_avg, aes(x = mean_hours, y = mean_total_cells, color = Condition)) +
+# via
+dia <- avg_df %>%
+  ggplot(aes(x = mean_hours, y = mean_dia, color = Condition)) +
   geom_line(linewidth = 0.5) +
   geom_point(size = 1) +
-  geom_errorbar(aes(ymin = mean_total_cells - se_total_cells, ymax = mean_total_cells + se_total_cells, color = Condition), width = 3, na.rm = TRUE) +
+  geom_errorbar(aes(ymin = mean_dia - se_dia, ymax = mean_dia + se_dia, color = Condition), width = 3, na.rm = TRUE) +
   labs(
-    x = "Time [Hours]",
-    y = "Total Cells [x10^6]",
-    title = "Total Cells"
+    x = "Culture duration [h]",
+    y = "Average cell diameter [µm]",
+    title = "Average cell diameter"
+  ) +
+  geom_text_repel(
+    data = filter(avg_df, is_last),
+    aes(label = Condition, color = Condition), # Keep the color aesthetic inside aes()
+    hjust = 0,
+    size = 2,
+    angle = 0,
+    fontface = "bold",
+    nudge_x = 15,
+    segment.linetype = "dashed",
+    show.legend = FALSE,
+    direction = "x" # Adjust the direction to avoid overlap
   ) +
   theme_classic() +
   theme(
@@ -383,6 +361,8 @@ ggplot(total_cells_avg, aes(x = mean_hours, y = mean_total_cells, color = Condit
     axis.text.x = element_text(size = 10, color = "black"),
     axis.title.y = element_text(size = 10, face = "bold"),
     axis.text.y = element_text(size = 10, color = "black"),
+    axis.title.y.right = element_text(size = 10),
+    axis.text.y.right = element_text(size = 10, color = "black"),
     legend.position = "bottom",
     legend.title = element_text(size = 10, face = "bold"),
     legend.text = element_text(size = 10)
@@ -399,109 +379,19 @@ ggplot(total_cells_avg, aes(x = mean_hours, y = mean_total_cells, color = Condit
     ),
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
-  ) 
-
-# calculate cumulative sum of Total Cells stepwise for each condition and time point
-total_cells_cumsum <- total_cells %>%
-  group_by(Condition, TP) %>%
-  summarise(
-    mean_total_cells = mean(Total_Cells),
-    se_total_cells = sd(Total_Cells) / sqrt(n()),
-    mean_hours = mean(Hours),
-    .groups = "drop") %>%
-  arrange(Condition, mean_hours) %>%
-  group_by(Condition) %>%
-  mutate(cumsum_total_cells = cumsum(mean_total_cells)) %>%
-  ungroup()
-
-# plot cumulative sum of Total Cells
-ggplot(total_cells_cumsum, aes(x = mean_hours, y = cumsum_total_cells, color = Condition)) +
-  geom_line(linewidth = 0.5) +
-  geom_point(size = 1) +
-  geom_errorbar(aes(ymin = cumsum_total_cells - se_total_cells, ymax = cumsum_total_cells + se_total_cells, color = Condition), width = 3, na.rm = TRUE) +
-  labs(
-    x = "Time [Hours]",
-    y = "Cumulative Total Cells [x10^6]",
-    title = "Cumulative Total Cells"
   ) +
-  theme_classic() +
-  theme(
-    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
-    plot.subtitle = element_text(hjust = 0.5),
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 10, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "bottom",
-    legend.title = element_text(size = 10, face = "bold"),
-    legend.text = element_text(size = 10)
-  ) +
-  scale_color_manual(
-    values = c(
-      "STD" = "#ee3377",
-      "STD+" = "#56b4e9",
-      "LoG+" = "#009e73",
-      "HiF" = "#cc79a7",
-      "HIP" = "#ee7733",
-      "HIP+" = "#0072b2",
-      "LoG" = "#ffd800"
-    ),
-    name = "Feeding Strategy",
-    guide = guide_legend(nrow = 1)
-  ) + 
-  scale_x_continuous(limits = c(0, 300), breaks = seq(0, 300, 48))
-
-# save
-ggsave("results/total_cells_cumsum.pdf",
-       units = c("cm"),
-       height = 10,
-       width = 15,
-       bg = "white",
-       dpi = 600)
-
-# plot barchart for the last time point
-last_timepoint <- total_cells_cumsum %>%
-  group_by(Condition) %>%
-  filter(mean_hours == max(mean_hours)) %>%
-  mutate(Condition = factor(Condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
+  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 48))
+plot(dia)
 
 
-
-ggplot(last_timepoint, aes(x = Condition, y = cumsum_total_cells, fill = Condition)) +
-  geom_bar(stat = "identity", position = "dodge", colour="black") +
-  geom_errorbar(aes(ymin = cumsum_total_cells - se_total_cells, ymax = cumsum_total_cells + se_total_cells), width = 0.2, position = position_dodge(0.9)) +
-  labs(
-    x = "Condition",
-    y = "Total Cells [x10^6]",
-    title = "Total cell count"
-  ) +
-  theme_classic() +
-  theme(
-    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 10, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "none"
-  )  +
-scale_fill_manual(
-  values = c(
-    "STD" = "#ee3377",
-    "STD+" = "#56b4e9",
-    "LoG+" = "#009e73",
-    "HiF" = "#cc79a7",
-    "HIP" = "#ee7733",
-    "HIP+" = "#0072b2",
-    "LoG" = "#ffd800"
-  ),
-  name = "Feeding Strategy",
-  guide = guide_legend(nrow = 1)
+ggarrange(vcd, via, dia, tcc,
+  labels = c("(a)", "(b)", "(c)", "(d)"),
+  common.legend = TRUE, legend = "bottom"
 )
 
-# save
-ggsave("results/total_cells_last_timepoint.pdf",
+ggsave("results/VCD_VIA_DIA_TCC_arranged.pdf",
        units = c("cm"),
-       height = 15,
-       width = 15,
+       height = 20,
+       width = 23,
        bg = "white",
        dpi = 600)
