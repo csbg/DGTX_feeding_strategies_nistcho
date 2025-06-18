@@ -9,6 +9,18 @@ library(here)
 df <- read.csv(here("data", "vicell_sum.csv"))
 avg_df <- read.csv(here("data", "vicell_avg.csv"))
 titer <- read.csv(here("data", "vicell_titer_sum.csv"))
+lactate <- read.csv(here("data", "20250618_lactate-feeding-strategies.csv"))
+
+# rename Feeding strategies
+lactate$Con <- recode(lactate$Con,
+  "A" = "STD",
+  "B" = "STD+",
+  "C" = "LoG+",
+  "D" = "HiF",
+  "E" = "HIP",
+  "F" = "HIP+",
+  "G" = "LoG"
+)
 
 Condition_colors <- c(
   "A" = "#ee3377",
@@ -210,17 +222,17 @@ titer <- titer_avg %>%
   geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer, color = Condition), width = 3, na.rm = TRUE) +
   labs(
     x = "Culture duration [h]",
-    y = "Titer [µg/mL]",
-    title = "Titer"
+    y = "cNISTmAb titer [µg/mL]",
+    title = "cNISTmAB titer time course"
   ) +
   geom_text_repel(
     data = filter(titer_avg, is_last),
     aes(label = Condition, color = Condition), # Keep the color aesthetic inside aes()
     hjust = 0,
-    size = 3,
+    size = 2,
     angle = 0,
     fontface = "bold",
-    nudge_x = 25,
+    nudge_x = 13,
     segment.linetype = "dashed",
     show.legend = FALSE
     #direction = "x" # Adjust the direction to avoid overlap
@@ -252,35 +264,60 @@ titer <- titer_avg %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   )+
-  scale_x_continuous(limits = c(0, 300), breaks = seq(0, 300, 48))
+  scale_x_continuous(limits = c(0, 320), breaks = seq(0, 320, 48))
 
 plot(titer)
 
-ggsave("results/titer.png",
-       units = c("cm"),
-       height = 10,
-       width = 17,
-       bg = "white",
-       dpi = 600)
 
-lactate <- titer_avg %>%
-  ggplot(aes(x = mean_hours, y = mean_titer, color = Condition)) +
+ggsave("results/titer.png",
+  units = c("cm"),
+  height = 10,
+  width = 17,
+  bg = "white",
+  dpi = 600
+)
+
+# Set the display order of Condition to match the color_palette
+lactate <- lactate %>%
+  mutate(Condition = factor(Con, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+"))) %>%
+  select(-Con)
+
+# average and calculate SE fot titer
+lactate_avg <- lactate %>%
+  group_by(Condition, h) %>%
+  summarise(
+    mean_lactate_mM = mean(c_mM),
+    se_lactate_mM = sd(c_mM) / sqrt(n()),
+    mean_hours = mean(h),
+    .groups = "drop"
+  )
+
+# add a is_last column to identify the last time point for each condition
+lactate_avg <- lactate_avg %>%
+  group_by(Condition) %>%
+  mutate(is_last = mean_hours == max(mean_hours)) %>%
+  ungroup()
+
+
+#plot
+lactate <- lactate_avg %>%
+  ggplot(aes(x = mean_hours, y = mean_lactate_mM, color = Condition)) +
   geom_line(linewidth = 0.5) +
   geom_point(size = 1) +
-  geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer, color = Condition), width = 3, na.rm = TRUE) +
+  geom_errorbar(aes(ymin = mean_lactate_mM - se_lactate_mM, ymax = mean_lactate_mM + se_lactate_mM, color = Condition), width = 3, na.rm = TRUE) +
   labs(
-    x = "Time [Hours]",
-    y = "Lactate mM",
-    title = "Lactate placeholder"
+    x = "Cultivation duration [h]",
+    y = "Extracellular lactate [mM]",
+    title = "Lactate time course"
   ) +
   geom_text_repel(
-    data = filter(titer_avg, is_last),
+    data = filter(lactate_avg, is_last),
     aes(label = Condition, color = Condition), # Keep the color aesthetic inside aes()
     hjust = 0,
     size = 2,
     angle = 0,
     fontface = "bold",
-    nudge_x = -5,
+    nudge_x = 13,
     segment.linetype = "dashed",
     show.legend = FALSE
     #direction = "x" # Adjust the direction to avoid overlap
@@ -312,22 +349,9 @@ lactate <- titer_avg %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 300), breaks = seq(0, 300, 48))
+  scale_x_continuous(limits = c(0, 320), breaks = seq(0, 320, 48))
 
-
-ggarrange(titer, lactate,
-  labels = c("(a)", "(b)"),
-  common.legend = TRUE, legend = "bottom"
-)
-
-
-ggsave("results/titer_lactate_timecourse.pdf",
-  units = c("cm"),
-  height = 8,
-  width = 20,
-  bg = "white",
-  dpi = 600
-)
+plot(lactate)
 
 
 # via
@@ -395,3 +419,138 @@ ggsave("results/VCD_VIA_DIA_TCC_arranged.pdf",
        width = 23,
        bg = "white",
        dpi = 600)
+
+
+# wrangle titer data 
+# rename Feeding strategies
+titer$Condition <- recode(titer$Condition,
+  "A" = "STD",
+  "B" = "STD+",
+  "C" = "LoG+",
+  "D" = "HiF",
+  "E" = "HIP",
+  "F" = "HIP+",
+  "G" = "LoG"
+)%>%
+  mutate(Condition = factor(Condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
+
+# plot last titer time point
+last_timepoint <- titer %>%
+  group_by(Condition, Replicate) %>%
+  mutate(is_last = Hours == max(Hours)) %>%
+  ungroup() %>%
+  filter(is_last)
+
+
+# plot is_last from titer_avg as barchart
+# filter out the last time point
+titer_last <- titer_avg %>%
+  filter(is_last) %>%
+  select(Condition, mean_titer, se_titer)
+
+
+last_timepoint <- titer %>%
+  group_by(Condition, Replicate) %>%
+  summarise(
+    cumsum_total_cells = sum(Total_Cells),
+    .groups = "drop"
+  ) 
+
+# perform ANOVA for total cells at the last time point
+anova_total_titer <- aov(Titer_µg.mL ~ Condition, data = last_timepoint)
+summary(anova_total_titer)
+
+tukey_result <- TukeyHSD(anova_total_titer)
+print(tukey_result)
+
+# Extract the Condition comparison results
+tukey_df <- as.data.frame(tukey_result$Condition)
+
+
+
+# Assign significance symbols based on p.adj value
+tukey_df <- tukey_df %>%
+  mutate(
+    Significance = case_when(
+      `p adj` < 0.001 ~ "***", # Highly significant
+      `p adj` < 0.01 ~ "**", # Moderately significant
+      `p adj` < 0.05 ~ "*", # Significant
+      `p adj` > 0.05 ~ "ns" # Not significant
+    )
+  )
+
+# create group 1 and group 2 columns for stat_pvalue_manual
+tukey_df_anno <- tukey_df %>%
+  rownames_to_column(var = "Comparison") %>%
+  separate(Comparison, into = c("group1", "group2"), sep = "-") %>%
+  mutate(.y. = "cumulative_glucose", y.position = 2400) %>%
+  filter(!(Significance %in% c("ns", "*", "**"))) # filter out significant comparisons
+
+# replot the bar chart with significance symbols
+totaltiter <- ggplot(titer_last, aes(x = Condition, y = mean_titer)) +
+  geom_bar(
+    mapping = aes(fill = Condition),
+    stat = "identity",
+    position = position_dodge(width = 0.95),
+    color = "black",
+    size = 0.5
+  ) +
+  geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer), width = 0.2, position = position_dodge(0.9)) +
+  labs(
+    x = "Condition",
+    y = "cNISTmAB titer [µg/mL]",
+    title = "Total cNISTmAB titer"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(size = 8, color = "black"),
+    axis.title.y = element_text(size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    legend.position = "none"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "STD" = "#ee3377",
+      "STD+" = "#56b4e9",
+      "LoG+" = "#009e73",
+      "HiF" = "#cc79a7",
+      "HIP" = "#ee7733",
+      "HIP+" = "#0072b2",
+      "LoG" = "#ffd800"
+    ),
+    name = "Feeding Strategy",
+    guide = guide_legend(nrow = 1)
+  ) +
+  stat_pvalue_manual(
+    tukey_df_anno,
+    label = "Significance",
+    step.increase = 0.1,
+    label.size = 3,
+    size = 1
+  ) 
+  #scale_y_continuous(limits = c(0, 650), breaks = seq(0, 650, 100))
+
+ggsave("results/total_titer_stat.pdf",
+  units = c("cm"),
+  height = 10,
+  width = 15,
+  bg = "white",
+  dpi = 600
+)
+
+
+ggarrange(totaltiter, titer, lactate,
+  labels = c("(a)", "(b)", "(c)"), ncol = 3,
+  common.legend = TRUE, legend = "bottom"
+)
+
+
+ggsave("results/total_titer_lactate_timecourse.pdf",
+  units = c("cm"),
+  height = 10,
+  width = 23,
+  bg = "white",
+  dpi = 600
+)

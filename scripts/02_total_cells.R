@@ -190,9 +190,6 @@ ggsave("results/total_cells_last_timepoint.pdf",
 ## statistical analysis ------------------------------------------------------------
 
 # calculate cumulative sum of Total Cells for the last time point for each replicate
-# filter out Gal+ conditions
-total_cells <- total_cells %>%
-  filter(!Condition %in% c("LoG+", "HIP+")) %>%
 
 last_timepoint <- total_cells %>%
   group_by(Condition, Replicate) %>%
@@ -223,9 +220,9 @@ tukey_df <- as.data.frame(tukey_result$Condition)
 tukey_df <- tukey_df %>%
   mutate(
     Significance = case_when(
-      `p adj` <= 0.001 ~ "***", # Highly significant
-      `p adj` <= 0.01 ~ "**", # Moderately significant
-      `p adj` <= 0.05 ~ "*", # Significant
+      `p adj` < 0.001 ~ "***", # Highly significant
+      `p adj` < 0.01 ~ "**", # Moderately significant
+      `p adj` < 0.05 ~ "*", # Significant
       `p adj` > 0.05 ~ "ns" # Not significant
     )
   )
@@ -234,7 +231,7 @@ tukey_df_anno <- tukey_df %>%
   rownames_to_column(var = "Comparison") %>%
   separate(Comparison, into = c("group1", "group2"), sep = "-") %>%
   mutate(.y. = "cumulative_glucose", y.position = 400) %>%
-  filter(!(Significance %in% c("ns", "*", "**")))
+  filter(!(Significance %in% c("*", "**", "***")))
 
 # calculate cumulative sum of Total Cells stepwise for each condition and time point
 total_cells_cumsum <- total_cells %>%
@@ -258,7 +255,7 @@ last_timepoint <- total_cells_cumsum %>%
 
 
 # replot the bar chart with significance symbols
-tcc <- ggplot(last_timepoint, aes(x = Condition, y = cumsum_total_cells)) +
+ggplot(last_timepoint, aes(x = Condition, y = cumsum_total_cells)) +
   geom_bar(
     mapping = aes(fill = Condition),
     stat = "identity",
