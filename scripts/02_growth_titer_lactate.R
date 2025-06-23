@@ -223,7 +223,7 @@ titer <- titer_avg %>%
   labs(
     x = "Culture duration [h]",
     y = "cNISTmAb titer [µg/mL]",
-    title = "cNISTmAB titer time course"
+    title = "Accumulation of cNISTmAb"
   ) +
   geom_text_repel(
     data = filter(titer_avg, is_last),
@@ -235,7 +235,7 @@ titer <- titer_avg %>%
     nudge_x = 13,
     segment.linetype = "dashed",
     show.legend = FALSE
-    #direction = "x" # Adjust the direction to avoid overlap
+    # direction = "x" # Adjust the direction to avoid overlap
   ) +
   theme_classic() +
   theme(
@@ -249,7 +249,6 @@ titer <- titer_avg %>%
     axis.text.y.right = element_text(size = 10, color = "black"),
     legend.position = "bottom",
     legend.title = element_text(size = 10, face = "bold"),
-    legend.text = element_text(size = 10)
   ) +
   scale_color_manual(
     values = c(
@@ -263,8 +262,9 @@ titer <- titer_avg %>%
     ),
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
-  )+
-  scale_x_continuous(limits = c(0, 320), breaks = seq(0, 320, 48))
+  ) +
+  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48))+
+  scale_y_continuous(limits = c(0, 2250), breaks = seq(0, 2250, 250))
 
 plot(titer)
 
@@ -299,7 +299,7 @@ lactate_avg <- lactate_avg %>%
   ungroup()
 
 
-#plot
+# plot
 lactate <- lactate_avg %>%
   ggplot(aes(x = mean_hours, y = mean_lactate_mM, color = Condition)) +
   geom_line(linewidth = 0.5) +
@@ -308,7 +308,7 @@ lactate <- lactate_avg %>%
   labs(
     x = "Cultivation duration [h]",
     y = "Extracellular lactate [mM]",
-    title = "Lactate time course"
+    title = "Extracellular lactate concentration"
   ) +
   geom_text_repel(
     data = filter(lactate_avg, is_last),
@@ -320,7 +320,7 @@ lactate <- lactate_avg %>%
     nudge_x = 13,
     segment.linetype = "dashed",
     show.legend = FALSE
-    #direction = "x" # Adjust the direction to avoid overlap
+    # direction = "x" # Adjust the direction to avoid overlap
   ) +
   theme_classic() +
   theme(
@@ -349,7 +349,8 @@ lactate <- lactate_avg %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 320), breaks = seq(0, 320, 48))
+  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 2))
 
 plot(lactate)
 
@@ -483,56 +484,123 @@ tukey_df <- tukey_df %>%
 tukey_df_anno <- tukey_df %>%
   rownames_to_column(var = "Comparison") %>%
   separate(Comparison, into = c("group1", "group2"), sep = "-") %>%
-  mutate(.y. = "cumulative_glucose", y.position = 2400) %>%
-  filter(!(Significance %in% c("ns", "*", "**"))) # filter out significant comparisons
+  mutate(.y. = "cumulative_glucose", y.position = 2400)# %>%
+  # filter(!(Significance %in% c("ns", "*", "**"))) # filter out significant comparisons
 
-# replot the bar chart with significance symbols
-totaltiter <- ggplot(titer_last, aes(x = Condition, y = mean_titer)) +
-  geom_bar(
-    mapping = aes(fill = Condition),
-    stat = "identity",
-    position = position_dodge(width = 0.95),
-    color = "black",
-    size = 0.5
-  ) +
-  geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer), width = 0.2, position = position_dodge(0.9)) +
-  labs(
-    x = "Condition",
-    y = "cNISTmAB titer [µg/mL]",
-    title = "Total cNISTmAB titer"
-  ) +
-  theme_classic() +
-  theme(
-    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 8, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "none"
-  ) +
-  scale_fill_manual(
-    values = c(
-      "STD" = "#ee3377",
-      "STD+" = "#56b4e9",
-      "LoG+" = "#009e73",
-      "HiF" = "#cc79a7",
-      "HIP" = "#ee7733",
-      "HIP+" = "#0072b2",
-      "LoG" = "#ffd800"
-    ),
-    name = "Feeding Strategy",
-    guide = guide_legend(nrow = 1)
-  ) +
-  stat_pvalue_manual(
-    tukey_df_anno,
-    label = "Significance",
-    step.increase = 0.1,
-    label.size = 3,
-    size = 1
-  ) 
-  #scale_y_continuous(limits = c(0, 650), breaks = seq(0, 650, 100))
+  # replot the bar chart with significance symbols
+  totaltiter <- ggplot(titer_last, aes(x = Condition, y = mean_titer)) +
+    geom_bar(
+      mapping = aes(fill = Condition),
+      stat = "identity",
+      position = position_dodge(width = 0.95),
+      color = "black",
+      size = 0.5
+    ) +
+    geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer), width = 0.2, position = position_dodge(0.9)) +
+    labs(
+      x = "Condition",
+      y = "cNISTmAB titer [µg/mL]",
+      title = "Total cNISTmAB titer"
+    ) +
+    theme_classic() +
+    theme(
+      plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
+      axis.title.x = element_text(size = 10, face = "bold"),
+      axis.text.x = element_text(size = 8, color = "black"),
+      axis.title.y = element_text(size = 10, face = "bold"),
+      axis.text.y = element_text(size = 10, color = "black"),
+      legend.position = "none"
+    ) +
+    scale_fill_manual(
+      values = c(
+        "STD" = "#ee3377",
+        "STD+" = "#56b4e9",
+        "LoG+" = "#009e73",
+        "HiF" = "#cc79a7",
+        "HIP" = "#ee7733",
+        "HIP+" = "#0072b2",
+        "LoG" = "#ffd800"
+      ),
+      name = "Feeding Strategy",
+      guide = guide_legend(nrow = 1)
+    ) +
+    stat_pvalue_manual(
+      tukey_df_anno,
+      label = "Significance",
+      step.increase = 0.1,
+      label.size = 3,
+      size = 1
+    )
+  
+plot(totaltiter)  
 
-ggsave("results/total_titer_stat.pdf",
+ggsave("results/total_titer_all_stat.pdf",
+  units = c("cm"),
+  height = 10,
+  width = 15,
+  bg = "white",
+  dpi = 600
+)
+
+# filter total_anno only if group1 or group2 is STD or HiF and filter out ns
+titer_STD_anno <- tukey_df_anno %>%
+  filter(group1 %in% c("STD", "HiF") | group2 %in% c("STD", "HiF")) %>%
+  filter(!(Significance %in% c("ns")))
+
+  # replot the bar chart with significance symbols
+  totaltiter <- ggplot(titer_last, aes(x = Condition, y = mean_titer)) +
+    geom_bar(
+      mapping = aes(fill = Condition),
+      stat = "identity",
+      position = position_dodge(width = 0.95),
+      color = "black",
+      size = 0.5
+    ) +
+    geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer), width = 0.2, position = position_dodge(0.9)) +
+    labs(
+      x = "Condition",
+      y = "cNISTmAB titer [µg/mL]",
+      title = "cNISTmAB endtiter"
+    ) +
+    theme_classic() +
+    theme(
+      plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
+      axis.title.x = element_text(size = 10, face = "bold"),
+      axis.text.x = element_text(size = 8, color = "black"),
+      axis.title.y = element_text(size = 10, face = "bold"),
+      axis.text.y = element_text(size = 10, color = "black"),
+      legend.position = "none",
+      legend.title = element_text(size = 10, face = "bold"),
+
+    ) +
+    scale_fill_manual(
+      values = c(
+        "STD" = "#ee3377",
+        "STD+" = "#56b4e9",
+        "LoG+" = "#009e73",
+        "HiF" = "#cc79a7",
+        "HIP" = "#ee7733",
+        "HIP+" = "#0072b2",
+        "LoG" = "#ffd800"
+      ),
+      name = "Feeding Strategy",
+      guide = guide_legend(nrow = 1)
+    ) +
+    stat_pvalue_manual(
+      titer_STD_anno,
+      label = "Significance",
+      step.increase = 0.1,
+      label.size = 3,
+      size = 1
+    ) +
+    scale_y_continuous(
+      limits = c(0, 3500),
+      breaks = seq(0, 3500, 500)
+    )
+plot(totaltiter)
+
+# save
+ggsave("results/total_titer_STD_HiF_stat.pdf",
   units = c("cm"),
   height = 10,
   width = 15,
