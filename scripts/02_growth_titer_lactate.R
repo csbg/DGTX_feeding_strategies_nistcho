@@ -97,7 +97,7 @@ vcd <- avg_df %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)    
     ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 48))
+  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 295, 48))
 
 plot(vcd)
 
@@ -159,7 +159,7 @@ via <- avg_df %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 48)) +
+  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 295, 48))+
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 10))
 
 plot(via)
@@ -306,7 +306,7 @@ lactate <- lactate_avg %>%
   geom_point(size = 1) +
   geom_errorbar(aes(ymin = mean_lactate_mM - se_lactate_mM, ymax = mean_lactate_mM + se_lactate_mM, color = Condition), width = 3, na.rm = TRUE) +
   labs(
-    x = "Cultivation duration [h]",
+    x = "Culture duration [h]",
     y = "Extracellular lactate [mM]",
     title = "Extracellular lactate concentration"
   ) +
@@ -355,7 +355,7 @@ lactate <- lactate_avg %>%
 plot(lactate)
 
 
-# via
+# dia
 dia <- avg_df %>%
   ggplot(aes(x = mean_hours, y = mean_dia, color = Condition)) +
   geom_line(linewidth = 0.5) +
@@ -405,7 +405,8 @@ dia <- avg_df %>%
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(0, 295, 48))
+  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48))
+
 plot(dia)
 
 
@@ -416,7 +417,7 @@ ggarrange(vcd, via, dia, tcc,
 
 ggsave("results/VCD_VIA_DIA_TCC_arranged.pdf",
        units = c("cm"),
-       height = 20,
+       height = 16,
        width = 23,
        bg = "white",
        dpi = 600)
