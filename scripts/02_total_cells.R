@@ -226,12 +226,16 @@ tukey_df <- tukey_df %>%
       `p adj` > 0.05 ~ "ns" # Not significant
     )
   )
+
 # create group 1 and group 2 columns for stat_pvalue_manual
 tukey_df_anno <- tukey_df %>%
   rownames_to_column(var = "Comparison") %>%
   separate(Comparison, into = c("group1", "group2"), sep = "-") %>%
-  mutate(.y. = "cumulative_glucose", y.position = 400) %>%
-  filter(!(Significance %in% c("*", "**", "***")))
+  mutate(.y. = "cumulative_glucose", y.position = 400)
+
+
+  # save
+  write.csv(tukey_df_anno, "results/tukey_total_cells.csv", row.names = TRUE)
 
 # calculate cumulative sum of Total Cells stepwise for each condition and time point
 total_cells_cumsum <- total_cells %>%
@@ -300,7 +304,7 @@ ggplot(last_timepoint, aes(x = Condition, y = cumsum_total_cells)) +
   ) +
   scale_y_continuous(limits = c(0, 650), breaks = seq(0, 650, 100))
 
-ggsave("results/total_cells_last_timepoint_stat.png",
+ggsave("results/total_cells_last_timepoint_all_stat.png",
   units = c("cm"),
   height = 10,
   width = 15,
@@ -308,3 +312,63 @@ ggsave("results/total_cells_last_timepoint_stat.png",
   dpi = 600
 )
 
+# filter total_anno only if group1 or group2 is STD or HiF and filter out ns
+tukey_df_STD_anno <- tukey_df_anno %>%
+  filter(group1 %in% c("STD", "HiF") | group2 %in% c("STD", "HiF")) %>%
+  filter(!(Significance %in% c("ns")))
+
+# replot the bar chart with significance symbols
+tcc <- ggplot(last_timepoint, aes(x = Condition, y = cumsum_total_cells)) +
+  geom_bar(
+    mapping = aes(fill = Condition),
+    stat = "identity",
+    position = position_dodge(width = 0.95),
+    color = "black",
+    size = 0.5
+  ) +
+  geom_errorbar(aes(ymin = cumsum_total_cells - se_total_cells, ymax = cumsum_total_cells + se_total_cells), width = 0.2, position = position_dodge(0.9)) +
+  labs(
+    x = "Condition",
+    y = "Total Cells [x10^6]",
+    title = "Total cell count"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(size = 10, color = "black"),
+    axis.title.y = element_text(size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    legend.position = "none"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "STD" = "#ee3377",
+      "STD+" = "#56b4e9",
+      "LoG+" = "#009e73",
+      "HiF" = "#cc79a7",
+      "HIP" = "#ee7733",
+      "HIP+" = "#0072b2",
+      "LoG" = "#ffd800"
+    ),
+    name = "Feeding Strategy",
+    guide = guide_legend(nrow = 1)
+  ) +
+  stat_pvalue_manual(
+    tukey_df_STD_anno,
+    label = "Significance",
+    step.increase = 0.16,
+    label.size = 3,
+    size = 1
+  ) +
+  scale_y_continuous(limits = c(0, 550), breaks = seq(0, 550, 100))
+
+plot(tcc)
+
+ggsave("results/total_cells_last_timepoint_stat.png",
+  units = c("cm"),
+  height = 10,
+  width = 15,
+  bg = "white",
+  dpi = 600
+)
