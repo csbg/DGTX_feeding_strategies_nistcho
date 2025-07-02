@@ -86,13 +86,13 @@ vcd <- avg_df %>%
   ) +
   scale_color_manual(
     values = c(
-      "STD" = "#ee3377",
-      "STD+" = "#56b4e9",
-      "LoG+" = "#009e73",
-      "HiF" = "#cc79a7",
-      "HIP" = "#ee7733",
-      "HIP+" = "#0072b2",
-      "LoG" = "#ffd800"
+      "STD" = "#e34a33",
+      "STD+" = "#f1a340",
+      "LoG+" = "#2b8cbe",
+      "HiF" = "#4c9b82",
+      "HIP" = "#9f82ce",
+      "HIP+" = "#63589f",
+      "LoG" = "#045a8d"
     ),
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)    
@@ -450,14 +450,6 @@ titer_last <- titer_avg %>%
   filter(is_last) %>%
   select(Condition, mean_titer, se_titer)
 
-
-last_timepoint <- titer %>%
-  group_by(Condition, Replicate) %>%
-  summarise(
-    cumsum_total_cells = sum(Total_Cells),
-    .groups = "drop"
-  ) 
-
 # perform ANOVA for total cells at the last time point
 anova_total_titer <- aov(Titer_µg.mL ~ Condition, data = last_timepoint)
 summary(anova_total_titer)
@@ -467,7 +459,6 @@ print(tukey_result)
 
 # Extract the Condition comparison results
 tukey_df <- as.data.frame(tukey_result$Condition)
-
 
 
 # Assign significance symbols based on p.adj value
@@ -487,6 +478,11 @@ tukey_df_anno <- tukey_df %>%
   separate(Comparison, into = c("group1", "group2"), sep = "-") %>%
   mutate(.y. = "cumulative_glucose", y.position = 2400)# %>%
   # filter(!(Significance %in% c("ns", "*", "**"))) # filter out significant comparisons
+
+
+# save
+#write.csv(tukey_df_anno, "results/tukey_total_titer.csv")
+
 
   # replot the bar chart with significance symbols
   totaltiter <- ggplot(titer_last, aes(x = Condition, y = mean_titer)) +
