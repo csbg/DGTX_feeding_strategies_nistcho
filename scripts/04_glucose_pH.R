@@ -101,31 +101,34 @@ high_glc_plt <- ggplot(high_glc, aes(x = Hour, y = mean_glucose, color = Conditi
   geom_point(size = 0.7) +
   geom_line(size = 0.7) +
   geom_errorbar(aes(ymin = mean_glucose - se_glucose, ymax = mean_glucose + se_glucose), width = 3, size = 0.5) +
-  theme_classic() +
-  theme(
-    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 10, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "bottom",
-    legend.title = element_text(size = 10, face = "bold", hjust = 1),
-    legend.text = element_text(size = 10)
-  ) +
+  theme_bw() +
+    theme(
+      text = element_text( # apply to all text elements
+        size = 11,
+        family = "sans",
+        colour = "black"
+      ),
+      axis.line = element_line(),
+      axis.text = element_text(color = "black", size = 10),
+      axis.title.y = element_text(hjust = 0.5, face = "bold"),
+      axis.title.x = element_text(hjust = 0.5, face = "bold"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.border = element_blank(),
+      legend.position = "bottom",
+      legend.title = element_text(face = "bold"),
+      legend.text = element_text(),
+      legend.box = "horizontal"
+    )+
   labs(
-    title = "Replenishment to 8 g/L",
     x = "Culture duration [h]",
     y = "Glucose [g/L]"
   ) +
   scale_color_manual(
     values = c(
-      "STD" = "#ee3377",
-      "STD+" = "#56b4e9",
-      "LoG+" = "#009e73",
-      "HiF" = "#cc79a7",
-      "HIP" = "#ee7733",
-      "HIP+" = "#0072b2",
-      "LoG" = "#ffd800"
+      "STD" = "grey50",
+      "STD+" = "grey20"
     ),
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
@@ -163,27 +166,35 @@ med_glc_plt <- ggplot(med_glc, aes(x = Hour, y = mean_glucose, color = Condition
   geom_point(size = 0.7) +
   geom_line(size = 0.7) +
   geom_errorbar(aes(ymin = mean_glucose - se_glucose, ymax = mean_glucose + se_glucose), width = 3, size = 0.5) +
-  theme_classic()+
-  theme(
-    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 10, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "bottom",
-    legend.title = element_text(size = 10, face = "bold", hjust = 1),
-    legend.text = element_text(size = 10)
-  ) +
+  theme_bw() +
+    theme(
+      text = element_text( # apply to all text elements
+        size = 11,
+        family = "sans",
+        colour = "black"
+      ),
+      axis.line = element_line(),
+      axis.text = element_text(color = "black", size = 10),
+      axis.title.y = element_text(hjust = 0.5, face = "bold"),
+      axis.title.x = element_text(hjust = 0.5, face = "bold"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.border = element_blank(),
+      legend.position = "bottom",
+      legend.title = element_text(face = "bold"),
+      legend.text = element_text(),
+      legend.box = "horizontal"
+    )+
   labs(
-    title = "Replenishment to 4 g/L",
     x = "Culture duration [h]",
     y = "Glucose [g/L]"
   )+
   scale_color_manual(
     values = c(
-      "LoG+" = "#009e73",
-      "HiF" = "#cc79a7",
-      "LoG" = "#ffd800"
+      "LoG+" = "#1f78b4",
+      "HiF" = "#f1a340",
+      "LoG" = "#a6cee3"
     ),
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1))+
@@ -219,26 +230,34 @@ low_glc_plt <- ggplot(low_glc, aes(x = Hour, y = mean_glucose, color = Condition
   geom_point(aes(group = Condition), size = 0.7, position = position_dodge(width = 2)) +
   geom_line(aes(group = Condition), size = 0.7, position = position_dodge(width = 2)) +
   geom_errorbar(aes(ymin = mean_glucose - se_glucose, ymax = mean_glucose + se_glucose), width = 3, size = 0.5) +
-  theme_classic()+
-  theme(
-    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 10, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "bottom",
-    legend.title = element_text(size = 10, face = "bold", hjust = 1),
-    legend.text = element_text(size = 10)
-  ) +
+  theme_bw() +
+    theme(
+      text = element_text( # apply to all text elements
+        size = 11,
+        family = "sans",
+        colour = "black"
+      ),
+      axis.line = element_line(),
+      axis.text = element_text(color = "black", size = 10),
+      axis.title.y = element_text(hjust = 0.5, face = "bold"),
+      axis.title.x = element_text(hjust = 0.5, face = "bold"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.border = element_blank(),
+      legend.position = "bottom",
+      legend.title = element_text(face = "bold"),
+      legend.text = element_text(),
+      legend.box = "horizontal"
+    )+
   labs(
-    title = "Replenishment to 2 g/L",
     x = "Culture duration [h]",
     y = "Glucose [g/L]"
   )+
   scale_color_manual(
     values = c(
-      "HIP" = "#ee7733",
-      "HIP+" = "#0072b2"
+      "HIP" = "#b2df8a",
+      "HIP+" = "#33a02c"
     ),
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1))+
