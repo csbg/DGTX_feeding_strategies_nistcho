@@ -1,4 +1,5 @@
 {
     "r.rterm.linux": "/home/hoferl/miniforge3/envs/feeding_R/bin/R",
-    "r.rpath.linux": "/home/hoferl/miniforge3/envs/feeding_R/bin/R"
+    "r.rpath.linux": "/home/hoferl/miniforge3/envs/feeding_R/bin/R",
+    "editor.fontFamily": "JetBrains Mono, Consolas, 'Courier New', monospace"
 }
