@@ -10,3 +10,7 @@ staging/
 *.png
 *.svg
 *.xlsx
+*.json
+*._.DS_Store
+*.DS_Store
+*.gitignore
