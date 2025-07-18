@@ -20,7 +20,7 @@ write.csv(df, here("data", "vicell_sum.csv"))
 df <- df %>%
     filter(!(TP == "TP10" & Condition %in% "G")) %>%
     filter(!(TP == "TP1_2")) %>%
-    filter(!(TP == "TP1_3")) %>%
+    filter(!(TP == "TP1_3"))
     
 
 # remove Condition A,B,C & Replicate 1,2,3
@@ -31,6 +31,7 @@ replicates_to_remove <- c("R1", "R2", "R3")
 # Filter out rows where Condition is in conditions_to_remove and Replicate is in replicates_to_remove
 df_filtered <- df[!(df$Condition %in% conditions_to_remove & df$Replicate %in% replicates_to_remove), ]
 
+write.csv(df_filtered, here("data", "vicell_sum_filtered.csv"), row.names = FALSE)
 
 # calculate average data
 avg_df <- df_filtered %>%
