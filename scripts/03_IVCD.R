@@ -220,6 +220,10 @@ tukey_df_anno <- tukey_df %>%
 # save
 write.csv(tukey_df_anno, "results/tukey_IVCD.csv", row.names = TRUE)
 
+# plot barchart for the last time point
+last_timepoint <- IVCD_avg %>%
+  group_by(Condition) %>%
+  filter(mean_hours == max(mean_hours))
 
 # replot the bar chart with significance symbols
 ggplot(last_timepoint, aes(x = Condition, y = mean_IVCD)) +
@@ -292,7 +296,8 @@ IVCD_plot <- ggplot(last_timepoint, aes(x = Condition, y = mean_IVCD)) +
   geom_errorbar(aes(ymin = mean_IVCD - se_IVCD, ymax = mean_IVCD + se_IVCD), width = 0.2, position = position_dodge(0.9)) +
   labs(
     x = "Condition",
-    y = "IVCD [10^6 cells⋅h⋅mL^−1]"
+    y = expression(bold("IVCD") ~ bold("[") * bold(10)^6 * bold(" cells·h·mL"^-1) * bold("]")
+  )
   ) +
   theme_bw() +
     theme(
