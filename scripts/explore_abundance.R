@@ -356,30 +356,32 @@ pve <- round(100 * (pca_result$sdev^2 / sum(pca_result$sdev^2)), 1)
 # Manual mappings
 timepoint_shapes <- c("120" = 22, "240" = 23, "264" = 24)
 condition_colors <- c(
-  "STD" = "#EE3377",
-  "STD+" = "#56B4E9",
-  "LoG" = "#ffd800",
-  "LoG+" = "#009E73",
-  "HiF" = "#CC79A7",
-  "HIP" = "#EE7631",
-  "HIP+" = "#0072B2"
+  "STD" = "grey50",
+  "STD+" = "grey20",
+  "LoG+" = "#1f78b4",
+  "HiF" = "#f1a340",
+  "HIP" = "#b2df8a",
+  "HIP+" = "#33a02c",
+  "LoG" = "#a6cee3"
 )
 condition_colors_tp <- c(
-  "STD_120" = "#EE3377",
-  "STD_264" = "#EE3377",
-  "STD+_120" = "#56B4E9",
-  "STD+_264" = "#56B4E9",
-  "LoG_120" = "#ffd800",
-  "LoG_240" = "#ffd800",
-  "LoG+_120" = "#009E73",
-  "LoG+_240" = "#009E73",
-  "HiF_120" = "#CC79A7",
-  "HiF_264" = "#CC79A7",
-  "HIP_120" = "#EE7631",
-  "HIP_264" = "#EE7631",
-  "HIP+_120" = "#0072B2",
-  "HIP+_264" = "#0072B2"
+  "STD_120" = "grey50",
+  "STD_264" = "grey50",
+  "STD+_120" = "grey20",
+  "STD+_264" = "grey20",
+  "LoG_120" = "#a6cee3",
+  "LoG_240" = "#a6cee3",
+  "LoG+_120" = "#1f78b4",
+  "LoG+_240" = "#1f78b4",
+  "HiF_120" = "#f1a340",
+  "HiF_264" = "#f1a340",
+  "HIP_120" = "#b2df8a",
+  "HIP_264" = "#b2df8a",
+  "HIP+_120" = "#33a02c",
+  "HIP+_264" = "#33a02c"
 )
+
+
 
 # # Calculate the centroids of each hull group for label placement
 # centroids <- pca_data %>%
@@ -423,15 +425,39 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
     shape = "Timepoint",
     color = "Condition"
   ) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "right")
+  theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "right",
+    # legend.title = element_text(face = "bold"),
+    # legend.text = element_text(),
+    # legend.box = "horizontal"
+  )
+  # theme_minimal(base_size = 12) +
+  # theme(legend.position = "right")
 
 plot(hull_plot)
   
-ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new.png", 
+ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
          plot = hull_plot, 
          width = 6, height = 5, bg = "white", dpi = 300)
 
+ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
+       plot = hull_plot, 
+       width = 5, height = 4, bg = "white", dpi = 300)
 
 # renaming conditions A-F with the new names in the colnames of da --------
 
@@ -496,15 +522,20 @@ spearman_correlations <- function(data,
                     "240" = "#fa9fb5",
                     "264" = "#c51b8a"),
       condition = c(
-        "STD" = "#EE3377", "STD+" = "#56B4E9", "LoG" = "#009E73", "HiF" = "#CC79A7",
-        "HIP" = "#EE7631", "HIP+" = "#0072B2", "LoG+" = "#ffd800"
+        "STD" = "grey50",
+        "STD+" = "grey20",
+        "LoG+" = "#1f78b4",
+        "HiF" = "#f1a340",
+        "HIP" = "#b2df8a",
+        "HIP+" = "#33a02c",
+        "LoG" = "#a6cee3"
       )
     ),
     annotation_legend_param = list(
-      # condition = list(title = "Condition", direction = "horizontal", nrow = 1),
+      condition = list(title = "Condition", direction = "horizontal", ncol = 1),
       timepoint = list(title = "Timepoint [h]", direction = "vertical")
     ),
-    annotation_name_gp = gpar(fontsize = 7),  # <- set label text size here
+    annotation_name_gp = gpar(fontsize = 11),  # <- set label text size here
     gp = gpar(col = "black")
   )
   
@@ -528,12 +559,11 @@ spearman_correlations <- function(data,
   # Draw heatmap with horizontal legends
   draw(ht, annotation_legend_side = annotation_legend_side, heatmap_legend_side = "right")
   # draw(ht)
-  
 }
 
 
 # clr transformed
-png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp.png",
+png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp_new_theme_color.png",
     width = 100,
     height = 120,
     units = "mm",
