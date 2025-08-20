@@ -564,8 +564,8 @@ spearman_correlations <- function(data,
 
 # clr transformed
 png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp_new_theme_color.png",
-    width = 100,
-    height = 120,
+    width = 130,
+    height = 160,
     units = "mm",
     res = 600)
 spearman_correlations(clr_data.matrix,
