@@ -6,7 +6,7 @@ library(RColorBrewer)
 
 # load an overview table of data & analysis paths -------------------------
 
-samples_table <- read_csv("analysis/overview_pngase_merged.csv")
+samples_table <- read_csv("analysis/overview_pngase_merged_2.csv")
 
 samples_table <- samples_table[-1:-3,]
 
@@ -166,13 +166,13 @@ abundance_data_br_averaged <- abundance_data %>%
             error = sd(frac_ab)) %>%
   mutate(modcom_name = factor(modcom_name, levels = c("3xHex","2xHex","1xHex","none"))) %>%
   mutate(condition_tp = paste(condition,timepoint, sep = "_")) %>%
-  mutate(condition_tp = factor(condition_tp, levels = c("F_264","F_120", "E_264", "E_120", "D_264", "D_120", "G_240","G_120", "C_240","C_120","B_264", "B_120","A_264", "A_120"))) %>%
+  mutate(condition_tp = factor(condition_tp, levels = c("F_264","F_120", "E_264", "E_120", "D_264", "D_120","G_246", "G_240","G_120", "C_246","C_240","C_120","B_264", "B_120","A_264", "A_120"))) %>%
   {.}
 
 save(abundance_data,
      abundance_data_averaged,
      abundance_data_br_averaged,
-     file = paste0("analysis/abundance_data_","pngase",".RData"))
+     file = paste0("analysis/abundance_data_","pngase","_2.RData"))
 
 color_mapping_abcdefg <- c(
   "A_120" = "#EE3377",
@@ -181,9 +181,11 @@ color_mapping_abcdefg <- c(
   "B_264" = "#56B4E9",
   "C_120" = "#009E73",
   "C_240" = "#009E73",
+  "C_246" = "#009E73",
   "C_264" = "#009E73",
   "G_120" = "#ffd800",
   "G_240" = "#ffd800",
+  "G_246" = "#ffd800",
   "D_120" = "#CC79A7",
   "D_264" = "#CC79A7",
   "E_120" = "#EE7631",
@@ -193,7 +195,7 @@ color_mapping_abcdefg <- c(
 )
 
 abundance_data_br_averaged %>%
-  filter(timepoint %in% c("264", "240")) %>%
+  filter(timepoint %in% c("264", "240", "246")) %>%
   ggplot(aes(modcom_name, frac_abundance)) +
   geom_col(
     aes(y = frac_abundance, fill = condition_tp),
