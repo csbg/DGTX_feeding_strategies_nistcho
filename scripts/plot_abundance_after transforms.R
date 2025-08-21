@@ -2,18 +2,17 @@
 
 library(here)
 library(tidyverse)
+library(ggpubr)
 
 # load data ---------------------------------------------------------------
 
-input_file_path <- here::here("analysis", "matrix_meta_transformations_triplicates_br.RData")
+input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
 
 load(file = input_file_path)
 
-corr_abud_file_path <- here::here("analysis", "corr_abundance_data.RData")
+corr_abud_file_path <- here::here("analysis", "corr_abundance_meta_subset_vol2.RData")
 
 load(file = corr_abud_file_path)
-
-# plot bar plots, for specific comparisons --------------------------------
 
 # Define the colors
 color_mapping_condition <- c(
@@ -26,6 +25,23 @@ color_mapping_condition <- c(
   "F" = "#0072B2"
 )
 
+color_mapping_condition_abrev <- c(
+  "STD" = "#EE3377",
+  "STD+" = "#56B4E9",
+  "LoG+" = "#009E73",
+  "LoG" = "#ffd800",
+  "HiF" = "#CC79A7",
+  "HIP" = "#EE7631",
+  "HIP+" = "#0072B2"
+)
+
+clr_corr_abundance <- as.data.frame(clr_data.matrix) %>%
+  mutate(glycoform1 = rownames(as.data.frame(clr_data.matrix))) %>%
+  pivot_longer(cols = -glycoform1,
+               values_to = "corr_abundance",
+               names_to = "condition_br_tp_batch_anbatch")
+
+# plot bar plots, for specific comparisons --------------------------------
 # Function to sanitize file names
 sanitize_filename <- function(name) {
   gsub("[^[:alnum:]]", "_", name)  # Replace non-alphanumeric characters with underscores
@@ -92,12 +108,6 @@ for (glycoform in glycoforms) {
   #        dpi = 600)
 }
 
-clr_corr_abundance <- as.data.frame(clr_data.matrix) %>%
-  mutate(glycoform1 = rownames(as.data.frame(clr_data.matrix))) %>%
-  pivot_longer(cols = -glycoform1,
-               values_to = "corr_abundance",
-               names_to = "condition_br_tp_batch_anbatch")
-
 # log2_corr_abundance <- as.data.frame(log2_data.matrix) %>%
 #   mutate(glycoform1 = rownames(as.data.frame(log2_data.matrix))) %>%
 #   pivot_longer(cols = -glycoform1,
@@ -163,13 +173,13 @@ for (glycoform in glycoforms) {
   # Sanitize the glycoform1 value for use in the file name
   sanitized_glycoform <- sanitize_filename(glycoform)
   
-  # Save the plot to a file
-  ggsave(filename = paste0("figures/statistical_analysis/barplots/plot_", sanitized_glycoform, "_clr.png"),
-         plot = p,
-         height = 90,
-         width = 180,
-         units = "mm",
-         dpi = 600)
+  # # Save the plot to a file
+  # ggsave(filename = paste0("figures/statistical_analysis/barplots/plot_", sanitized_glycoform, "_clr.png"),
+  #        plot = p,
+  #        height = 90,
+  #        width = 180,
+  #        units = "mm",
+  #        dpi = 600)
 }
 
 
@@ -407,8 +417,226 @@ ggsave(filename = paste0("figures/statistical_analysis/barplots/clr_allglycans_F
        dpi = 600)
 
 
+# paired lollipop plots ----------------------------------------------------
+# one condition, two time points
+plot_lollipop_time_effects <- function(clr_data,
+                                       condition_to_plot = "F") {
+  
+  data_for_lollipop <- clr_data %>%
+    separate(condition_br_tp_batch_anbatch, 
+             into = c("condition", "br", "timepoint", "fed_batch", "analytical_batch"),
+             sep = "_") %>%
+    mutate(condition_abrev = case_when(
+      condition == "A" ~ "STD",
+      condition == "B" ~ "STD+",
+      condition == "G" ~ "LoG",
+      condition == "C" ~ "LoG+",
+      condition == "D" ~ "HiF",
+      condition == "E" ~ "HIP",
+      condition == "F" ~ "HIP+") 
+    ) %>%
+    filter(condition == condition_to_plot) %>%
+    mutate(
+      timepoint = as.character(timepoint),  # Ensure it's a character for plotting
+      condition_tp = paste(condition, timepoint, sep = "_"),
+      glycoform1 = factor(
+        glycoform1, 
+        levels = c("none/G0F", "none/G1F", "none/G2F",
+                   "G0/G0", "G0/G0F", "G0F/G0F",
+                   "G0F/G1F", "G1F/G1F", "G1F/G2F", "G2F/G2F")
+      )
+    )
+  
+  condition_label <- unique(data_for_lollipop$condition_abrev)
+  available_timepoints <- sort(unique(data_for_lollipop$timepoint))
+  
+  # Safety check
+  if (length(available_timepoints) < 2) {
+    stop("Not enough timepoints to draw lollipop segments.")
+  }
+  
+  # Compute group means
+  mean_df <- data_for_lollipop %>%
+    group_by(glycoform1, timepoint) %>%
+    summarise(mean_clr = mean(corr_abundance), .groups = "drop")
+  
+  # Pivot wider for segment plotting
+  mean_segments <- mean_df %>%
+    pivot_wider(names_from = timepoint, values_from = mean_clr)
+  
+  # Dynamically define shape codes
+  shape_vals <- c("120" = 22, "240" = 23, "264" = 24)
+  shapes_used <- shape_vals[available_timepoints]
+  
+  # Plot
+  ggplot() +
+    # Draw line segments only if both timepoints exist
+    {
+      if (all(c("120", available_timepoints[2]) %in% colnames(mean_segments))) {
+        geom_segment(data = mean_segments,
+                     aes(x = glycoform1, xend = glycoform1,
+                         y = .data[[available_timepoints[1]]],
+                         yend = .data[[available_timepoints[2]]]),
+                     color = "lightgreen", linewidth = 1)
+      }
+    } +
+    geom_point(data = mean_df,
+               aes(x = glycoform1, y = mean_clr, shape = timepoint),
+               size = 3, stroke = 0.5, color = "black", fill = "lightgreen") + 
+    scale_shape_manual(values = shapes_used) +
+    coord_flip() +
+    theme_minimal(base_size = 9) +
+    labs(
+      title = paste("Condition:", condition_label),
+      x = "Glycoform",
+      y = "",
+      shape = "Timepoint"
+    )
+}
 
 
+conditions <- clr_corr_abundance %>%
+  separate(condition_br_tp_batch_anbatch, 
+           into = c("condition", "br", "timepoint", "fed_batch", "analytical_batch"),
+           sep = "_", remove = FALSE) %>%
+  pull(condition) %>%
+  unique()
+
+# Step 2: Generate all plots
+plot_list <- lapply(conditions, function(cond) {
+  plot_lollipop_time_effects(clr_corr_abundance, condition_to_plot = cond)
+})
+
+# Optional: name the list elements for tracking
+names(plot_list) <- conditions
+
+# Dynamically calculate the number of rows based on plot count
+ncol_value <- 2
+nrow_value <- ceiling(length(plot_list) / ncol_value)
+
+# Arrange plots with dynamic rows
+final_plot <- ggarrange(
+  plotlist = plot_list,
+  ncol = ncol_value,
+  nrow = nrow_value,
+  common.legend = TRUE,
+  legend = "bottom"
+)
+
+plot(final_plot)
+
+ggsave(
+  filename = "figures/br_4/clr_transformed/final_lollipop_plot.png",
+  plot = final_plot,
+  device = "png",
+  width = 7.48,
+  height = 9.45,
+  units = "in",
+  dpi = 600
+)
+# two conditions, two time points
+
+data_for_lollipop <- clr_corr_abundance %>%
+  separate(condition_br_tp_batch_anbatch, 
+           into = c("condition", "br", "timepoint", "fed_batch", "analytical_batch"),
+           sep = "_") %>%
+  mutate(condition_abrev = case_when(
+    condition == "A" ~ "STD",
+    condition == "B" ~ "STD+",
+    condition == "G" ~ "LoG",
+    condition == "C" ~ "LoG+",
+    condition == "D" ~ "HiF",
+    condition == "E" ~ "HIP",
+    condition == "F" ~ "HIP+") 
+  ) %>%
+  filter(grepl("D|E|F", condition)) %>%
+  mutate(
+    timepoint = as.character(timepoint),  # Ensure it's a character for plotting
+    condition_tp = paste(condition_abrev, timepoint, sep = "_"),
+    glycoform1 = factor(
+      glycoform1, 
+      levels = c("none/G0F", "none/G1F", "none/G2F",
+                 "G0/G0", "G0/G0F", "G0F/G0F",
+                 "G0F/G1F", "G1F/G1F", "G1F/G2F", "G2F/G2F")
+    )
+  )
+
+common_lim <- abs(max(data_for_lollipop$corr_abundance))
+
+# condition_label <- unique(data_for_lollipop$condition_abrev)
+# available_timepoints <- sort(unique(data_for_lollipop$timepoint))
+
+#ABCG
+#potential combinations in 120 timepoint
+condition_combinations <- c("STD+", "STD")
+condition_combinations <- c("STD+", "LoG")
+condition_combinations <- c("LoG+", "STD")
+condition_combinations <- c("LoG+", "LoG")
+
+condition_combinations <- c("LoG+", "STD+")
+condition_combinations <- c("LoG", "STD")
 
 
+#potential combinations in 264/240 timepoint
+condition_combinations <- c("STD+", "STD")
+condition_combinations <- c("LoG+", "LoG")
+
+#DEF
+condition_combinations <- c("HIP", "HiF")
+condition_combinations <- c("HIP+", "HIP")
+condition_combinations <- c("HIP+", "HiF")
+
+# Compute group means
+mean_df <- data_for_lollipop %>%
+  group_by(glycoform1, condition_tp) %>%
+  summarise(mean_clr = mean(corr_abundance), .groups = "drop") %>%
+  separate(condition_tp, 
+         into = c("condition","timepoint"),
+         sep = "_") %>%
+  filter(condition %in% condition_combinations,
+         # timepoint %in% c("264", "240")) 
+        timepoint %in% c("264")) 
+
+# Pivot wider for segment plotting
+mean_segments <- mean_df %>%
+  select(glycoform1, condition, mean_clr) %>%
+  pivot_wider(names_from = condition, values_from = mean_clr)
+
+
+# Plot
+ggplot() +
+  geom_point(data = mean_df,
+             aes(x = glycoform1, y = mean_clr, fill = condition),
+             shape = 21, color = "black", size = 3, stroke = 0.5) +
+  # Draw line segments only if both timepoints exist
+      geom_segment(data = mean_segments,
+                   aes(x = glycoform1, xend = glycoform1,
+                       y = `HIP+`,
+                       yend = `HiF`),
+                   color = "grey", linewidth = 1) +
+
+  scale_fill_manual(values = color_mapping_condition_abrev) +
+  # coord_flip() +
+  theme_minimal(base_size = 9) +
+  ylim(-3.5, 3.5) +
+  labs(
+    # title = paste("STD+ vs STD"),
+    x = "",
+    y = "",
+  ) + 
+  theme(
+    axis.text.x = element_blank(),
+    # axis.text.x = element_text(angle = 90),
+    panel.grid.minor.y = element_blank()
+  )
+
+ggsave(
+  filename = "figures/br_4/clr_transformed/hip+_hif_264.png",
+  device = "png",
+  width = 80,
+  height = 50,
+  units = "mm",
+  dpi = 600,
+  bg = "white"
+)
 
