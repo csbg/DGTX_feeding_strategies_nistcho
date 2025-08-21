@@ -74,7 +74,8 @@ gi_stats <- gi_summary %>%
     sd_GI = sd(GI),
     .groups = "drop"
   ) %>%
-  mutate(time_group = if_else(tp == 120, "exponential", "stationary"))
+  mutate(time_group = if_else(tp == 120, "exponential", "stationary"),
+         condition = factor(condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
 
 print(gi_stats)
 
@@ -86,6 +87,16 @@ color_mapping_condition <- c(
   "HiF" = "#CC79A7",
   "HIP" = "#EE7631",
   "HIP+" = "#0072B2"
+)
+
+color_mapping_condition <- c(
+  "STD" = "grey50",
+  "STD+" = "grey20",
+  "LoG+" = "#1f78b4",
+  "HiF" = "#f1a340",
+  "HIP" = "#b2df8a",
+  "HIP+" = "#33a02c",
+  "LoG" = "#a6cee3"
 )
 
 # ggplot() +
@@ -207,6 +218,84 @@ ggsave(filename = "figures/galactosylation_index.png",
        bg = "white")
 
 
+
+# plot index as barplot ---------------------------------------------------
+
+gal_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
+  geom_col(aes(fill = condition),
+           position = position_dodge(width = 0.9)) +
+  geom_errorbar(
+    aes(
+      ymin = mean_GI - sd_GI,
+      ymax = mean_GI + sd_GI,
+      group = condition
+    ),
+    position = position_dodge(.9),
+    width = .5,
+    linewidth = .25
+  ) +
+  geom_text(
+    aes(label = condition, fill = condition, y = 2),  # include fill here!
+    position = position_dodge(width = 0.9),
+    vjust = 0,
+    hjust = 0, 
+    angle = 90,
+    colour = "white",
+    size = 3
+  ) +
+  # # Lines: same combined mapping
+  # geom_line(
+  #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
+  #   linewidth = 1,
+  #   position = position_dodge(width = 0.9)
+  # ) +
+scale_fill_manual(
+  values = color_mapping_condition,
+  breaks = names(color_mapping_condition)
+) +
+  # scale_color_manual(
+  #   values = color_mapping_condition,
+  #   breaks = names(color_mapping_condition)
+  # ) 
+# Unified legend title
+labs(
+  x = "Bioprocess phase",
+  y = "Galactosylation_index (%)",
+  fill = "Strategy"
+) +
+  
+  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
+  theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) +
+  
+  guides(fill = guide_legend(nrow = 1)) 
+
+plot(gal_ind_bar)
+ggsave(filename = "figures/galactosylation_index_barplot.png",
+       width = 150,
+       height = 100,
+       units = "mm",
+       dpi = 600,
+       bg = "white")
+
 # make wider table --------------------------------------------------------
 gi_stats_wider <- gi_stats %>% 
   mutate(
@@ -311,7 +400,8 @@ gi_stats <- gi_summary %>%
     sd_GI = sd(glycation_index),
     .groups = "drop"
   ) %>%
-  mutate(time_group = if_else(tp == 120, "exponential", "stationary"))
+  mutate(time_group = if_else(tp == 120, "exponential", "stationary"),
+         condition = factor(condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
 
 
 # make wider table --------------------------------------------------------
@@ -453,12 +543,99 @@ glu_ind <-
   )
   
 plot(glu_ind)
+
+
+# plot glycation index as barplot -----------------------------------------
+gly_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
+  geom_col(aes(fill = condition),
+           position = position_dodge(width = 0.9)) +
+  geom_errorbar(
+    aes(
+      ymin = mean_GI - sd_GI,
+      ymax = mean_GI + sd_GI,
+      group = condition
+    ),
+    position = position_dodge(.9),
+    width = .5,
+    linewidth = .25
+  ) +
+  geom_text(
+    aes(label = condition, fill = condition, y = 0.5),  # include fill here!
+    position = position_dodge(width = 0.9),
+    vjust = 0,
+    hjust = 0,
+    angle = 90,
+    colour = "white",
+    size = 3
+  ) +
+  # # Lines: same combined mapping
+  # geom_line(
+  #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
+  #   linewidth = 1,
+  #   position = position_dodge(width = 0.9)
+  # ) +
+  scale_fill_manual(
+    values = color_mapping_condition,
+    breaks = names(color_mapping_condition)
+  ) +
+  # scale_color_manual(
+  #   values = color_mapping_condition,
+  #   breaks = names(color_mapping_condition)
+  # ) 
+  # Unified legend title
+  labs(
+    x = "Bioprocess phase",
+    y = "Glycation_index (%)",
+    fill = "Strategy"
+  ) +
+  
+  scale_y_continuous(limits = c(0, 6), breaks = seq(0, 6, by = 1)) +
+  theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) +
+  
+  guides(fill = guide_legend(nrow = 1)) 
+
+plot(gly_ind_bar)
+ggsave(filename = "figures/glycationn_index_barplot.png",
+       width = 150,
+       height = 100,
+       units = "mm",
+       dpi = 600,
+       bg = "white")
+
 # arrange both indices ----------------------------------------------------
 
 ggarrange(gal_ind,glu_ind, ncol = 2, common.legend = TRUE)  
 
 ggsave("figures/galactosyaltion_glycation_index.png",
        width = 200,
+       height = 85,
+       units = "mm",
+       dpi = 600,
+       bg = "white")
+
+ggarrange(gal_ind_bar,gly_ind_bar, ncol = 2, common.legend = TRUE, legend = "bottom")  
+
+ggsave("figures/galactosylation_glycation_index_barplot.png",
+       width = 210,
        height = 85,
        units = "mm",
        dpi = 600,
