@@ -59,16 +59,16 @@ glycoforms_order <- c("none/G0F",
 # condition effects -------------------------------------------------------
 # plot the abundances
 subset_abcg <- subset_dataset %>%
-  # filter(grepl("A|B|C|G", condition_br_tp)) %>%
-  filter(grepl("D|E|F", condition_br_tp)) %>%
+  filter(grepl("A|B|C|G", condition_br_tp)) %>%
+  # filter(grepl("D|E|F", condition_br_tp)) %>%
   mutate(condition_abrev = case_when(
-    # condition == "A" ~ "STD",
-    # condition == "B" ~ "STD+",
-    # condition == "G" ~ "LoG",
-    # condition == "C" ~ "LoG+")
-    condition == "D" ~ "HiF",
-    condition == "E" ~ "HIP",
-    condition == "F" ~ "HIP+"),
+    condition == "A" ~ "STD",
+    condition == "B" ~ "STD+",
+    condition == "G" ~ "LoG",
+    condition == "C" ~ "LoG+")
+    # condition == "D" ~ "HiF",
+    # condition == "E" ~ "HIP",
+    # condition == "F" ~ "HIP+"),
   ) %>%
   group_by(timepoint, glycoform1, condition_abrev) %>%
   summarise(mean_frac_ab = mean(corr_abundance),
@@ -76,8 +76,8 @@ subset_abcg <- subset_dataset %>%
             .groups = "drop") %>%
   mutate(
     glycoform1 = factor(glycoform1, levels = rev(c("G2F/G2F","G1F/G2F","G1F/G1F","G0F/G1F","G0F/G0F","G0/G0F", "G0/G0","none/G2F", "none/G1F", "none/G0F"))),
-    # condition_abrev = factor(condition_abrev, levels = c("STD","STD+","LoG","LoG+")),
-    condition_abrev = factor(condition_abrev, levels = c("HiF","HIP","HIP+")),
+    condition_abrev = factor(condition_abrev, levels = c("STD","STD+","LoG","LoG+")),
+    # condition_abrev = factor(condition_abrev, levels = c("HiF","HIP","HIP+")),
     time_group = case_when(
       timepoint == "120" ~ "Exponential",
       timepoint %in% c("240", "264") ~ "Stationary"
@@ -98,7 +98,7 @@ frac_ab_col <- ggplot(subset_abcg, aes(x = glycoform1, y = mean_frac_ab)) +
     linewidth = .25
   ) +
   facet_wrap(~time_group, nrow = 1) +
-  scale_fill_manual('Condition',
+  scale_fill_manual('Strategy',
                     values = color_mapping_condition_abrev, 
                     breaks = names(color_mapping_condition_abrev)) +
   xlab("") +
@@ -107,25 +107,31 @@ frac_ab_col <- ggplot(subset_abcg, aes(x = glycoform1, y = mean_frac_ab)) +
   geom_hline(yintercept = 0, linewidth = .35) +
   theme_bw() +
   guides(fill = guide_legend(ncol = 1)) +
-  theme(text = element_text(size = 9, 
+  theme(text = element_text(size = 11, 
                             # face = "bold", 
-                            family = "sans"),
+                            family = "sans",
+                            colour = "black"),
+        axis.line = element_line(),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5),
-        axis.text.y = element_text(colour = "black", hjust = 0.5),
+        axis.text.y = element_text(hjust = 0.5),
         axis.text = element_text(colour = "black"),
+        axis.title.y = element_text(hjust = 0.5, face = "bold",margin = margin(r = 4)),
+        axis.title.x = element_text(hjust = 0.5, face = "bold"),
         axis.ticks.y = element_blank(),
         # legend.title = element_blank(),
-        legend.text = element_text(size = 9),
+        legend.text = element_text(),
         legend.key.height = unit(0.3, 'cm'),
         legend.key.width = unit(0.3, 'cm'),
         legend.position = "right",
+        legend.box = "horizontal",
+        legend.title = element_text(face = "bold"),
         panel.border = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         panel.grid.minor.y = element_blank(),
-        plot.margin = unit(c(1,1,0.5,0.5), "lines"),
-        axis.title.y = element_text(margin = margin(r = 4))
+        plot.margin = unit(c(1,1,0.5,0.5), "lines")
   ) 
+
 
 plot(frac_ab_col)
 # ggsave(filename = "figures/br_4/corr_frac_ab_ABCG_horizontal.png",
@@ -138,30 +144,30 @@ plot(frac_ab_col)
 # subset limma results 
 res_contr2 <- res_twoConditions_oneTimepoint %>%
   # filter(coef %in% c("B_A_120", "B_A_264",  "C_B_120", "C_G_120", "C_G_240","G_A_120","C_A_120")) %>%
-  # filter(coef %in% c("B_A_120", "B_A_264", "C_G_120", "B_G_120","C_G_240","C_A_120")) %>%
-  filter(coef %in% c("E_D_120", "E_D_264", "F_E_120", "F_E_264","F_D_120","F_D_264")) %>%
+  filter(coef %in% c("B_A_120", "B_A_264", "C_G_120", "B_G_120","C_G_240","C_A_120")) %>%
+  # filter(coef %in% c("E_D_120", "E_D_264", "F_E_120", "F_E_264","F_D_120","F_D_264")) %>%
   mutate(modcom = factor(modcom, levels = glycoforms_order)) %>%
   separate(coef, 
            into = c("condition1", "condition2", "timepoint"),
            sep = "_") %>%
   mutate(condition1 = case_when(
-    # condition1 == "A" ~ "STD",
-    # condition1 == "B" ~ "STD+",
-    # condition1 == "G" ~ "LoG",
-    # condition1 == "C" ~ "LoG+")
-    condition1 == "D" ~ "HiF",
-    condition1 == "E" ~ "HIP",
-    condition1 == "F" ~ "HIP+"
-  )
+    condition1 == "A" ~ "STD",
+    condition1 == "B" ~ "STD+",
+    condition1 == "G" ~ "LoG",
+    condition1 == "C" ~ "LoG+")
+  #   condition1 == "D" ~ "HiF",
+  #   condition1 == "E" ~ "HIP",
+  #   condition1 == "F" ~ "HIP+"
+  # )
   ) %>%
   mutate(condition2 = case_when(
-    # condition2 == "A" ~ "STD",
-    # condition2 == "B" ~ "STD+",
-    # condition2 == "G" ~ "LoG",
-    # condition2 == "C" ~ "LoG+"
-    condition2 == "D" ~ "HiF",
-    condition2 == "E" ~ "HIP",
-    condition2 == "F" ~ "HIP+"
+    condition2 == "A" ~ "STD",
+    condition2 == "B" ~ "STD+",
+    condition2 == "G" ~ "LoG",
+    condition2 == "C" ~ "LoG+"
+    # condition2 == "D" ~ "HiF",
+    # condition2 == "E" ~ "HIP",
+    # condition2 == "F" ~ "HIP+"
     ),
     time_group = case_when(
       timepoint == "120" ~ "Exponential",
@@ -169,7 +175,8 @@ res_contr2 <- res_twoConditions_oneTimepoint %>%
     )
   ) %>%
   mutate(coef = paste(condition1, condition2, sep = "_vs_"),
-         coef = factor(coef, levels = c("HIP+_vs_HiF","HIP+_vs_HIP", "HIP_vs_HiF"))) %>%
+         # coef = factor(coef, levels = c("HIP+_vs_HiF","HIP+_vs_HIP", "HIP_vs_HiF"))
+         ) %>%
   mutate(adj.P.Val = case_when(
   adj.P.Val > 0.05 ~ NA_real_,
   TRUE ~ adj.P.Val)) %>%
@@ -206,28 +213,36 @@ limma_dotplot <- ggplot(res_contr2, aes(y = coef, x = modcom, color = logFC, siz
   # labs(x = "", y = "B_A_120", "B_A_264",  "C_B_120", "C_G_120", "C_G_240","G_A_120","C_A_120") +
   labs(x = "", y ="") +
   theme_bw() +
-  theme(text = element_text(size = 10,
-                            family = "sans"),
-        axis.text = element_text(colour = "black"),
+  theme(text = element_text(size = 11,
+                            family = "sans",
+                            colour = "black"),
+        axis.line = element_line(),
+        axis.text = element_text(colour = "black",, size = 11),
         # axis.text.y = element_blank(),
+        axis.title.y = element_text(hjust = 0.5, face = "bold"),
+        axis.title.x = element_text(hjust = 0.5, face = "bold"),
         axis.text.x = element_blank(),
         axis.ticks.y = element_blank(),
         legend.position = "bottom",
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(),
+        legend.box = "horizontal",
+        # panel.border = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         strip.background = element_blank(),
         strip.text.x = element_blank(),
         plot.margin = unit(c(-1,0,0,-1), "cm")
   )
-plot(limma_dotplot)
 
+plot(limma_dotplot)
 
 ggarrange(frac_ab_col,limma_dotplot,
           heights = c(0.6,0.4),
           ncol = 1,
           align = "v") 
 
-ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/condition_effects_DEF.png"),
+ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/condition_effects_ABCG_new_theme_color.png"),
        height = 100,
        width = 210,
        units = "mm",
