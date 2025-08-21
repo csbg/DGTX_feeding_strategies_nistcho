@@ -6,13 +6,13 @@ library(fs)
 
 # load abundance data -----------------------------------------------------
 
-load("analysis/abundance_data_none.RData")
+load("analysis/abundance_data_none_2.RData")
 
 glycosylation <-  abundance_data_averaged  
 
 # load glycation data -----------------------------------------------------
 
-load("analysis/abundance_data_pngase.RData")
+load("analysis/abundance_data_pngase_2.RData")
 
 glycation <-  abundance_data_averaged 
 
