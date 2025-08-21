@@ -8,7 +8,7 @@ library(circlize)
 
 # load data ---------------------------------------------------------------
 
-input_file_path <- here::here("analysis", "matrix_meta_transformations_triplicates_br.RData")
+input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
 
 load(file = input_file_path)
 
@@ -46,10 +46,10 @@ limmaFit <- lmFit(clr_data.matrix, design = design)
 head(coef(limmaFit))
 
 # Loop through each coefficient in the design matrix
-for (i in 1:ncol(design)) {
-  plotMA(limmaFit, coef = i, main = colnames(design)[i])
-  abline(0, 0, col = "blue")
-}
+# for (i in 1:ncol(design)) {
+#   plotMA(limmaFit, coef = i, main = colnames(design)[i])
+#   abline(0, 0, col = "blue")
+# }
 # analyse different contrasts ---------------------------------------------
 extract_results_contrasts <- function(contrast) {
   
@@ -170,6 +170,7 @@ extract_results_contrasts <- function(contrast) {
 contrast.withinCondition_timepoint <- makeContrasts(A_264_vs_120 = A_264 - A_120, 
                                                     B_264_vs_120 = B_264 - B_120,
                                                     C_240_vs_120 = C_240 - C_120,
+                                                    # C_264_vs_240 = C_264 - C_240,
                                                     D_264_vs_120 = D_264 - D_120,
                                                     E_264_vs_120 = E_264 - E_120,
                                                     F_264_vs_120 = F_264 - F_120,
@@ -182,6 +183,7 @@ Heatmap(contrast.withinCondition_timepoint,
 res_withinCondition_timepoint <- extract_results_contrasts(contrast = contrast.withinCondition_timepoint)
 
 res_withinCondition_timepoint[res_withinCondition_timepoint$coef == "A_264_vs_120" & res_withinCondition_timepoint$adj.P.Val < 0.05, ]
+res_withinCondition_timepoint[res_withinCondition_timepoint$coef == "G_240_vs_120" & res_withinCondition_timepoint$adj.P.Val < 0.05, ]
 
 # 2. The same timepoint, the effect of 2 conditions----------------------------
 cont.twoConditions_oneTimepoint <- makeContrasts(
@@ -190,15 +192,20 @@ cont.twoConditions_oneTimepoint <- makeContrasts(
   D_A_120 = D_120 - A_120,
   D_A_264 = D_264 - A_264,
   C_B_120 = C_120 - B_120,
-  C_B_264 = C_240 - B_264,
+  C_A_120 = C_120 - A_120,
+  B_G_120 = B_120 - G_120,
+  # C_A_240 = C_240 - A_264,
+  # C_B_264 = C_240 - B_264,
   C_G_120 = C_120 - G_120,
   C_G_240 = C_240 - G_240,
   G_A_120 = G_120 - A_120,
-  G_A_240 = G_240 - A_264,
+  # G_A_240 = G_240 - A_264,
   G_E_120 = G_120 - E_120,
   G_E_240 = G_240 - E_264,
   E_D_120 = E_120 - D_120,
   E_D_264 = E_264 - D_264,
+  F_D_120 = F_120 - D_120,
+  F_D_264 = F_264 - D_264,
   F_E_120 = F_120 - E_120,
   F_E_264 = F_264 - E_264,
   levels = design)
@@ -215,7 +222,8 @@ res_twoConditions_oneTimepoint[res_twoConditions_oneTimepoint$coef == "B_A_264" 
 cont.twoConditions_timepoint <- makeContrasts(
   Dif_B_A = (B_264 - B_120) - (A_264 - A_120),
   Dif_D_A = (D_264 - D_120) - (A_264 - A_120),
-  Dif_C_B = (C_240 - C_120) - (B_264 - B_120),
+  # Dif_C_B = (C_264 - C_120) - (B_264 - B_120),
+  Dif_C_G = (C_240 - C_120) - (G_240 - G_120),
   Dif_E_D = (E_264 - E_120) - (D_264 - D_120),
   Dif_F_E = (F_264 - F_120) - (E_264 - E_120),
   levels = design)
@@ -233,7 +241,7 @@ res_twoConditions_timepoint[res_twoConditions_timepoint$coef == "Dif_B_A" & res_
 save(res_twoConditions_oneTimepoint,
      res_twoConditions_timepoint, 
      res_withinCondition_timepoint, 
-     file = "analysis/limma_results.RData")
+     file = "analysis/limma_results_subset_vol2.RData")
 
 # plot vulcano & pval histogram ------------------------------------------------
 plot_vulcano_pval_histo <- function(results,
@@ -301,12 +309,12 @@ plot_dotplot <- function(indata = res_contr3_contr2,
   
   plot(q)
   
-  ggsave(filename = paste0("figures/statistical_analysis/dotplots/limma_dotplots_",figure_name,".png"),
-         plot = q,
-         height = 110,
-         width = 210,
-         units = "mm",
-         dpi = 600)
+  # ggsave(filename = paste0("figures/statistical_analysis/dotplots/limma_dotplots_",figure_name,".png"),
+  #        plot = q,
+  #        height = 110,
+  #        width = 210,
+  #        units = "mm",
+  #        dpi = 600)
 }
 
 plot_dotplot()
@@ -375,7 +383,7 @@ plot_dotplot_facet_glycan <- function(indata = res_contr3_contr2,
   
   plot(q)
   
-  ggsave(filename = paste0("figures/statistical_analysis/dotplots/limma_dotplots_",figure_name,".png"),
+  ggsave(filename = paste0("figures/br_4/statistical_analysis/dotplots/limma_dotplots_",figure_name,".png"),
          plot = q,
          height = 50,
          width = 210,
