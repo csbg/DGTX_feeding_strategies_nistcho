@@ -4,11 +4,14 @@ library(tidyverse)
 
 # define analysis of pngase F digested or not digested data ---------------
 
-pngase <- "none" # "none"
+pngase <- "pngase" # "none"
 
 # load an overview table of data & analysis paths -------------------------
 
-samples_table <- read_csv(paste0("analysis/overview_",pngase,"_merged.csv"))
+samples_table <- read_csv(paste0("analysis/overview_",pngase,"_merged_2.csv"))
+if (pngase == "pngase") {
+  samples_table <- samples_table[-1:-3,]
+}
 
 # load abundances using a for loop  ---------------------------------------
 
@@ -62,11 +65,25 @@ abundance_data_averaged <- abundance_data %>%
   mutate(modcom_name = factor(modcom_name, levels = modcom_levels)) %>%
   ungroup()
 
+#to remove repeated measurement
+abundance_data_averaged <- abundance_data_averaged %>%
+  rename(condition_br_tp)
+
+unique(abundance_data_averaged$condition_br_tp)
+#to rename wrong labels
+abundance_data_averaged <-  abundance_data_averaged %>%
+  mutate(condition_br_tp = case_when(
+    condition_br_tp == "G_4_246" ~ "G_4_240",
+    condition_br_tp == "C_4_246" ~ "C_4_240",
+    TRUE ~ condition_br_tp
+  ))
+unique(abundance_data_averaged$condition_br_tp)
+
 save(abundance_data,
      abundance_data_averaged,
-     file = paste0("analysis/abundance_data_",pngase,".RData"))
+     file = paste0("analysis/abundance_data_",pngase,"_2.RData"))
 
-# write_csv(abundance_data_averaged, "analysis/FB2_abundance_glycation.csv")
+write_csv(abundance_data_averaged, "analysis/FB4_abundance_glycation.csv")
 
 # vertical bar plot -------------------------------------------------------
 plot_vertical_barplot <- function(data_to_plot,
@@ -78,8 +95,7 @@ plot_vertical_barplot <- function(data_to_plot,
     filter(grepl(condition, condition_br_tp)) %>%
     filter(grepl(timepoint, condition_br_tp))
     
-  data_to_plot %>%
-    ggplot(aes(x = modcom_name, y = frac_abundance, fill = condition_br_tp)) +
+    ggplot(data_to_plot,aes(x = modcom_name, y = frac_abundance, fill = condition_br_tp)) +
     geom_col(
       position = position_dodge(width = 0.9)  
     ) +
@@ -115,22 +131,40 @@ plot_vertical_barplot <- function(data_to_plot,
           panel.grid.major.y = element_blank(),
           panel.grid.minor = element_blank(),
     ) 
-  ggsave(filename = paste0("figures/frac_ab_barplot",condition,"_",timepoint,"_",pngase,".png"),    
-         height = 160,
-         width = 160,
-         units = "mm",
-         dpi = 600)
+  # ggsave(filename = paste0("figures/frac_ab_barplot",condition,"_",timepoint,"_",pngase,".png"),    
+  #        height = 160,
+  #        width = 160,
+  #        units = "mm",
+  #        dpi = 600)
 }
 
 plot_vertical_barplot(abundance_data_averaged, 
-                      condition = "[D]",
+                      condition = "[G]",
                       timepoint = "120") 
+
+plot_vertical_barplot(abundance_data_averaged, 
+                      condition = "[G]",
+                      timepoint = "246|240") 
+
+plot_vertical_barplot(abundance_data_averaged, 
+                      condition = "[A]",
+                      timepoint = "264") 
+
+
+plot_vertical_barplot(abundance_data_averaged, 
+                      condition = "[B]",
+                      timepoint = "264") 
+
+plot_vertical_barplot(abundance_data_averaged, 
+                      condition = "[C]",
+                      timepoint = "240|246") 
 
 
 # mirror plots --------------------------------------------------------------
 
 make_wider_table <- function(data,
-                             condition = "[ABC]"
+                             condition = "[ABC]",
+                             timepoints_sta = "264"
                              ){
 tp_120 <- data %>%
   filter(grepl(condition, condition_br_tp)) %>%
@@ -139,7 +173,7 @@ tp_120 <- data %>%
 
 tp_264 <- data %>%
   filter(grepl(condition, condition_br_tp)) %>%
-  filter(grepl("240", condition_br_tp)) %>%
+  filter(grepl(timepoints_sta, condition_br_tp)) %>%
   rename(frac_abundance_264 = frac_abundance,error_264 = error) %>% 
   select(frac_abundance_264,error_264) %>%
   mutate(frac_abundance_264 = -frac_abundance_264)
@@ -151,12 +185,18 @@ table_wider <- tp_120 %>%
 return(table_wider)
 }
 
-ab_wider <- make_wider_table(data = abundance_data_averaged, condition = "[AB]")
-cg_wider <- make_wider_table(data = abundance_data_averaged, condition = "[CG]")
-def_wider <- make_wider_table(data = abundance_data_averaged, condition = "[DEF]")
+
+ab_wider <- make_wider_table(data = abundance_data_averaged, condition = "[AB]", timepoints_sta = "264")
+
+
+cg_wider <- make_wider_table(data = abundance_data_averaged, condition = "[CG]", timepoints_sta = "240|246") #
+
+def_wider <- make_wider_table(data = abundance_data_averaged, condition = "[DEF]", timepoints_sta = "264")
+
+all_wider <- make_wider_table(data = abundance_data_averaged, condition = "[ABCGDEF]", timepoints_sta = "240|246|264") #
 
 #plot mirror plot
-ggplot(cg_wider, aes(x = modcom_name)) +
+ggplot(all_wider, aes(x = modcom_name)) +
   geom_col(aes(y = frac_abundance_264, fill = condition_br), position = position_dodge(width = 0.9)) +
   geom_col(aes(y = frac_abundance_120, fill = condition_br), position = position_dodge(width = 0.9)) +
   geom_errorbar(
@@ -180,7 +220,7 @@ ggplot(cg_wider, aes(x = modcom_name)) +
     linewidth = .25
   ) +
   coord_flip() +
-  ylim(-60, 60) +
+  # ylim(-60, 60) +
   xlab("") +
   ylab("fractional abundance (%)") +
   geom_hline(yintercept = 0, linewidth = .35) +
@@ -203,7 +243,7 @@ ggplot(cg_wider, aes(x = modcom_name)) +
         panel.grid.minor = element_blank(),
   ) 
 
-ggsave(filename = paste0("figures/frac_ab_mirror_barplot_CG.png"),    
+ggsave(filename = paste0("figures/frac_ab_mirror_barplot_none_all.png"),    
        height = 160,
        width = 160,
        units = "mm",
