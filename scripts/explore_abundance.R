@@ -423,7 +423,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
     x = paste0("PC1 (", pve[1], "%)"),
     y = paste0("PC2 (", pve[2], "%)"),
     shape = "Timepoint",
-    color = "Condition"
+    color = "Strategy"
   ) +
   theme_bw() +
   theme(
@@ -441,10 +441,14 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
     panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
     panel.border = element_blank(),
-    legend.position = "right",
-    # legend.title = element_text(face = "bold"),
-    # legend.text = element_text(),
-    # legend.box = "horizontal"
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) +
+  guides(
+    color = guide_legend(title.position = "top"),
+    shape = guide_legend(title.position = "top")
   )
   # theme_minimal(base_size = 12) +
   # theme(legend.position = "right")
@@ -453,11 +457,11 @@ plot(hull_plot)
   
 ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
          plot = hull_plot, 
-         width = 6, height = 5, bg = "white", dpi = 300)
+         width = 5, height = 5, bg = "white", dpi = 300)
 
-ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
-       plot = hull_plot, 
-       width = 5, height = 4, bg = "white", dpi = 300)
+# ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
+#        plot = hull_plot, 
+#        width = 170, height = 160, bg = "white", dpi = 300, units = "mm")
 
 # renaming conditions A-F with the new names in the colnames of da --------
 
@@ -512,16 +516,18 @@ spearman_correlations <- function(data,
     legend_border = FALSE
   )
   
+
   # Annotations
   ha <- HeatmapAnnotation(
-    condition = meta_data$condition_abrev,
-    timepoint = meta_data$timepoint,
-    gap = unit(1, "mm"),  # <-- controls vertical spacing between annotation tracks
+    Strategy = meta_data$condition_abrev,
+    Timepoint = meta_data$timepoint,
+    show_legend = c(Strategy = FALSE, Timepoint = TRUE),  # hide Strategy, show Timepoint
+    gap = unit(1, "mm"),  # controls vertical spacing between annotation tracks
     col = list(
-      timepoint = c("120" = "#fde0dd",
+      Timepoint = c("120" = "#fde0dd",
                     "240" = "#fa9fb5",
                     "264" = "#c51b8a"),
-      condition = c(
+      Strategy = c(
         "STD" = "grey50",
         "STD+" = "grey20",
         "LoG+" = "#1f78b4",
@@ -532,20 +538,20 @@ spearman_correlations <- function(data,
       )
     ),
     annotation_legend_param = list(
-      condition = list(title = "Condition", direction = "horizontal", ncol = 1),
-      timepoint = list(title = "Timepoint [h]", direction = "vertical")
+      Timepoint = list(title = "Timepoint [h]", nrow = 1, title_gp = gpar(fontface = "bold"))
     ),
-    annotation_name_gp = gpar(fontsize = 11),  # <- set label text size here
+    annotation_name_gp = gpar(fontsize = 11),
     gp = gpar(col = "black")
   )
   
   # Build Heatmap
   ht <- Heatmap(
     matrix = cor_sp,
-    name = "correlations",
+    name = "Correlations",
     na_col = "grey",
     col = f2,
     top_annotation = ha,
+    show_heatmap_legend = TRUE,       # heatmap legend visible
     column_labels = meta_data$condition_abrev_tp,
     show_row_names = show_row_names,
     show_column_names = show_column_names,
@@ -553,20 +559,20 @@ spearman_correlations <- function(data,
     cluster_columns = cluster_columns,
     show_row_dend = FALSE,
     show_column_dend = cluster_columns,
-    column_names_gp = gpar(fontsize = 5)
+    column_names_gp = gpar(fontsize = 7)
   )
   
-  # Draw heatmap with horizontal legends
-  draw(ht, annotation_legend_side = annotation_legend_side, heatmap_legend_side = "right")
+  # Draw heatmap with horizontal annotation legend at the bottom
+  draw(ht, annotation_legend_side = "bottom", heatmap_legend_side = "right")
+  
   # draw(ht)
 }
 
-
 # clr transformed
 png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp_new_theme_color.png",
-    width = 130,
-    height = 160,
-    units = "mm",
+    width = 5,
+    height = 5,
+    units = "in",
     res = 600)
 spearman_correlations(clr_data.matrix,
                       meta_data = meta,
