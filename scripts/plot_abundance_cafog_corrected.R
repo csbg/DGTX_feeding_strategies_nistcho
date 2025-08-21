@@ -1,7 +1,7 @@
 library(tidyverse)
 #library("scales")    
-# library(ComplexHeatmap)
-# library(circlize)
+library(ComplexHeatmap)
+library(circlize)
 library(RColorBrewer)
 library(fs)
 
@@ -29,6 +29,16 @@ for (folder in folders) {
 unique(abundance_data$glycoform)
 
 corr_abundance_data <- abundance_data %>%
+  separate(condition_br_tp,
+           into = c("condition", "br", "tp"),
+           sep = "_") %>%
+  mutate(
+    tp = case_when(
+      tp  == "246" ~ "240",
+      TRUE ~ tp,  # Handle unmatched cases
+    ) 
+  ) %>%
+  mutate(condition_br_tp = paste(condition, br, tp, sep = "_")) %>%
   separate(
     glycoform,
     into = c("glycoform1", "glycoform2",  "glycoform3"),
@@ -42,9 +52,11 @@ corr_abundance_data <- abundance_data %>%
 
 #sanity check 
 unique(corr_abundance_data$glycoform1)
+unique(corr_abundance_data$condition_br_tp)
 
-save(corr_abundance_data, file = "analysis/corr_abundance_data.RData")
-load("analysis/corr_abundance_data.RData")
+
+save(corr_abundance_data, file = "analysis/corr_abundance_data_2.RData")
+load("analysis/corr_abundance_data_2.RData")
 
 # prepare data for differential analysis ----------------------------------
 #Add more meta information on biological and analytical batches
@@ -79,7 +91,7 @@ meta <- tibble(sample_name = colnames(data.matrix)) %>%
            remove = FALSE
           )
 
-save(data.matrix, meta, file = "analysis/matrix_meta_three_br.RData")
+save(data.matrix, meta, file = "analysis/matrix_meta_four_br.RData")
 
 # prepare data for mirror plots -------------------------------------------------
 
@@ -110,6 +122,7 @@ make_wider_table <- function(data,
   
 }
 
+
 abc_wider <- make_wider_table(data = corr_abundance_data, 
                               condition = "[ABC]")
 ab_wider <- make_wider_table(data = corr_abundance_data, 
@@ -137,7 +150,8 @@ plot_mirror_plot <- function(data,
                              grouping_var = condition_br,
                              legend_cols = 3,
                              color_mapping = color_mapping,
-                             title = "plot_title") {
+                             title = "plot_title",
+                             sta_label = "264 hours") {
   
   # # Define y-axis breaks and labels
   y_breaks <- c(-60, -30, 0, 30, 60)
@@ -188,7 +202,7 @@ plot_mirror_plot <- function(data,
     geom_hline(yintercept = 0, linewidth = .35) +
     guides(fill = guide_legend(ncol = legend_cols)) +
     annotate("text", x = 10, y = -50, label = "120 hours", alpha = 0.5) +
-    annotate("text", x = 10, y = 50, label = "264 hours", alpha = 0.5) +
+    annotate("text", x = 10, y = 50, label = sta_label, alpha = 0.5) +
     theme_bw() +
     theme(text = element_text(size = 16, 
                               face = "bold",
@@ -220,15 +234,19 @@ color_mapping_abcdef_br <- c(
   "A_1" = "#EE3377",
   "A_2" = "#EE3377",
   "A_3" = "#EE3377",
+  "A_4" = "#EE3377",
   "B_1" = "#56B4E9",
   "B_2" = "#56B4E9",
   "B_3" = "#56B4E9",
+  "B_4" = "#56B4E9",
   "C_1" = "#009E73",
   "C_2" = "#009E73",
   "C_3" = "#009E73",
+  "C_4" = "#009E73",
   "G_1" = "#ffd800",
   "G_2" = "#ffd800",
   "G_3" = "#ffd800",
+  "G_4" = "#ffd800",
   "D_1" = "#CC79A7",
   "D_2" = "#CC79A7",
   "D_3" = "#CC79A7",
@@ -245,45 +263,56 @@ color_mapping_abcdef_br <- c(
 plot_mirror_plot(data = abc_wider,
                  condition = "ABC",
                  grouping_var = abc_wider$condition_br,
-                 color_mapping = color_mapping_abcdef_br)
+                 color_mapping = color_mapping_abcdef_br,
+                 title = "Conditions_A_B_C")
 
 plot_mirror_plot(data = def_wider,
                  condition = "DEF",
                  grouping_var = def_wider$condition_br,
-                 color_mapping = color_mapping_abcdef_br)
+                 color_mapping = color_mapping_abcdef_br,
+                 title = "Conditions_D_E_F")
 
 plot_mirror_plot(data = ab_wider,
                  condition = "AB",
+                 legend_cols = 2,
                  grouping_var = ab_wider$condition_br,
                  color_mapping = color_mapping_abcdef_br,
                  title = "Impact of Gal+")
 
 plot_mirror_plot(data = ad_wider,
                  condition = "AD",
+                 legend_cols = 2,
                  grouping_var = ad_wider$condition_br,
                  color_mapping = color_mapping_abcdef_br,
-                 title = "24h_vs_48h feeding interval")
+                 title = "24h_vs_48h feeding interval"
+                 )
 
 plot_mirror_plot(data = ag_wider,
                  condition = "AG",
+                 legend_cols = 2,
                  grouping_var = ag_wider$condition_br,
                  color_mapping = color_mapping_abcdef_br,
-                 title = "Reduction of glucose")
+                 title = "Reduction of glucose",
+                 sta_label = "240/264 hours")
 
 plot_mirror_plot(data = cg_wider,
                  condition = "CG",
+                 legend_cols = 2,
                  grouping_var = cg_wider$condition_br,
                  color_mapping = color_mapping_abcdef_br,
-                 title = "Influence of Gal+, reduced glucose") #should be renamed
+                 title = "Influence of Gal+, reduced glucose",
+                 sta_label = "240 hours") #should be renamed
 
 plot_mirror_plot(data = de_wider,
                  condition = "DE",
+                 legend_cols = 2,
                  grouping_var = de_wider$condition_br,
                  color_mapping = color_mapping_abcdef_br,
                  title = "HIPDOG impact")
 
 plot_mirror_plot(data = ef_wider,
                  condition = "EF",
+                 legend_cols = 2,
                  grouping_var = ef_wider$condition_br,
                  color_mapping = color_mapping_abcdef_br,
                  title = "Gal+ effect on HIPDOG")
@@ -334,14 +363,14 @@ plot_mirror_plot(data = filt_def_wider,
                  title = "DEF conditions, biological replicate 2")
 
 
-# plot some heatmaps ------------------------------------------------------
 # plot data as a heatmap --------------------------------------------------
 glycan_order_120 <- c(6,7, 8, 5, 9, 4, 1, 2, 10, 3)
 glycan_order_264 <- c(6, 7, 5, 8, 1, 4, 9, 2, 10, 3)
 
 plot_heatmap <-  function(data,
                           timepoint = "120",
-                          glycan_order = c(6, 7, 8, 5, 9, 4, 1, 2, 10, 3)) {
+                          glycan_order = c(6, 7, 8, 5, 9, 4, 1, 2, 10, 3)
+                          ) {
   
   data.matrix <- data %>%
     select(glycoform1, corr_abundance, condition_br_tp) %>%
@@ -385,10 +414,11 @@ plot_heatmap <-  function(data,
                     "darkorchid3",
                     "darkorchid4"),
                   space = "RGB")
+  safe_timepoint <- str_replace_all(timepoint, "\\|", "_")
   
-  png(filename = paste0("figures/heatmap_",timepoint,".png"),    
+  png(filename = paste0("figures/heatmap_",safe_timepoint,".png"),    
       height = 9,
-      width = 9,
+      width = 13,
       units = "cm",
       res = 600)
   
@@ -409,10 +439,11 @@ plot_heatmap <-  function(data,
   dev.off()
 }
 
-data.matrix_120_func <- plot_heatmap(data = corr_abundance_data) 
+data.matrix_120_func <- plot_heatmap(data = corr_abundance_data,
+                                     glycan_order = glycan_order_264) 
 
 data.matrix_264_func <- plot_heatmap(data = corr_abundance_data,
-                                     timepoint = "264",
+                                     timepoint = "264|240",
                                      glycan_order = glycan_order_264) 
 
 
@@ -425,14 +456,15 @@ color_mapping <- c(
   "C" = "#009E73",
   "D" = "#CC79A7",
   "E" = "#EE7631",
-  "F" = "#0072B2"
+  "F" = "#0072B2",
+  "G" = "#ffd800"
 )
 
 
 # plot glycans individually, bar plots ------------------------------------
 
 filtered_tp_264 <- filtered_corr_abundance_data %>%
-  filter(grepl("264", condition_br_tp)) %>%
+  filter(grepl("264|240", condition_br_tp)) %>%
   mutate(condition = str_extract(condition_br_tp, "([^_]+)")) 
  
 filtered_tp_120 <- filtered_corr_abundance_data %>%
