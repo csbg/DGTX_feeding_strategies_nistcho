@@ -77,6 +77,10 @@ gi_stats <- gi_summary %>%
   mutate(time_group = if_else(tp == 120, "exponential", "stationary"),
          condition = factor(condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
 
+# Ensure time_group is treated as a factor with the correct order
+gi_stats$time_group <- factor(gi_stats$time_group, levels = c("exponential", "stationary"))
+
+gi_stats$condition <- factor(gi_stats$condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+"))
 print(gi_stats)
 
 color_mapping_condition <- c(
@@ -99,6 +103,11 @@ color_mapping_condition <- c(
   "LoG" = "#a6cee3"
 )
 
+save(gi_summary, gi_stats, file = "analysis/galactosylation_index.RData")
+load("analysis/galactosylation_index.RData")
+
+
+# plot as dotplots --------------------------------------------------------
 # ggplot() +
 #   geom_jitter(data = gi_summary, aes(x = condition, y = GI, color = condition), width = 0.2, size = 2.5) +
 #   geom_point(data = gi_stats, aes(x = condition, y = mean_GI), color = "black", size = 3, alpha = 0.5) +
@@ -146,8 +155,7 @@ color_mapping_condition <- c(
 #     panel.border = element_blank()
 #   )
 
-# Ensure time_group is treated as a factor with the correct order
-gi_stats$time_group <- factor(gi_stats$time_group, levels = c("exponential", "stationary"))
+
 
 gal_ind <- ggplot(data = gi_stats) +
   # Points: color and linetype mapped to condition in one aes() call
@@ -221,9 +229,10 @@ ggsave(filename = "figures/galactosylation_index.png",
 
 # plot index as barplot ---------------------------------------------------
 
-gal_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
+gal_ind_bar <- ggplot(data = gi_stats, aes(x = condition, y = mean_GI)) +
   geom_col(aes(fill = condition),
-           position = position_dodge(width = 0.9)) +
+           position = position_dodge(width = 0.9),
+           color = "black") +
   geom_errorbar(
     aes(
       ymin = mean_GI - sd_GI,
@@ -234,15 +243,19 @@ gal_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
     width = .5,
     linewidth = .25
   ) +
-  geom_text(
-    aes(label = condition, fill = condition, y = 2),  # include fill here!
-    position = position_dodge(width = 0.9),
-    vjust = 0,
-    hjust = 0, 
-    angle = 90,
-    colour = "white",
-    size = 3
-  ) +
+  # geom_text(
+  #   aes(label = condition, fill = condition, y = 2),  # include fill here!
+  #   position = position_dodge(width = 0.9),
+  #   vjust = 0,
+  #   hjust = 0, 
+  #   angle = 90,
+  #   colour = "white",
+  #   size = 3
+  # ) +
+  facet_wrap(~time_group, 
+             labeller = labeller(time_group = c("exponential" = "Exponential",
+                                                "stationary" = "Stationary"))
+             ) +
   # # Lines: same combined mapping
   # geom_line(
   #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
@@ -251,7 +264,7 @@ gal_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
   # ) +
 scale_fill_manual(
   values = color_mapping_condition,
-  breaks = names(color_mapping_condition)
+  breaks = levels(gi_stats$condition)
 ) +
   # scale_color_manual(
   #   values = color_mapping_condition,
@@ -259,7 +272,7 @@ scale_fill_manual(
   # ) 
 # Unified legend title
 labs(
-  x = "Bioprocess phase",
+  x = "",
   y = "Galactosylation_index (%)",
   fill = "Strategy"
 ) +
@@ -274,6 +287,7 @@ labs(
     ),
     axis.line = element_line(),
     axis.text = element_text(color = "black", size = 11),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
     axis.title.y = element_text(hjust = 0.5, face = "bold"),
     axis.title.x = element_text(hjust = 0.5, face = "bold"),
     panel.grid.major.x = element_blank(),
@@ -289,7 +303,7 @@ labs(
   guides(fill = guide_legend(nrow = 1)) 
 
 plot(gal_ind_bar)
-ggsave(filename = "figures/galactosylation_index_barplot.png",
+ggsave(filename = "figures/galactosylation_index_barplot_facet_time.png",
        width = 150,
        height = 100,
        units = "mm",
@@ -403,6 +417,8 @@ gi_stats <- gi_summary %>%
   mutate(time_group = if_else(tp == 120, "exponential", "stationary"),
          condition = factor(condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
 
+save(gi_summary, gi_stats, file = "analysis/glycation_index.RData")
+load("analysis/glycation_index.RData")
 
 # make wider table --------------------------------------------------------
 gi_stats_wider <- gi_stats %>% 
@@ -546,9 +562,10 @@ plot(glu_ind)
 
 
 # plot glycation index as barplot -----------------------------------------
-gly_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
+gly_ind_bar <- ggplot(data = gi_stats, aes(x = condition, y = mean_GI)) +
   geom_col(aes(fill = condition),
-           position = position_dodge(width = 0.9)) +
+           position = position_dodge(width = 0.9),
+           color = "black") +
   geom_errorbar(
     aes(
       ymin = mean_GI - sd_GI,
@@ -559,14 +576,18 @@ gly_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
     width = .5,
     linewidth = .25
   ) +
-  geom_text(
-    aes(label = condition, fill = condition, y = 0.5),  # include fill here!
-    position = position_dodge(width = 0.9),
-    vjust = 0,
-    hjust = 0,
-    angle = 90,
-    colour = "white",
-    size = 3
+  # geom_text(
+  #   aes(label = condition, fill = condition, y = 2),  # include fill here!
+  #   position = position_dodge(width = 0.9),
+  #   vjust = 0,
+  #   hjust = 0, 
+  #   angle = 90,
+  #   colour = "white",
+  #   size = 3
+  # ) +
+  facet_wrap(~time_group, 
+             labeller = labeller(time_group = c("exponential" = "Exponential",
+                                                "stationary" = "Stationary"))
   ) +
   # # Lines: same combined mapping
   # geom_line(
@@ -576,15 +597,15 @@ gly_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
   # ) +
   scale_fill_manual(
     values = color_mapping_condition,
-    breaks = names(color_mapping_condition)
-  ) +
+    breaks = levels(gi_stats$condition)
+    ) +
   # scale_color_manual(
   #   values = color_mapping_condition,
   #   breaks = names(color_mapping_condition)
   # ) 
   # Unified legend title
   labs(
-    x = "Bioprocess phase",
+    x = "",
     y = "Glycation_index (%)",
     fill = "Strategy"
   ) +
@@ -599,6 +620,7 @@ gly_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
     ),
     axis.line = element_line(),
     axis.text = element_text(color = "black", size = 11),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
     axis.title.y = element_text(hjust = 0.5, face = "bold"),
     axis.title.x = element_text(hjust = 0.5, face = "bold"),
     panel.grid.major.x = element_blank(),
@@ -614,7 +636,7 @@ gly_ind_bar <- ggplot(data = gi_stats, aes(x = time_group, y = mean_GI)) +
   guides(fill = guide_legend(nrow = 1)) 
 
 plot(gly_ind_bar)
-ggsave(filename = "figures/glycationn_index_barplot.png",
+ggsave(filename = "figures/glycation_index_barplot_facet_time.png",
        width = 150,
        height = 100,
        units = "mm",
@@ -634,7 +656,7 @@ ggsave("figures/galactosyaltion_glycation_index.png",
 
 ggarrange(gal_ind_bar,gly_ind_bar, ncol = 2, common.legend = TRUE, legend = "bottom")  
 
-ggsave("figures/galactosylation_glycation_index_barplot.png",
+ggsave("figures/galactosylation_glycation_index_barplot_facet_time.png",
        width = 210,
        height = 85,
        units = "mm",
