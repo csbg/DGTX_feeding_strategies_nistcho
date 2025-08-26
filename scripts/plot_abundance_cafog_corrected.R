@@ -222,7 +222,7 @@ plot_mirror_plot <- function(data,
     ggtitle(title) +
   NULL  
 
-  ggsave(filename = paste0("figures/corrected_frac_ab_mirror_barplot_",condition,"_LH_colorscale_font16bold.png"),
+  ggsave(filename = paste0("figures/corrected_frac_ab_mirror_barplot_",condition,"_LH_colorscale_font16bold.pdf"),
          height = 180,
          width = 180,
          units = "mm",
