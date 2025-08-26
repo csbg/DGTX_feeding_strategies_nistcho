@@ -26,13 +26,13 @@ color_mapping_condition <- c(
 )
 
 color_mapping_condition_abrev <- c(
-  "STD" = "#EE3377",
-  "STD+" = "#56B4E9",
-  "LoG+" = "#009E73",
-  "LoG" = "#ffd800",
-  "HiF" = "#CC79A7",
-  "HIP" = "#EE7631",
-  "HIP+" = "#0072B2"
+  "STD" = "grey50",
+  "STD+" = "grey20",
+  "LoG+" = "#1f78b4",
+  "HiF" = "#f1a340",
+  "HIP" = "#b2df8a",
+  "HIP+" = "#33a02c",
+  "LoG" = "#a6cee3"
 )
 
 clr_corr_abundance <- as.data.frame(clr_data.matrix) %>%
@@ -485,12 +485,34 @@ plot_lollipop_time_effects <- function(clr_data,
                size = 3, stroke = 0.5, color = "black", fill = "lightgreen") + 
     scale_shape_manual(values = shapes_used) +
     coord_flip() +
-    theme_minimal(base_size = 9) +
+    theme_bw() +
     labs(
-      title = paste("Condition:", condition_label),
+      title = paste("Strategy:", condition_label),
       x = "Glycoform",
       y = "",
       shape = "Timepoint"
+    ) +
+    theme(
+      text = element_text( 
+        size = 11,
+        family = "sans",
+        colour = "black"
+      ),
+      axis.line = element_line(),
+      axis.text = element_text(color = "black", size = 11),
+      axis.title.y = element_text(hjust = 0.5, face = "bold"),
+      axis.title.x = element_text(hjust = 0.5, face = "bold"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.border = element_blank(),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
+      legend.text = element_text(),
+      legend.box = "horizontal"
+      # 
+      # axis.text.x = element_blank()
+      # # axis.text.x = element_text(angle = 90)
     )
 }
 
@@ -526,7 +548,7 @@ final_plot <- ggarrange(
 plot(final_plot)
 
 ggsave(
-  filename = "figures/br_4/clr_transformed/final_lollipop_plot.png",
+  filename = "figures/br_4/clr_transformed/final_lollipop_plot_new_theme.png",
   plot = final_plot,
   device = "png",
   width = 7.48,
@@ -594,8 +616,8 @@ mean_df <- data_for_lollipop %>%
          into = c("condition","timepoint"),
          sep = "_") %>%
   filter(condition %in% condition_combinations,
-         # timepoint %in% c("264", "240")) 
-        timepoint %in% c("264")) 
+         # timepoint %in% c("264", "240"))
+        timepoint %in% c("264"))
 
 # Pivot wider for segment plotting
 mean_segments <- mean_df %>%
@@ -615,9 +637,10 @@ ggplot() +
                        yend = `HiF`),
                    color = "grey", linewidth = 1) +
 
-  scale_fill_manual(values = color_mapping_condition_abrev) +
+  scale_fill_manual('Strategy',
+                    values = color_mapping_condition_abrev) +
   # coord_flip() +
-  theme_minimal(base_size = 9) +
+  theme_bw() +
   ylim(-3.5, 3.5) +
   labs(
     # title = paste("STD+ vs STD"),
@@ -625,10 +648,28 @@ ggplot() +
     y = "",
   ) + 
   theme(
-    axis.text.x = element_blank(),
-    # axis.text.x = element_text(angle = 90),
-    panel.grid.minor.y = element_blank()
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "right",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal",
+    
+    axis.text.x = element_blank()
+    # axis.text.x = element_text(angle = 90)
   )
+
 
 ggsave(
   filename = "figures/br_4/clr_transformed/hip+_hif_264.png",
