@@ -482,7 +482,7 @@ tukey_df_anno <- tukey_df %>%
 
 
   # replot the bar chart with significance symbols
-  totaltiter <- ggplot(titer_last, aes(x = Condition, y = mean_titer)) +
+  totaltiter <- ggplot(titer_last, aes(x = Condition, y = mean_titer/1000)) +
     geom_bar(
       mapping = aes(fill = Condition),
       stat = "identity",
@@ -490,7 +490,7 @@ tukey_df_anno <- tukey_df %>%
       color = "black",
       size = 0.5
     ) +
-    geom_errorbar(aes(ymin = mean_titer - se_titer, ymax = mean_titer + se_titer), width = 0.2, position = position_dodge(0.9)) +
+    geom_errorbar(aes(ymin = (mean_titer - se_titer) / 1000, ymax = (mean_titer + se_titer) / 1000), width = 0.2, position = position_dodge(0.9)) +
     labs(
       x = "Condition",
       y = "cNISTmAB titer [µg/mL]",
@@ -563,7 +563,7 @@ titer_STD_anno <- tukey_df_anno %>%
         colour = "black"
       ),
       axis.line = element_line(),
-      axis.text = element_text(color = "black", size = 11),
+      axis.text = element_text(color = "black", size = 10),
       axis.title.y = element_text(hjust = 0.5, face = "bold"),
       axis.title.x = element_text(hjust = 0.5, face = "bold"),
       panel.grid.major.x = element_blank(),
@@ -610,5 +610,6 @@ ggsave("results/total_titer_STD_stat.pdf",
   bg = "white",
   dpi = 600
 )
+
 
 
