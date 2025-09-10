@@ -42,6 +42,8 @@ IVCD$Condition <- recode(IVCD$Condition,
 
 # rename Hour_ID to h and Rep to Replicate
 IVCD <- IVCD %>% rename(h = Hour_ID)
+lactate <- lactate %>% rename(Replicate = Rep)
+
 
 
 # merge dataframes on Condition and Hour
