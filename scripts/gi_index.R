@@ -107,6 +107,49 @@ save(gi_summary, gi_stats, file = "analysis/galactosylation_index.RData")
 load("analysis/galactosylation_index.RData")
 
 
+
+
+# statistics --------------------------------------------------------------
+
+# Check distribution 
+gi_summary_exp <- gi_summary %>%
+  filter(time_group %in% c("exponential"))
+boxplot(GI ~ condition, data = gi_summary_exp)
+
+gi_summary_sta <- gi_summary %>%
+  filter(time_group %in% c("stationary"))
+boxplot(GI ~ condition, data = gi_summary_sta)
+
+condition_ttest <- function(data, which_strategies) {
+results <- data %>%
+  filter(condition %in% which_strategies) %>%
+  group_by(time_group) %>%
+  summarise(
+    t_test = list(t.test(GI ~ condition)),
+    wilcox = list(wilcox.test(GI ~ condition)),
+    .groups = "drop"
+  )
+
+# Extract p-values
+results <- results %>%
+  mutate(
+    t_pval = sapply(t_test, function(x) x$p.value),
+    wilcox_pval = sapply(wilcox, function(x) x$p.value)
+  )
+}
+
+#function
+results_std <- condition_ttest(data = gi_summary,
+                which_strategies = c("STD", "STD+"))
+
+results_log <- condition_ttest(data = gi_summary,
+                which_strategies = c("LoG", "LoG+"))
+
+results_hip <- condition_ttest(data = gi_summary,
+                which_strategies = c("HIP", "HIP+"))
+
+
+
 # plot as dotplots --------------------------------------------------------
 # ggplot() +
 #   geom_jitter(data = gi_summary, aes(x = condition, y = GI, color = condition), width = 0.2, size = 2.5) +

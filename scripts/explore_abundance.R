@@ -457,7 +457,7 @@ plot(hull_plot)
   
 ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
          plot = hull_plot, 
-         width = 5, height = 5, bg = "white", dpi = 300)
+         width = 5.5, height = 5, bg = "white", dpi = 300)
 
 # ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
 #        plot = hull_plot, 
