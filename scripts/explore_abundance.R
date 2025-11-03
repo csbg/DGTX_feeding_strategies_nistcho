@@ -4,7 +4,7 @@ library(here)
 library(limma)
 suppressPackageStartupMessages(library(ComplexHeatmap))
 library(tidyverse)
-library(colorRamp2)
+# library(colorRamp2)
 library(compositions)
 library(viridisLite)
 library(ggforce)
@@ -347,6 +347,10 @@ pca_data$condition_abrev_tp <- paste(pca_data$condition_abrev,pca_data$timepoint
 pca_data <- pca_data %>%
   filter(!is.na(condition_abrev) & !is.na(timepoint))
 
+
+# Explained variance
+pve <- round(100 * (pca_result$sdev^2 / sum(pca_result$sdev^2)), 1)
+
 # ------------------------------------------------
 # 1. Scree Plot (variance explained per PC)
 # ------------------------------------------------
@@ -542,6 +546,142 @@ ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png",
          plot = hull_plot, 
          width = 5.5, height = 5, bg = "white", dpi = 300)
 
+
+# PC1 & 3 -----------------------------------------------------------------
+
+# Plot with hulls and labels
+hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC3)) +
+  geom_point(
+    aes(shape = timepoint, fill = condition_abrev_tp, , color = condition_abrev), 
+    size = 3, stroke = 0.7) +
+  scale_shape_manual(values = timepoint_shapes) +
+  scale_fill_manual(values = condition_colors_tp, guide = "none") +
+  scale_color_manual(values = condition_colors) +
+  geom_mark_hull(aes(group = condition_abrev_tp, 
+                     fill = condition_abrev_tp,
+                     label = condition_abrev_tp),
+                 alpha = 0.2,
+                 linewidth = 0.3,
+                 concavity = 30, 
+                 expand = unit(2.5, "mm"),
+                 label.fontsize = 8,
+                 label.margin = margin(0.1, 0, 0, 0, "mm"),
+                 label.buffer = unit(0.1, "mm"),
+                 label.minwidth = unit(0, "mm"),
+                 label.width = NULL,
+                 label.lineheight = 1,
+                 con.type = "straight",
+                 con.size = 0.3,
+                 con.cap = 0,
+                 show.legend = FALSE) +
+  labs(
+    x = paste0("PC1 (", pve[1], "%)"),
+    y = paste0("PC3 (", pve[3], "%)"),
+    shape = "Timepoint",
+    color = "Strategy"
+  ) +
+  theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) +
+  guides(
+    color = guide_legend(title.position = "top"),
+    shape = guide_legend(title.position = "top")
+  )
+# theme_minimal(base_size = 12) +
+# theme(legend.position = "right")
+
+plot(hull_plot)
+
+ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color_pc1_pc3.png", 
+       plot = hull_plot, 
+       width = 5.5, height = 5, bg = "white", dpi = 300)
+
+
+# pc2 & 3 -----------------------------------------------------------------
+# Plot with hulls and labels
+hull_plot <- ggplot(pca_data, aes(x = PC2, y = PC3)) +
+  geom_point(
+    aes(shape = timepoint, fill = condition_abrev_tp, , color = condition_abrev), 
+    size = 3, stroke = 0.7) +
+  scale_shape_manual(values = timepoint_shapes) +
+  scale_fill_manual(values = condition_colors_tp, guide = "none") +
+  scale_color_manual(values = condition_colors) +
+  geom_mark_hull(aes(group = condition_abrev_tp, 
+                     fill = condition_abrev_tp,
+                     label = condition_abrev_tp),
+                 alpha = 0.2,
+                 linewidth = 0.3,
+                 concavity = 30, 
+                 expand = unit(2.5, "mm"),
+                 label.fontsize = 8,
+                 label.margin = margin(0.1, 0, 0, 0, "mm"),
+                 label.buffer = unit(0.1, "mm"),
+                 label.minwidth = unit(0, "mm"),
+                 label.width = NULL,
+                 label.lineheight = 1,
+                 con.type = "straight",
+                 con.size = 0.3,
+                 con.cap = 0,
+                 show.legend = FALSE) +
+  labs(
+    x = paste0("PC2 (", pve[2], "%)"),
+    y = paste0("PC3 (", pve[3], "%)"),
+    shape = "Timepoint",
+    color = "Strategy"
+  ) +
+  theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) +
+  guides(
+    color = guide_legend(title.position = "top"),
+    shape = guide_legend(title.position = "top")
+  )
+# theme_minimal(base_size = 12) +
+# theme(legend.position = "right")
+
+plot(hull_plot)
+
+ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color_pc2_pc3.png", 
+       plot = hull_plot, 
+       width = 5.5, height = 5, bg = "white", dpi = 300)
+
+
 # ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
 #        plot = hull_plot, 
 #        width = 170, height = 160, bg = "white", dpi = 300, units = "mm")
@@ -554,41 +694,7 @@ ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png",
 #   colnames(clr_data.matrix) <- sub(paste0("^", prefix), replacements[prefix], colnames(clr_data.matrix))
 # }
 
-# ------------------------------------------------
-# 4. PCA 1 & 2 & 3 visualisation
-# ------------------------------------------------
-library(plotly)
 
-# Normalize PC3 values between 0 and 1 for alpha mapping
-alpha_scaled <- scales::rescale(pca_data$PC3, to = c(0.3, 1))  # 0.3 = most transparent, 1 = fully opaque
-
-fig <- plot_ly(
-  data = pca_data,
-  x = ~PC1,
-  y = ~PC2,
-  z = ~PC3,
-  color = ~condition_abrev,
-  symbol = ~timepoint,
-  colors = condition_colors,
-  symbols = timepoint_shapes,
-  type = "scatter3d",
-  mode = "markers",
-  marker = list(
-    size = 5,
-    line = list(width = 0.5, color = "black"),
-    opacity = alpha_scaled
-  )
-) %>%
-  layout(
-    scene = list(
-      xaxis = list(title = paste0("PC1 (", pve[1], "%)")),
-      yaxis = list(title = paste0("PC2 (", pve[2], "%)")),
-      zaxis = list(title = paste0("PC3 (", pve[3], "%)"))
-    ),
-    legend = list(orientation = "h", x = 0.3, y = -0.1)
-  )
-
-fig
 
 
 
