@@ -347,11 +347,107 @@ pca_data$condition_abrev_tp <- paste(pca_data$condition_abrev,pca_data$timepoint
 pca_data <- pca_data %>%
   filter(!is.na(condition_abrev) & !is.na(timepoint))
 
-# Grouping for hulls
-pca_data$group <- interaction(pca_data$condition_abrev, pca_data$timepoint)
+# ------------------------------------------------
+# 1. Scree Plot (variance explained per PC)
+# ------------------------------------------------
 
-# Explained variance
-pve <- round(100 * (pca_result$sdev^2 / sum(pca_result$sdev^2)), 1)
+var_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2) * 100
+scree_data <- data.frame(
+  PC = paste0("PC", 1:length(var_explained)),
+  Variance = var_explained
+)
+
+scree_plot <- ggplot(scree_data, aes(x = reorder(PC, as.numeric(gsub("PC", "", PC))), y = Variance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(aes(label = sprintf("%.1f%%", Variance)), vjust = -0.5, size = 3.5) +
+  # theme_minimal(base_size = 13) +
+  labs(title = "Scree Plot", x = "Principal Component", y = "Variance Explained (%)") +
+theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) 
+
+plot(scree_plot)
+ggsave("figures/br_4/explore_abundance/scree_plots.png", 
+       plot = scree_plot, 
+       width = 5.5, height = 5, bg = "white", dpi = 300)
+
+# ------------------------------------------------
+# 2. PCA Loadings Visualization
+# ------------------------------------------------
+# Loadings = contribution of each variable to each PC
+loadings <- as.data.frame(pca_result$rotation)
+loadings$Variable <- rownames(loadings)
+
+# Example: visualize top contributing variables for PC1 and PC2
+top_n <- 10
+loading_long <- loadings %>%
+  select(Variable, PC1, PC2) %>%
+  pivot_longer(cols = starts_with("PC"), names_to = "Component", values_to = "Loading")
+
+top_loadings <- loading_long %>%
+  group_by(Component) %>%
+  slice_max(abs(Loading), n = top_n) %>%
+  ungroup()
+
+pca_loadings <- ggplot(top_loadings, aes(x = reorder(Variable, Loading), y = Loading, fill = Loading > 0)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~Component, scales = "free_y") +
+  coord_flip() +
+  scale_fill_manual(values = c("TRUE" = "tomato", "FALSE" = "steelblue")) +
+  # theme_minimal(base_size = 13) +
+  theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) +
+  theme(legend.position = "none") +
+  labs(title = paste("Top", top_n, "Loadings for PC1 and PC2"),
+       x = "Variable", y = "Loading")
+plot(pca_loadings)
+ggsave("figures/br_4/explore_abundance/pca_loadings_top10.png", 
+       plot = pca_loadings, 
+       width = 6, height = 5, bg = "white", dpi = 300)
+
+# ------------------------------------------------
+# 3. PCA 1 & 2 visualisation
+# ------------------------------------------------
+# Grouping for hulls
+
+pca_data$group <- interaction(pca_data$condition_abrev, pca_data$timepoint)
 
 # Manual mappings
 timepoint_shapes <- c("120" = 22, "240" = 23, "264" = 24)
@@ -381,19 +477,6 @@ condition_colors_tp <- c(
   "HIP+_264" = "#33a02c"
 )
 
-
-
-# # Calculate the centroids of each hull group for label placement
-# centroids <- pca_data %>%
-#   group_by(condition_abrev_tp) %>%
-#   summarise(
-#     centroid_x = mean(PC1),
-#     centroid_y = mean(PC2),
-#     label = first(condition_abrev_tp)  # Tag based on condition_abrev
-#   )
-
-
-
 # Plot with hulls and labels
 hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
   geom_point(
@@ -410,7 +493,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
                  concavity = 30, 
                  expand = unit(2.5, "mm"),
                  label.fontsize = 8,
-                 label.margin= margin(0.1, 0, 0, 0, "mm"),
+                 label.margin = margin(0.1, 0, 0, 0, "mm"),
                  label.buffer = unit(0.1, "mm"),
                  label.minwidth = unit(0, "mm"),
                  label.width = NULL,
