@@ -553,6 +553,46 @@ ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png",
 # for (prefix in names(replacements)) {
 #   colnames(clr_data.matrix) <- sub(paste0("^", prefix), replacements[prefix], colnames(clr_data.matrix))
 # }
+
+# ------------------------------------------------
+# 4. PCA 1 & 2 & 3 visualisation
+# ------------------------------------------------
+library(plotly)
+
+# Normalize PC3 values between 0 and 1 for alpha mapping
+alpha_scaled <- scales::rescale(pca_data$PC3, to = c(0.3, 1))  # 0.3 = most transparent, 1 = fully opaque
+
+fig <- plot_ly(
+  data = pca_data,
+  x = ~PC1,
+  y = ~PC2,
+  z = ~PC3,
+  color = ~condition_abrev,
+  symbol = ~timepoint,
+  colors = condition_colors,
+  symbols = timepoint_shapes,
+  type = "scatter3d",
+  mode = "markers",
+  marker = list(
+    size = 5,
+    line = list(width = 0.5, color = "black"),
+    opacity = alpha_scaled
+  )
+) %>%
+  layout(
+    scene = list(
+      xaxis = list(title = paste0("PC1 (", pve[1], "%)")),
+      yaxis = list(title = paste0("PC2 (", pve[2], "%)")),
+      zaxis = list(title = paste0("PC3 (", pve[3], "%)"))
+    ),
+    legend = list(orientation = "h", x = 0.3, y = -0.1)
+  )
+
+fig
+
+
+
+
 # plot heatmap of Spearman correlations ------------------------------------
 # function to calculate spearman correlations and plot as heatmap
 spearman_correlations <- function(data,
