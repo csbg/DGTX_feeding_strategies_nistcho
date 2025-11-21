@@ -40,7 +40,15 @@ df2 <- df2 %>%
 merged_df <- merge(df, df2, by = "CR_TP", all.x = TRUE) %>%   
   rename(Titer_µg.mL = Titer) 
 
-
+merged_df$Condition <- recode(merged_df$Condition,
+  "A" = "STD",
+  "B" = "STD+",
+  "C" = "LoG+",
+  "D" = "HiF",
+  "E" = "HIP",
+  "F" = "HIP+",
+  "G" = "LoG"
+)
 write_csv(merged_df, here("data", "vicell_titer_sum.csv"))
 
 

@@ -21,7 +21,10 @@ lactate$Con <- recode(lactate$Con,
   "F" = "HIP+",
   "G" = "LoG"
 )
+
+write.csv(lactate, here("data", "lactate_data.csv"), row.names = FALSE)
 # individual vcd and viab
+
 
 # rename Feeding strategies 
 avg_df$Condition <- recode(avg_df$Condition,

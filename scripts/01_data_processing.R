@@ -33,6 +33,20 @@ df_filtered <- df[!(df$Condition %in% conditions_to_remove & df$Replicate %in% r
 
 write.csv(df_filtered, here("data", "vicell_sum_filtered.csv"), row.names = FALSE)
 
+# rename Feeding strategies
+df_filtered$Condition <- recode(df_filtered$Condition,
+    "A" = "STD",
+    "B" = "STD+",
+    "C" = "LoG+",
+    "D" = "HiF",
+    "E" = "HIP",
+    "F" = "HIP+",
+    "G" = "LoG"
+)
+
+write.csv(df_filtered, here("data", "vicell_growth_data.csv"), row.names = FALSE)
+
+
 # calculate average data
 avg_df <- df_filtered %>%
     group_by(Condition, TP) %>%

@@ -6,7 +6,18 @@ library(here)
 
 Glucose_pH_rawdata <- read_excel(here("data/Glucose_pH_rawdata_FB2+4_2.xlsx"))
 
+# rename Feeding strategies
+Glucose_pH_rawdata$Condition <- recode(Glucose_pH_rawdata$Condition,
+  "A" = "STD",
+  "B" = "STD+",
+  "C" = "LoG+",
+  "D" = "HiF",
+  "E" = "HIP",
+  "F" = "HIP+",
+  "G" = "LoG"
+)
 
+write.csv(Glucose_pH_rawdata, here("data", "glucose_pH.csv"), row.names = FALSE)
 
 # glucose concentrations plotted ------------------------------------------
 
