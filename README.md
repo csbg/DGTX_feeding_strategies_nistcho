@@ -23,11 +23,11 @@ Zenodo DOI: INSERT_DOI_HERE
 
 The processed data provided in this repository were generated entirely from the Zenodo raw data using the scripts in /scripts.
 
-# 📝 Citation
+## 📝 Citation
 If you use the code or data, please cite:
 INSERT_CITATION_HERE
 
-# 🤝 Contact
+## 🤝 Contact
 For computational questions, please reach out to:
 
 **Veronika Schäpertöns**
