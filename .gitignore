@@ -1,4 +1,4 @@
-.Rproj.user
+/.Rproj.user
 .Rhistory
 .RData
 .Ruserdata
@@ -22,3 +22,4 @@ staging/
 *._.DS_Store
 *.DS_Store
 *.gitignore
+/.vscode
