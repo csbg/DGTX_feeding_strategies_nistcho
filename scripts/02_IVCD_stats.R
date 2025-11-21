@@ -13,6 +13,8 @@
 ##   - IVCD_FB2+FB4_individual.csv    (optional: precomputed IVCD; see below)
 ##
 ## Outputs (in /results):
+##   - 01_IVCD_individual.csv
+##   - 02_IVCD_averaged.csv
 ##   - IVCD_timecourse.pdf
 ##   - tukey_IVCD.csv
 ##   - total_IVCD_last_timepoint_all_stat.pdf
@@ -69,12 +71,9 @@ IVCD <- df %>%
   select(-VCD_t1, -VCD_t2)
 
 ## If you want to save the individual IVCD timecourse per replicate:
-## write.csv(IVCD, here("data", "IVCD_individual.csv"),
+write.csv(IVCD, here("results", "01_IVCD_individual.csv"),
 ##           row.names = FALSE)
 
-## If you prefer to work from a precomputed IVCD file instead,
-## uncomment the following and comment out the block above:
-# IVCD <- read.csv(here("data", "IVCD_FB2+FB4_individual.csv"))
 
 ## -------------------------------------------------------------------
 ## 3. Common recoding and plotting helpers
@@ -149,6 +148,8 @@ IVCD_avg <- IVCD %>%
   mutate(is_last = mean_hours == max(mean_hours)) %>% # flag final time point
   ungroup()
 
+write.csv(IVCD_avg, here("results", "02_IVCD_averaged.csv"),
+          row.names = FALSE)
 ## -------------------------------------------------------------------
 ## 5. IVCD timecourse plot
 ## -------------------------------------------------------------------
