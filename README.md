@@ -19,27 +19,42 @@ poorly characterized
 
 The full raw dataset for this study is archived and publicly available on Zenodo:
 
-👉 Zenodo DOI: INSERT_DOI_HERE
-(Example: https://doi.org/10.5281/zenodo.xxxxxxx)
+Zenodo DOI: INSERT_DOI_HERE
 
 The processed data provided in this repository were generated entirely from the Zenodo raw data using the scripts in /scripts.
 
-# Citation
+# 📝 Citation
 If you use the code or data, please cite:
 INSERT_CITATION_HERE
 
 # 🤝 Contact
 For computational questions, please reach out to:
+
+
 **Veronika Schäpertöns**
+
+
 University of Salzburg
+
+
 📧 veronika.schaepteroens@plus.ac.at
 
 Bioprocessing aspects to be directed to:
+
+
 **Larissa Hofer**
+
 BOKU University
+
 📧 larissa.hofer@boku.ac.at
 
 Any questions regarding the inact mass spectrometry analysis can be addressed to:
+
+
 **Thomas Berger**
+
+
 University of Salzburg
+
+
 📧 thomas.berger2@plus.ac.at
