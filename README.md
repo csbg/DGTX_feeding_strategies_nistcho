@@ -2,7 +2,7 @@
 
 ## 📄 Overview
 
-This repository contains the analysis scripts, processed datasets, and figure-generation code for the publication.
+This repository contains the analysis scripts and figure-generation R codes for the publication.
 
 In this study, we systematically investigate how distinct fed-batch feeding strategies modulate cellular performance
 and monoclonal antibody (mAb) critical quality attributes (CQAs) in the NISTCHO cell line. NISTCHO, developed by
@@ -29,21 +29,18 @@ INSERT_CITATION_HERE
 
 ## 🤝 Contact
 For computational questions, please reach out to:
-
 **Veronika Schäpertöns**
 University of Salzburg
 📧 **veronika.schaepertoens@plus.ac.at**  
 🔗 **GitHub:** [@VSchaepertoens](https://github.com/VSchaepertoens) 
 
 For bioprocessing-related questions, please contact:
-
 **Larissa Hofer**  
 BOKU University
 📧 **larissa.hofer@boku.ac.at**  
 🔗 **GitHub:** [@larissahofer](https://github.com/larissahofer)  
 
 Any questions regarding the inact mass spectrometry analysis can be addressed to:
-
 **Thomas Berger**  
 University of Salzburg
 📧 **thomas.berger2@plus.ac.at**  
