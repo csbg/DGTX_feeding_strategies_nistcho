@@ -30,31 +30,20 @@ INSERT_CITATION_HERE
 # 🤝 Contact
 For computational questions, please reach out to:
 
-
 **Veronika Schäpertöns**
-
-
 University of Salzburg
+📧 **veronika.schaepertoens@plus.ac.at**  
+🔗 **GitHub:** [@VSchaepertoens](https://github.com/VSchaepertoens) 
 
+For bioprocessing-related questions, please contact:
 
-📧 veronika.schaepteroens@plus.ac.at
-
-Bioprocessing aspects to be directed to:
-
-
-**Larissa Hofer**
-
+**Larissa Hofer**  
 BOKU University
-
-📧 larissa.hofer@boku.ac.at
+📧 **larissa.hofer@boku.ac.at**  
+🔗 **GitHub:** [@larissahofer](https://github.com/larissahofer)  
 
 Any questions regarding the inact mass spectrometry analysis can be addressed to:
 
-
-**Thomas Berger**
-
-
+**Thomas Berger**  
 University of Salzburg
-
-
-📧 thomas.berger2@plus.ac.at
+📧 **thomas.berger2@plus.ac.at**  
