@@ -22,7 +22,7 @@
 ## -------------------------------------------------------------------
 
 library(tidyverse)
-library(ggpubr) # stat_pvalue_manual
+library(ggpubr)
 library(ggrepel)
 library(here)
 
