@@ -23,3 +23,4 @@ staging/
 *.DS_Store
 *.gitignore
 /.vscode
+scripts/data_processing.R
