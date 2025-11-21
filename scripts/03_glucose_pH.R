@@ -1,5 +1,5 @@
 ## -------------------------------------------------------------------
-## Script: 03_glucose_timecourse_plots.R
+## Script: 03_glucose_pH.R
 ## Purpose:
 ##   - Read glucose measurements from FB2 + FB4 runs.
 ##   - Compute mean ± SE glucose per condition and timepoint.
