@@ -316,6 +316,7 @@ ggsave(here("results", "qp_all_comparisons.pdf"),
 ## 9. Barplot of average qp with only comparisons vs STD
 ## -------------------------------------------------------------------
 
+# Figure 2B
 qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = mean_qp * 24)) +
   geom_bar(
     aes(fill = Condition),
