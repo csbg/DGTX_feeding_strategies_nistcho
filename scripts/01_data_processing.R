@@ -49,5 +49,5 @@ avg_df <- df_filtered %>%
     mutate(is_last = ifelse(mean_hours == max(mean_hours), TRUE, FALSE))
 
 
-# write averafe csv
+# write average csv
 write.csv(avg_df, here("data", "vicell_avg.csv"), row.names = FALSE)
