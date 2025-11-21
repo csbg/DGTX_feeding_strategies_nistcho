@@ -70,9 +70,14 @@ IVCD <- df %>%
   ) %>%
   select(-VCD_t1, -VCD_t2)
 
-## If you want to save the individual IVCD timecourse per replicate:
-write.csv(IVCD, here("results", "01_IVCD_individual.csv"),
-##           row.names = FALSE)
+IVCD <- IVCD %>%
+  mutate(
+    Condition = dplyr::recode(Condition, !!!recode_condition),
+    Condition = factor(Condition, levels = condition_levels)
+  )
+
+## save the individual IVCD timecourse per replicate
+write.csv(IVCD, here("results", "01_IVCD_individual.csv"), row.names = FALSE)
 
 
 ## -------------------------------------------------------------------
@@ -148,8 +153,7 @@ IVCD_avg <- IVCD %>%
   mutate(is_last = mean_hours == max(mean_hours)) %>% # flag final time point
   ungroup()
 
-write.csv(IVCD_avg, here("results", "02_IVCD_averaged.csv"),
-          row.names = FALSE)
+write.csv(IVCD_avg, here("results", "02_IVCD_averaged.csv"), row.names = FALSE)
 ## -------------------------------------------------------------------
 ## 5. IVCD timecourse plot
 ## -------------------------------------------------------------------
