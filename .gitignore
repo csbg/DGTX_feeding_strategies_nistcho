@@ -24,3 +24,5 @@ staging/
 *.gitignore
 /.vscode
 scripts/data_processing.R
+*.js
+*.css
