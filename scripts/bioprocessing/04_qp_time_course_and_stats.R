@@ -4,8 +4,8 @@
 ##   - Calculate cell-specific productivity (qp) from titer and IVCD data.
 ##   - Plot qp time courses (pg/cell/day) for all feeding strategies.
 ##   - Test differences in average qp between feeding strategies using
-##     Welch ANOVA + Games–Howell post hoc (non-normal residuals).
-##   - Generate barplots of average qp with:
+##     one-way ANOVA + Tukey HSD post hoc.
+##   - Generate bar plots of average qp with:
 ##       (1) all pairwise comparisons annotated
 ##       (2) only comparisons vs STD annotated.
 ##
@@ -15,18 +15,16 @@
 ##
 ## Outputs:
 ##   - results/qp_timecourse.png
-##   - results/qp_welch_gameshowell_results.csv
+##   - results/qp_anova_tukey_results.csv
 ##   - results/qp_all_comparisons.pdf
 ##   - results/qp_vs_STD.pdf
 ## -------------------------------------------------------------------
 
 library(tidyverse)
-library(readr)
-library(ggpubr) # stat_pvalue_manual
+library(ggpubr)   
 library(here)
 library(ggrepel)
-library(rstatix) # welch_anova_test, games_howell_test
-library(car) # leveneTest
+library(car)      
 
 ## -------------------------------------------------------------------
 ## 1. Load titer and IVCD data
@@ -53,11 +51,11 @@ merged_df <- titer_df %>%
   left_join(IVCD, by = c("Replicate", "Condition", "Hours")) %>%
   select(Replicate, Condition, Hours, IVCD_sum, Titer_µg.mL) %>%
   mutate(
-    Hours = round(Hours, 0) # round time to full hours (safety/consistency)
+    Hours = round(Hours, 0)  # round time to full hours (safety/consistency)
   ) %>%
   arrange(Condition, Replicate, Hours)
 
-# Calculate qp per interval: Δc / ΔIVCD per replicate & condition
+# Calculate qp per interval: Δc / ΔIVCD per replicate & condition.
 # qp units depend on input; here we later plot qp * 24 as "pg/cell/day".
 titer_qp <- merged_df %>%
   group_by(Condition, Replicate) %>%
@@ -69,7 +67,7 @@ titer_qp <- merged_df %>%
   ) %>%
   ungroup()
 
-# Keep only rows where qp can be calculated (i.e., skip first TP per replicate)
+# Keep only rows where qp can be calculated (i.e. skip first TP per replicate)
 titer_qp_clean <- titer_qp %>%
   filter(!is.na(qp))
 
@@ -81,11 +79,14 @@ titer_qp_summary <- titer_qp_clean %>%
   group_by(Condition, Hours) %>%
   summarise(
     mean_qp = mean(qp, na.rm = TRUE),
-    se_qp   = sd(qp, na.rm = TRUE) / sqrt(n()),
+    n       = sum(!is.na(qp)),
+    sd_qp   = sd(qp, na.rm = TRUE),
+    se_qp   = ifelse(n > 1, sd_qp / sqrt(n), NA_real_),
     .groups = "drop"
   ) %>%
   mutate(
-    Condition = factor(Condition,
+    Condition = factor(
+      Condition,
       levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")
     ),
     Hour_ID = as.numeric(Hours)
@@ -156,14 +157,15 @@ qp_timecourse <- ggplot(
   ) +
   scale_color_manual(
     values = condition_colors,
-    name   = "Feeding Strategy",
+    name   = "Feeding strategy",
     guide  = guide_legend(nrow = 1)
   ) +
   scale_x_continuous(limits = c(0, 295), breaks = seq(24, 264, 48))
 
 plot(qp_timecourse)
 
-ggsave(here("results", "qp_timecourse.png"),
+ggsave(
+  here("results", "qp_timecourse.png"),
   plot   = qp_timecourse,
   units  = "cm",
   height = 10,
@@ -184,87 +186,104 @@ qp_repl <- titer_qp_clean %>%
     .groups = "drop"
   ) %>%
   mutate(
-    Condition = factor(Condition,
+    Condition = factor(
+      Condition,
       levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")
     )
   )
 
-# 5.2 Condition-level mean and SE (for barplots)
+# 5.2 Condition-level mean and SE (for bar plots)
 qp_cond <- qp_repl %>%
   group_by(Condition) %>%
   summarise(
-    mean_qp = mean(mean_qp),
-    se_qp   = sd(mean_qp) / sqrt(n()),
-    n       = n(),
-    .groups = "drop"
+    average_qp = mean(mean_qp, na.rm = TRUE),
+    n          = sum(!is.na(mean_qp)),
+    sd_qp      = sd(mean_qp, na.rm = TRUE),
+    se_qp      = ifelse(n > 1, sd_qp / sqrt(n), NA_real_),
+    .groups    = "drop"
   )
 
 ## -------------------------------------------------------------------
-## 6. Statistical testing: Welch ANOVA + Games–Howell
+## 6. Statistical testing: One-way ANOVA + Tukey HSD
 ## -------------------------------------------------------------------
 
-# Classical one-way ANOVA (used only to inspect residuals; not for inference)
+# Classical one-way ANOVA
 anova_qp <- aov(mean_qp ~ Condition, data = qp_repl)
+summary(anova_qp)
+
+# Extract residuals for diagnostics
 res <- residuals(anova_qp)
 
-# Normality of residuals: Shapiro–Wilk
-# (Result you observed: W ~ 0.91, p = 0.036 -> NOT normal)
+# Normality of residuals: Shapiro–Wilk (interpret outside the script)
 shapiro.test(res)
 
 # Homogeneity of variance: Levene test
-# (Result you observed: p = 0.386 -> equal variances)
 leveneTest(mean_qp ~ Condition, data = qp_repl)
 
-# Since residuals are non-normal, we rely on Welch ANOVA + Games–Howell
+# Post hoc test: Tukey HSD
+tukey_qp <- TukeyHSD(anova_qp, "Condition")
+tukey_qp
 
-#kruskal-wallis test r anschauen
-welch_test <- welch_anova_test(qp_repl, mean_qp ~ Condition)
-welch_test
+# Extract pairwise condition comparisons as data frame
+tukey_df <- as.data.frame(tukey_qp$Condition)
 
-# Games–Howell post hoc for all pairwise comparisons
-gh_test <- games_howell_test(qp_repl, mean_qp ~ Condition)
-gh_test
+# Save ANOVA + Tukey results for reproducibility
+tukey_out <- tukey_df %>%
+  rownames_to_column(var = "Comparison")
 
-# Save Welch + Games–Howell results for reproducibility
-write.csv(gh_test,
-  here("results", "qp_welch_gameshowell_results.csv"),
+write.csv(
+  tukey_out,
+  here("results", "qp_anova_tukey_results.csv"),
   row.names = FALSE
 )
 
 ## -------------------------------------------------------------------
-## 7. Prepare annotation dataframes for stat_pvalue_manual
+## 7. Prepare annotation data frames for stat_pvalue_manual
 ## -------------------------------------------------------------------
 
-# Base y-position for brackets (in qp * 24 units)
-base_y <- max(qp_cond$mean_qp * 24) * 1.05
-
-# 7.1 ALL pairwise comparisons (significant + non-significant)
-gh_all_anno <- gh_test %>%
+# Assign significance symbols based on adjusted p-values
+tukey_df <- tukey_df %>%
   mutate(
-    Significance = p.adj.signif, # "ns", "*", "**", "***"
-    y.position   = base_y
+    Significance = case_when(
+      `p adj` < 0.001 ~ "***",  # highly significant
+      `p adj` < 0.01  ~ "**",   # moderately significant
+      `p adj` < 0.05  ~ "*",    # significant
+      TRUE            ~ "ns"    # not significant
+    )
   )
 
-# 7.2 Only comparisons vs STD (still keep ns)
-gh_STD_anno <- gh_all_anno %>%
+# Base y-position for brackets (in qp * 24 units)
+base_y <- max(qp_cond$average_qp * 24, na.rm = TRUE) * 1.1
+
+# Prepare annotation data frame for stat_pvalue_manual
+tukey_df_anno <- tukey_df %>%
+  rownames_to_column(var = "Comparison") %>%
+  separate(Comparison, into = c("group1", "group2"), sep = "-") %>%
+  mutate(
+    .y.        = "average_qp",  # response variable in the bar plots below
+    y.position = base_y
+  )
+
+# Subset: only comparisons vs STD
+tukey_anno_filtered <- tukey_df_anno %>%
   filter(group1 == "STD" | group2 == "STD")
 
 ## -------------------------------------------------------------------
-## 8. Barplot of average qp with ALL pairwise comparisons
+## 8. Bar plot of average qp with ALL pairwise comparisons
 ## -------------------------------------------------------------------
 
-qp_bar_all <- ggplot(qp_cond, aes(x = Condition, y = mean_qp * 24)) +
+qp_bar_all <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   geom_bar(
     aes(fill = Condition),
     stat     = "identity",
     position = position_dodge(width = 0.95),
     color    = "black",
-    size     = 0.5
+    linewidth = 0.5
   ) +
   geom_errorbar(
     aes(
-      ymin = (mean_qp - se_qp) * 24,
-      ymax = (mean_qp + se_qp) * 24
+      ymin = (average_qp - se_qp) * 24,
+      ymax = (average_qp + se_qp) * 24
     ),
     width = 0.2,
     position = position_dodge(0.9)
@@ -289,23 +308,24 @@ qp_bar_all <- ggplot(qp_cond, aes(x = Condition, y = mean_qp * 24)) +
     legend.text = element_text(),
     legend.box = "horizontal"
   ) +
-  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 15, 5)) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 5)) +
   scale_fill_manual(
     values = condition_colors,
-    name   = "Feeding Strategy",
+    name   = "Feeding strategy",
     guide  = guide_legend(nrow = 1)
   ) +
   stat_pvalue_manual(
-    gh_all_anno,
-    label = "Significance", # use "ns", "*", "**", "***"
+    tukey_df_anno,
+    label         = "Significance",  # use "ns", "*", "**", "***"
     step.increase = 0.2,
-    label.size = 3,
-    size = 0.6
+    label.size    = 3,
+    size          = 0.6
   )
 
 plot(qp_bar_all)
 
-ggsave(here("results", "qp_all_comparisons.pdf"),
+ggsave(
+  here("results", "qp_all_comparisons.pdf"),
   plot   = qp_bar_all,
   bg     = "white",
   dpi    = 300,
@@ -315,22 +335,21 @@ ggsave(here("results", "qp_all_comparisons.pdf"),
 )
 
 ## -------------------------------------------------------------------
-## 9. Barplot of average qp with only comparisons vs STD
+## 9. Bar plot of average qp with only comparisons vs STD
 ## -------------------------------------------------------------------
 
-# Figure 2B
-qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = mean_qp * 24)) +
+qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   geom_bar(
     aes(fill = Condition),
     stat     = "identity",
     position = position_dodge(width = 0.95),
     color    = "black",
-    size     = 0.5
+    linewidth = 0.5
   ) +
   geom_errorbar(
     aes(
-      ymin = (mean_qp - se_qp) * 24,
-      ymax = (mean_qp + se_qp) * 24
+      ymin = (average_qp - se_qp) * 24,
+      ymax = (average_qp + se_qp) * 24
     ),
     width = 0.2,
     position = position_dodge(0.9)
@@ -357,20 +376,21 @@ qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = mean_qp * 24)) +
   ) +
   scale_fill_manual(
     values = condition_colors,
-    name   = "Feeding Strategy",
+    name   = "Feeding strategy",
     guide  = guide_legend(nrow = 1)
   ) +
   stat_pvalue_manual(
-    gh_STD_anno,
-    label = "Significance",
+    tukey_anno_filtered,
+    label         = "Significance",
     step.increase = 0.1,
-    label.size = 3,
-    size = 0.6
+    label.size    = 3,
+    size          = 0.6
   )
 
 plot(qp_bar_STD)
 
-ggsave(here("results", "qp_vs_STD.pdf"),
+ggsave(
+  here("results", "qp_vs_STD.pdf"),
   plot   = qp_bar_STD,
   bg     = "white",
   dpi    = 300,
@@ -378,4 +398,3 @@ ggsave(here("results", "qp_vs_STD.pdf"),
   height = 15,
   units  = "cm"
 )
-
