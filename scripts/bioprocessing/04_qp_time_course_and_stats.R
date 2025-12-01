@@ -216,6 +216,8 @@ shapiro.test(res)
 leveneTest(mean_qp ~ Condition, data = qp_repl)
 
 # Since residuals are non-normal, we rely on Welch ANOVA + Games–Howell
+
+#kruskal-wallis test r anschauen
 welch_test <- welch_anova_test(qp_repl, mean_qp ~ Condition)
 welch_test
 
