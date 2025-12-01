@@ -70,14 +70,6 @@ IVCD <- df %>%
   ) %>%
   select(-VCD_t1, -VCD_t2)
 
-IVCD <- IVCD %>%
-  mutate(
-    Condition = dplyr::recode(Condition, !!!recode_condition),
-    Condition = factor(Condition, levels = condition_levels)
-  )
-
-## save the individual IVCD timecourse per replicate
-write.csv(IVCD, here("results", "01_IVCD_individual.csv"), row.names = FALSE)
 
 
 ## -------------------------------------------------------------------
@@ -139,6 +131,10 @@ IVCD <- IVCD %>%
     Condition = dplyr::recode(Condition, !!!recode_condition),
     Condition = factor(Condition, levels = condition_levels)
   )
+
+## save the individual IVCD timecourse per replicate
+write.csv(IVCD, here("results", "01_IVCD_individual.csv"), row.names = FALSE)
+
 
 # Average IVCD over replicates at each time point per condition
 IVCD_avg <- IVCD %>%
