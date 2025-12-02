@@ -56,9 +56,21 @@ glycoforms_order <- c("none/G0F",
                       "G1F/G2F",
                       "G2F/G2F")
 
+glycoforms_order_dots <- rev(c("G2F · G2F",
+                          "G1F · G2F",
+                          "G1F · G1F",
+                          "G0F · G1F",
+                          "G0F · G0F",
+                          "G0 · G0F", 
+                          "G0 · G0",
+                          "none · G2F", 
+                          "none · G1F", 
+                          "none · G0F"))
+
 #change / for ·  in glycoform1
 subset_dataset <- subset_dataset %>%
   mutate(glycoform1 = gsub("/", " · ", glycoform1))
+
   
 # condition effects -------------------------------------------------------
 # plot the abundances
@@ -201,7 +213,7 @@ pval_scale_log <- -log10(pval_scale)
 limma_dotplot <- ggplot(res_contr2, aes(y = coef, x = modcom, color = logFC, size = -log10(adj.P.Val))) +
   geom_point() +
   facet_wrap(~time_group) + 
-  scale_color_gradient2(expression(log[2]*"FC"),
+  scale_color_gradient2(name = expression(bold(log[2]*"FC")),
                         high = "red",
                         mid = "white",
                         low = "blue",
@@ -255,7 +267,8 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/fig
        dpi = 600)
 
 
-time point effects ------------------------------------------------------
+# time point effects ------------------------------------------------------
+#change / for ·  in glycoform1
 # subset limma results 
 res_contr1 <- res_withinCondition_timepoint %>%
   # filter(coef %in% c("B_A_120", "B_A_264",  "C_B_120", "C_G_120", "C_G_240","G_A_120","C_A_120")) %>%
@@ -279,6 +292,8 @@ res_contr1 <- res_withinCondition_timepoint %>%
     adj.P.Val > 0.05 ~ NA_real_,
     TRUE ~ adj.P.Val
   )) %>%
+  mutate(modcom = gsub("/", " · ", modcom)) %>%
+  mutate(modcom = factor(modcom, levels = glycoforms_order_dots)) %>%
   {.} 
 
 #set the same scale for logFC
@@ -314,8 +329,8 @@ limma_dotplot <- ggplot(res_contr1, aes(
     ymin = ymin, ymax = ymax), 
     fill = NA, color = "grey", linewidth = 0.5, inherit.aes = FALSE) +
   
-  scale_color_gradient2(
-    high = "red", mid = "white", low = "blue", 
+  scale_color_gradient2(name = expression(bold(log[2]*"FC")),
+    high = "red", mid = "white", low = "blue", breaks = c(-1, 0, 1),
     midpoint = 0, limits = c(min_logfc, max_logfc)
   ) +
   
@@ -333,6 +348,7 @@ limma_dotplot <- ggplot(res_contr1, aes(
     text = element_text(size = 11, family = "sans", colour = "black"),
     axis.line = element_line(),
     axis.text = element_text(color = "black", size = 11),
+    axis.text.y = element_text(hjust = 0.5),
     axis.title.y = element_text(hjust = 0.5, face = "bold"),
     axis.title.x = element_text(hjust = 0.5, face = "bold"),
     panel.grid.major = element_blank(),
@@ -354,7 +370,7 @@ limma_dotplot <- ggplot(res_contr1, aes(
   # )
 
 plot(limma_dotplot)
-ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/time_point_effects_limma_new_theme.png"),
+ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/figure_4a.png"),
        height = 150,
        width = 150,
        units = "mm",
@@ -363,7 +379,7 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/tim
 
 # plot fractional abundance per glycoform G0/G0
   data_to_plot <- subset_dataset %>%
-    filter(glycoform1 == "G0/G0") %>%
+    filter(glycoform1 == "G0 · G0") %>%
     # separate_wider_delim(cols = condition_br_tp, 
     #                      delim = "_",
     #                      names = c("condition", "br", "timepoint"),
@@ -413,21 +429,22 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/tim
       axis.line = element_line(),
       axis.text = element_text(color = "black", size = 11),
       axis.title.y = element_text(hjust = 0.5, face = "bold"),
-      axis.title.x = element_text(hjust = 0.5, face = "bold"),
+      axis.title = element_text(hjust = 0.5, face = "bold"),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.minor.y = element_blank(),
-      panel.border = element_blank()
+      panel.border = element_blank(),
+      plot.title = element_text(face = "bold")
     ) +
     labs(x = "Timepoint [h]", y = "Fractional abundance (%)", fill = "Condition", 
-         title = "G0/G0")
+         title = "G0 · G0")
   
   # Print the plot to the screen
   print(g0_g0)
   
   # plot fractional abundance per glycoform G0F/G0F
   data_to_plot <- subset_dataset %>%
-    filter(glycoform1 == "G0F/G0F") %>%
+    filter(glycoform1 == "G0F · G0F") %>%
     # separate_wider_delim(cols = condition_br_tp, 
     #                      delim = "_",
     #                      names = c("condition", "br", "timepoint"),
@@ -483,13 +500,14 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/tim
       plot.background = element_rect(fill = "white"),  # Set plot background color
       panel.background = element_rect(fill = "white"),  # Set panel background color
       legend.position = "none",
+      plot.title = element_text(face = "bold")
       # legend.title = element_text(face = "bold"),
       # legend.text = element_text(),
       # legend.box = "horizontal"
     ) +
     
     labs(x = "", y = "Fractional abundance (%)", fill = "Condition", 
-         title = "G0F/G0F")
+         title = "G0F · G0F")
   
   # Print the plot to the screen
   print(g0f_g0f)
@@ -508,7 +526,7 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/tim
   
   plot(combined_abundance)
   
-  ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/time_point_effects_frac_ab_new_theme_color.png"),
+  ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/figure_4b.png"),
          height = 150,
          width = 150,
          units = "mm",
@@ -532,7 +550,7 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/tim
   )
   
 
-  ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/time_point_effects.png"),
+  ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/figure_4.pdf"),
          height = 130,
          width = 210,
          units = "mm",
