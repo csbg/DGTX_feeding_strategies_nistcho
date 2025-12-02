@@ -9,7 +9,7 @@ library(fs)
 
 abundance_data <- NULL
 # Specify the directory path
-directory_path <- "analysis/cafog/"
+directory_path <- "analysis/cafog_br4/"
 
 # List all directories in the specified path
 folders <- dir_ls(directory_path, type = "directory")
