@@ -21,10 +21,10 @@ Below is an overview of the purpose and outputs of each script:
         - `/01_growth_titer_lactate_plots.R`: Generates the main time-course plots for growth, titer, and lactate concentration for all feeding strategies.
         - `/02_IVCD_stats.R`: Calculates Integrated Viable Cell Density (IVCD) per replicate and timepoint. Includes statistical analysis and visualization.
         - `/03_glucose_pH.R`: Processes offline glucose and pH measurements.
-        - `04_qp_time_course_and_stats.R`: Computes cell specific production rates for cNISTmAb. Time course plots and statistical analysis included for the final titers.
-        - `05_qp_glucose.R`: Computes cell-specific glucose consumption rates (qGlc) over the feeding windows.
-        - `06_qp_lactate.R`: Computes cell-specific lactate production/consumption rate (qLac) between consecutive time points.
-        - `07_specific_growthrate.R`: Calculates specific growth rate (µ)from VCD measurements.
+        - `/04_qp_time_course_and_stats.R`: Computes cell specific production rates for cNISTmAb. Time course plots and statistical analysis included for the final titers.
+        - `/05_qp_glucose.R`: Computes cell-specific glucose consumption rates (qGlc) over the feeding windows.
+        - `/06_qp_lactate.R`: Computes cell-specific lactate production/consumption rate (qLac) between consecutive time points.
+        - `/07_specific_growthrate.R`: Calculates specific growth rate (µ) from VCD measurements.
 
     - `/mass_spectrometry`:
     - `/computational_analysis`:
