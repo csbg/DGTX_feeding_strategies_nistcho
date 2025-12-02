@@ -4,7 +4,7 @@ library(here)
 library(limma)
 suppressPackageStartupMessages(library(ComplexHeatmap))
 library(tidyverse)
-# library(colorRamp2)
+library(colorRamp2)
 library(compositions)
 library(viridisLite)
 library(ggforce)
@@ -17,8 +17,20 @@ load(file = input_file_path)
 data.matrix
 meta
 
+#Reordering of the matrix by timepoint and the feeding strategy
+colnames(data.matrix)
+
+desired_order <- c("A_1_120_fb4_Dec24", "A_2_120_fb4_Dec24", "A_3_120_fb4_Dec24","A_4_120_fb4_Apr25",
+                  "B_1_120_fb4_Dec24", "B_2_120_fb4_Dec24", "B_3_120_fb4_Dec24", "B_4_120_fb4_Dec24",
+                  "C_1_120_fb4_Dec24", "C_2_120_fb4_Dec24", "C_3_120_fb4_Dec24", 
+                   
+)
+
 data.matrix_120 <- data.matrix[, grepl("120", colnames(data.matrix))]
 data.matrix_264 <- data.matrix[, grepl("264|240", colnames(data.matrix))]
+
+strategy_order <- c("STD", "HiF", "LoG", "HIP", "STD+", "HIP+", "LoG+")
+
 
 meta <- meta %>%
   mutate(condition_tp = paste(condition, timepoint, sep = "_")) %>%
@@ -31,8 +43,15 @@ mutate(condition_abrev = case_when(
   condition == "E" ~ "HIP",
   condition == "F" ~ "HIP+")
 ) %>%
-  mutate(condition_abrev = factor(condition_abrev, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+"))) %>%
+  mutate(phase = ifelse(timepoint == "120", "early", "late") ) %>%
+  mutate(condition_abrev = factor(condition_abrev, levels = strategy_order),
+         phase = factor(phase,levels = c("early", "late"))) %>%
   mutate(condition_abrev_tp = paste(condition_abrev, timepoint, sep = "_"))
+  
+meta <- meta %>%
+    arrange(phase, condition_abrev)
+
+data.matrix <- data.matrix[, meta$sample_name, drop = FALSE]
 
 meta_120 <- meta %>% filter(timepoint == "120")
 meta_264 <- meta %>% filter(timepoint %in% c("240","264"))
@@ -805,13 +824,14 @@ png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp_new_theme
     res = 600)
 spearman_correlations(clr_data.matrix,
                       meta_data = meta,
+                      show_row_names = FALSE,
                       annotation_legend_side = "bottom",
-                      cluster_rows = TRUE,
-                      cluster_columns = TRUE)
+                      cluster_rows = FALSE,
+                      cluster_columns = FALSE)
 
 dev.off()
 
-png(filename = "figures/br_4/explore_abundance/hc_clr_120_ann_condition_tp.png",
+png(filename = "figures/br_4/explore_abundance/figure_3b.png",
     width = 130,
     height = 120,
     units = "mm",

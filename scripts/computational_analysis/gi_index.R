@@ -4,7 +4,7 @@ library(ggpubr)
 
 # load abundance data -----------------------------------------------------
 
-load("analysis/corr_abundance_data.RData")
+load("analysis/corr_abundance_data_2.RData")
 
 # calculate GI ---------------------------------------------------------
 
@@ -103,8 +103,8 @@ color_mapping_condition <- c(
   "LoG" = "#a6cee3"
 )
 
-save(gi_summary, gi_stats, file = "analysis/galactosylation_index.RData")
-load("analysis/galactosylation_index.RData")
+save(gi_summary, gi_stats, file = "analysis/galactosylation_index_br4.RData")
+load("analysis/galactosylation_index_br4.RData")
 
 
 
