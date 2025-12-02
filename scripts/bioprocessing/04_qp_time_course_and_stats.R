@@ -24,32 +24,59 @@ library(tidyverse)
 library(ggpubr)   
 library(here)
 library(ggrepel)
-library(car)      
+library(car)
 
+## -------------------------------------------------------------------
+# 0. Condition mapping and factor levels
+## -------------------------------------------------------------------
+
+condition_levels <- c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")
+
+condition_map <- c(
+  "A" = "STD",
+  "B" = "STD+",
+  "C" = "LoG+",
+  "D" = "HiF",
+  "E" = "HIP",
+  "F" = "HIP+",
+  "G" = "LoG"
+)
+
+# Common color palette for conditions
+condition_colors <- c(
+  "STD"  = "grey50",
+  "STD+" = "grey20",
+  "LoG+" = "#1f78b4",
+  "HiF"  = "#f1a340",
+  "HIP"  = "#b2df8a",
+  "HIP+" = "#33a02c",
+  "LoG"  = "#a6cee3"
+)
 ## -------------------------------------------------------------------
 ## 1. Load titer and IVCD data
 ## -------------------------------------------------------------------
 
 # Titer time course (µg/mL); add "R" prefix to replicate IDs for consistency
-titer_df <- read.csv(here("data", "03_ViCell_titer.csv")) %>%
+titer_df <- read.csv(here("data", "03_titer.csv")) %>%
   mutate(Replicate = paste0("R", Replicate))
 
-# IVCD time course per replicate (same Replicate/Condition/Hours structure)
-IVCD <- read.csv(here("results", "01_IVCD_individual.csv"))
+titer_df <- titer_df %>%
+  mutate(
+    Condition = dplyr::recode(Condition, !!!condition_map),
+    Condition = factor(Condition, levels = condition_levels)
+  )
 
-## Expected IVCD columns (minimum):
-##   - Replicate
-##   - Condition
-##   - Hours
-##   - IVCD_sum  (cumulative integral viable cell density)
+# IVCD time course per replicate (same Replicate/Condition/Hours structure)
+IVCD <- read.csv(here("results", "01_IVCD_individual.csv")) %>%
+  select(-...1)
 
 ## -------------------------------------------------------------------
 ## 2. Merge titer + IVCD and calculate qp between time points
 ## -------------------------------------------------------------------
 
-merged_df <- titer_df %>%
-  left_join(IVCD, by = c("Replicate", "Condition", "Hours")) %>%
-  select(Replicate, Condition, Hours, IVCD_sum, Titer_µg.mL) %>%
+merged_df <- IVCD %>%
+  left_join(titer_df, by = c("Replicate", "Condition", "TP")) %>%
+  select(Replicate, Condition, Hours, IVCD_sum, Titer_ug.mL, TP) %>%
   mutate(
     Hours = round(Hours, 0)  # round time to full hours (safety/consistency)
   ) %>%
@@ -61,7 +88,7 @@ titer_qp <- merged_df %>%
   group_by(Condition, Replicate) %>%
   arrange(Hours, .by_group = TRUE) %>%
   mutate(
-    delta_c_µg.mL = c(NA, diff(Titer_µg.mL)),
+    delta_c_µg.mL = c(NA, diff(Titer_ug.mL)),
     delta_IVCD    = c(NA, diff(IVCD_sum)),
     qp            = ifelse(delta_IVCD == 0, NA, delta_c_µg.mL / delta_IVCD)
   ) %>%
@@ -95,16 +122,7 @@ titer_qp_summary <- titer_qp_clean %>%
   mutate(is_last = Hours == max(Hours)) %>%
   ungroup()
 
-# Common color palette for conditions
-condition_colors <- c(
-  "STD"  = "grey50",
-  "STD+" = "grey20",
-  "LoG+" = "#1f78b4",
-  "HiF"  = "#f1a340",
-  "HIP"  = "#b2df8a",
-  "HIP+" = "#33a02c",
-  "LoG"  = "#a6cee3"
-)
+
 
 ## -------------------------------------------------------------------
 ## 4. qp time course plot (pg/cell/day)
@@ -214,7 +232,8 @@ summary(anova_qp)
 # Extract residuals for diagnostics
 res <- residuals(anova_qp)
 
-# Normality of residuals: Shapiro–Wilk (interpret outside the script)
+# Normality of residuals: Shapiro–Wilk
+# Result: W = 0.91331, p-value = 0.03614
 shapiro.test(res)
 
 # Homogeneity of variance: Levene test

@@ -317,18 +317,17 @@ ggsave("results/titer.png",
 # Recode conditions in lactate data and drop original "Con" column
 lactate <- lactate %>%
   mutate(
-    Condition = dplyr::recode(Con, !!!recode_condition),
+    Condition = dplyr::recode(Condition, !!!recode_condition),
     Condition = factor(Condition, levels = condition_levels)
-  ) %>%
-  select(-Con)
+  )
 
 # Average lactate per condition/timepoint and compute SE
 lactate_avg <- lactate %>%
-  group_by(Condition, h) %>%
+  group_by(Condition, Hours) %>%
   summarise(
     mean_lactate_mM = mean(c_mM),
     se_lactate_mM   = sd(c_mM) / sqrt(n()),
-    mean_hours      = mean(h),
+    mean_hours      = mean(Hours),
     .groups         = "drop"
   ) %>%
   group_by(Condition) %>%
