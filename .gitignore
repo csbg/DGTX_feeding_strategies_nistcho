@@ -26,3 +26,4 @@ staging/
 scripts/data_processing.R
 *.js
 *.css
+*00_data_processing.R
