@@ -16,25 +16,25 @@ input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
 
 load(file = input_file_path)
 
-color_mapping_condition <- c(
-  "A" = "#EE3377",
-  "B" = "#56B4E9",
-  "C" = "#009E73",
-  "G" = "#ffd800",
-  "D" = "#CC79A7",
-  "E" = "#EE7631",
-  "F" = "#0072B2"
-)
-
-color_mapping_condition_abrev <- c(
-  "STD" = "#EE3377",
-  "STD+" = "#56B4E9",
-  "LoG" = "#ffd800",
-  "LoG+" = "#009E73",
-  "HiF" = "#CC79A7",
-  "HIP" = "#EE7631",
-  "HIP+" = "#0072B2"
-)
+# color_mapping_condition <- c(
+#   "A" = "#EE3377",
+#   "B" = "#56B4E9",
+#   "C" = "#009E73",
+#   "G" = "#ffd800",
+#   "D" = "#CC79A7",
+#   "E" = "#EE7631",
+#   "F" = "#0072B2"
+# )
+# 
+# color_mapping_condition_abrev <- c(
+#   "STD" = "#EE3377",
+#   "STD+" = "#56B4E9",
+#   "LoG" = "#ffd800",
+#   "LoG+" = "#009E73",
+#   "HiF" = "#CC79A7",
+#   "HIP" = "#EE7631",
+#   "HIP+" = "#0072B2"
+# )
 
 color_mapping_condition_abrev <- c(
 "STD" = "grey50",
@@ -75,16 +75,16 @@ subset_dataset <- subset_dataset %>%
 # condition effects -------------------------------------------------------
 # plot the abundances
 subset_abcg <- subset_dataset %>%
-  filter(grepl("A|B|C|G", condition_br_tp)) %>%
-  # filter(grepl("D|E|F", condition_br_tp)) %>%
+  # filter(grepl("A|B|C|G", condition_br_tp)) %>%
+  filter(grepl("D|E|F", condition_br_tp)) %>%
   mutate(condition_abrev = case_when(
-    condition == "A" ~ "STD",
-    condition == "B" ~ "STD+",
-    condition == "G" ~ "LoG",
-    condition == "C" ~ "LoG+")
-    # condition == "D" ~ "HiF",
-    # condition == "E" ~ "HIP",
-    # condition == "F" ~ "HIP+"),
+    # condition == "A" ~ "STD",
+    # condition == "B" ~ "STD+",
+    # condition == "G" ~ "LoG",
+    # condition == "C" ~ "LoG+")
+    condition == "D" ~ "HiF",
+    condition == "E" ~ "HIP",
+    condition == "F" ~ "HIP+"),
   ) %>%
   group_by(timepoint, glycoform1, condition_abrev) %>%
   summarise(mean_frac_ab = mean(corr_abundance),
@@ -93,8 +93,8 @@ subset_abcg <- subset_dataset %>%
   mutate(
     glycoform1 = factor(glycoform1, levels = rev(c("G2F · G2F","G1F · G2F","G1F · G1F","G0F · G1F","G0F · G0F","G0 · G0F", "G0 · G0","none · G2F", "none · G1F", "none · G0F"))),
     # glycoform1 = factor(glycoform1, levels = rev(c("G2F/G2F","G1F/G2F","G1F/G1F","G0F/G1F","G0F/G0F","G0/G0F", "G0/G0","none/G2F", "none/G1F", "none/G0F"))),
-    condition_abrev = factor(condition_abrev, levels = c("STD","STD+","LoG","LoG+")),
-    # condition_abrev = factor(condition_abrev, levels = c("HiF","HIP","HIP+")),
+    # condition_abrev = factor(condition_abrev, levels = c("STD","STD+","LoG","LoG+")),
+    condition_abrev = factor(condition_abrev, levels = c("HiF","HIP","HIP+")),
     time_group = case_when(
       timepoint == "120" ~ "Exponential",
       timepoint %in% c("240", "264") ~ "Stationary"
@@ -161,29 +161,29 @@ plot(frac_ab_col)
 
 # subset limma results 
 res_contr2 <- res_twoConditions_oneTimepoint %>%
-  filter(coef %in% c("B_A_120", "B_A_264", "C_G_120", "B_G_120","C_G_240","C_A_120")) %>%
-  # filter(coef %in% c("E_D_120", "E_D_264", "F_E_120", "F_E_264","F_D_120","F_D_264")) %>%
+  # filter(coef %in% c("B_A_120", "B_A_264", "C_G_120", "B_G_120","C_G_240","C_A_120")) %>%
+  filter(coef %in% c("E_D_120", "E_D_264", "F_E_120", "F_E_264","F_D_120","F_D_264")) %>%
   mutate(modcom = factor(modcom, levels = glycoforms_order)) %>%
   separate(coef, 
            into = c("condition1", "condition2", "timepoint"),
            sep = "_") %>%
   mutate(condition1 = case_when(
-    condition1 == "A" ~ "STD",
-    condition1 == "B" ~ "STD+",
-    condition1 == "G" ~ "LoG",
-    condition1 == "C" ~ "LoG+")
-    # condition1 == "D" ~ "HiF",
-    # condition1 == "E" ~ "HIP",
-    # condition1 == "F" ~ "HIP+")
+    # condition1 == "A" ~ "STD",
+    # condition1 == "B" ~ "STD+",
+    # condition1 == "G" ~ "LoG",
+    # condition1 == "C" ~ "LoG+")
+    condition1 == "D" ~ "HiF",
+    condition1 == "E" ~ "HIP",
+    condition1 == "F" ~ "HIP+")
   ) %>%
   mutate(condition2 = case_when(
-    condition2 == "A" ~ "STD",
-    condition2 == "B" ~ "STD+",
-    condition2 == "G" ~ "LoG",
-    condition2 == "C" ~ "LoG+"
-    # condition2 == "D" ~ "HiF",
-    # condition2 == "E" ~ "HIP",
-    # condition2 == "F" ~ "HIP+"
+    # condition2 == "A" ~ "STD",
+    # condition2 == "B" ~ "STD+",
+    # condition2 == "G" ~ "LoG",
+    # condition2 == "C" ~ "LoG+"
+    condition2 == "D" ~ "HiF",
+    condition2 == "E" ~ "HIP",
+    condition2 == "F" ~ "HIP+"
     ),
     time_group = case_when(
       timepoint == "120" ~ "Exponential",
@@ -191,7 +191,7 @@ res_contr2 <- res_twoConditions_oneTimepoint %>%
     )
   ) %>%
   mutate(coef = paste(condition1, condition2, sep = "_vs_"),
-         # coef = factor(coef, levels = c("HIP+_vs_HiF","HIP+_vs_HIP", "HIP_vs_HiF"))
+         coef = factor(coef, levels = c("HIP+_vs_HiF","HIP+_vs_HIP", "HIP_vs_HiF"))
          ) %>%
   mutate(adj.P.Val = case_when(
   adj.P.Val > 0.05 ~ NA_real_,
@@ -260,14 +260,14 @@ ggarrange(frac_ab_col,limma_dotplot,
           ncol = 1,
           align = "v") 
 
-ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/figure_5a.png"),
+ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/figure_5b.png"),
        height = 100,
        width = 210,
        units = "mm",
        dpi = 600)
 
 
-# time point effects ------------------------------------------------------
+time point effects ------------------------------------------------------
 #change / for ·  in glycoform1
 # subset limma results 
 res_contr1 <- res_withinCondition_timepoint %>%
