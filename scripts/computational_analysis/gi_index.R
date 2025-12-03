@@ -1,6 +1,9 @@
 # calculation of galactosylation index for each technical replicate and then plotting the mean + sd
 library(tidyverse)
 library(ggpubr)
+library(dplyr)
+library(purrr)
+library(broom)
 
 # load abundance data -----------------------------------------------------
 
@@ -83,15 +86,15 @@ gi_stats$time_group <- factor(gi_stats$time_group, levels = c("exponential", "st
 gi_stats$condition <- factor(gi_stats$condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+"))
 print(gi_stats)
 
-color_mapping_condition <- c(
-  "STD" = "#EE3377",
-  "STD+" = "#56B4E9",
-  "LoG" = "#009E73",
-  "LoG+" = "#ffd800",
-  "HiF" = "#CC79A7",
-  "HIP" = "#EE7631",
-  "HIP+" = "#0072B2"
-)
+# color_mapping_condition <- c(
+#   "STD" = "#EE3377",
+#   "STD+" = "#56B4E9",
+#   "LoG" = "#009E73",
+#   "LoG+" = "#ffd800",
+#   "HiF" = "#CC79A7",
+#   "HIP" = "#EE7631",
+#   "HIP+" = "#0072B2"
+# )
 
 color_mapping_condition <- c(
   "STD" = "grey50",
@@ -107,98 +110,152 @@ save(gi_summary, gi_stats, file = "analysis/galactosylation_index_br4.RData")
 load("analysis/galactosylation_index_br4.RData")
 
 
-
-
 # statistics --------------------------------------------------------------
+gal_index_stats <- gi_stats
+gal_index_summary <- gi_summary
 
-# Check distribution 
-gi_summary_exp <- gi_summary %>%
-  filter(time_group %in% c("exponential"))
-boxplot(GI ~ condition, data = gi_summary_exp)
+pairs_to_test <- list(
+  c("STD", "STD+"),
+  c("LoG", "LoG+"),
+  c("HIP", "HIP+")
+)
 
-gi_summary_sta <- gi_summary %>%
-  filter(time_group %in% c("stationary"))
-boxplot(GI ~ condition, data = gi_summary_sta)
-
-condition_ttest <- function(data, which_strategies) {
-results <- data %>%
-  filter(condition %in% which_strategies) %>%
-  group_by(time_group) %>%
-  summarise(
-    t_test = list(t.test(GI ~ condition)),
-    wilcox = list(wilcox.test(GI ~ condition)),
-    .groups = "drop"
-  )
-
-# Extract p-values
-results <- results %>%
+t_test_results <- map_df(pairs_to_test, function(pair) {
+  map_df(c("exponential", "stationary"), function(phase) {
+    df_phase <- gal_index_summary %>% 
+      filter(time_group == phase,
+             condition %in% pair)
+    
+    t_res <- t.test(GI ~ condition, data = df_phase)
+    
+    tidy(t_res) %>%
+      mutate(
+        group1 = pair[1],
+        group2 = pair[2],
+        time_group = phase
+      )
+  })
+}) %>%
   mutate(
-    t_pval = sapply(t_test, function(x) x$p.value),
-    wilcox_pval = sapply(wilcox, function(x) x$p.value)
+    Significance = case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01  ~ "**",
+      p.value < 0.05  ~ "*",
+      TRUE ~ "ns"
+    )
   )
-}
 
-#function
-results_std <- condition_ttest(data = gi_summary,
-                which_strategies = c("STD", "STD+"))
+# Find the highest bar top per facet
+top_heights <- gal_index_stats %>%
+  mutate(top = mean_GI + sd_GI) %>%
+  group_by(time_group) %>%
+  summarise(base_top = max(top), .groups = "drop")
 
-results_log <- condition_ttest(data = gi_summary,
-                which_strategies = c("LoG", "LoG+"))
+# Build annotation df
+t_test_anno <- t_test_results %>%
+  left_join(top_heights, by = "time_group") %>%
+  group_by(time_group) %>%
+  mutate(
+    p = p.value,
+    y.position = base_top + 1
+  ) %>%
+  ungroup() %>%
+  # make sure group1/2 match x-axis values
+  mutate(
+    group1 = factor(group1, levels = levels(gal_index_stats$condition)),
+    group2 = factor(group2, levels = levels(gal_index_stats$condition))
+  )
 
-results_hip <- condition_ttest(data = gi_summary,
-                which_strategies = c("HIP", "HIP+"))
 
+
+# plot gal index as bar with sig -------------------------------------------------
+
+gal_ind_bar_sig <- ggplot(data = gal_index_stats, aes(x = condition, y = mean_GI)) +
+  geom_col(aes(fill = condition),
+           position = position_dodge(width = 0.9),
+           color = "black") +
+  geom_errorbar(
+    aes(
+      ymin = mean_GI - sd_GI,
+      ymax = mean_GI + sd_GI,
+      group = condition
+    ),
+    position = position_dodge(.9),
+    width = .5,
+    linewidth = .25
+  ) +
+  # geom_text(
+  #   aes(label = condition, fill = condition, y = 2),  # include fill here!
+  #   position = position_dodge(width = 0.9),
+  #   vjust = 0,
+  #   hjust = 0, 
+  #   angle = 90,
+  #   colour = "white",
+  #   size = 3
+  # ) +
+  facet_wrap(~time_group, 
+             labeller = labeller(time_group = c("exponential" = "Exponential",
+                                                "stationary" = "Stationary"))
+  ) +
+  # # Lines: same combined mapping
+  # geom_line(
+  #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
+  #   linewidth = 1,
+  #   position = position_dodge(width = 0.9)
+  # ) +
+  scale_fill_manual(
+    values = color_mapping_condition,
+    breaks = levels(gi_stats$condition)
+  ) +
+  # scale_color_manual(
+  #   values = color_mapping_condition,
+  #   breaks = names(color_mapping_condition)
+  # ) 
+  # Unified legend title
+  labs(
+    x = "",
+    y = "Galactosylation index (%)",
+    fill = "Strategy"
+  ) +
+  
+  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
+  theme_bw() +
+  theme(
+    text = element_text( 
+      size = 11,
+      family = "sans",
+      colour = "black"
+    ),
+    axis.line = element_line(),
+    axis.text = element_text(color = "black", size = 11),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+    axis.title.y = element_text(hjust = 0.5, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(),
+    legend.box = "horizontal"
+  ) +
+  guides(fill = guide_legend(nrow = 1)) +
+  stat_pvalue_manual(
+    t_test_anno,
+    label = "Significance",   # column with the stars
+    y.position = "y.position",
+    xmin = "group1",
+    xmax = "group2",
+    #step.increase = 0,    
+    label.size = 3,
+    size = 0.3
+  )
+
+plot(gal_ind_bar_sig)
 
 
 # plot as dotplots --------------------------------------------------------
-# ggplot() +
-#   geom_jitter(data = gi_summary, aes(x = condition, y = GI, color = condition), width = 0.2, size = 2.5) +
-#   geom_point(data = gi_stats, aes(x = condition, y = mean_GI), color = "black", size = 3, alpha = 0.5) +
-#   geom_errorbar(
-#     data = gi_stats,
-#     aes(x = condition, ymin = mean_GI - sd_GI, ymax = mean_GI + sd_GI),
-#     width = 0.2,
-#     color = "black", 
-#     alpha = 0.5
-#   ) +
-#   facet_wrap(~ time_group, ncol = 1) +
-#   scale_color_manual(values = color_mapping_condition, 
-#                      breaks = names(color_mapping_condition)) +
-#   ylim(0,40) +
-#   labs(x = "", y = "Galactosylation index (%)") +
-#   theme_minimal() +
-#   theme(
-#     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-#     panel.grid.minor = element_blank(),
-#     panel.grid.major.x = element_blank()
-#   )
-# 
-# ggsave(filename = "figures/galactosylation_index.png",
-#        width = 100,
-#        height = 150,
-#        units = "mm",
-#        dpi = 600,
-#        bg = "white")
-# 
-# ggplot(data = gi_stats) +
-#   geom_point(aes(x = time_group, y = mean_GI, color = condition)) +
-#   geom_line(aes(x = time_group, y = mean_GI, color = condition, group = condition)) +
-#   scale_color_manual(values = color_mapping_condition, 
-#                      breaks = names(color_mapping_condition)) +
-#   labs(x = "Bioprocess phase", y = "Galactosylation index (%)") +
-#   ylim(0,30) +
-#   # xlim(100, 280) +
-#   theme_bw() +
-#   theme(
-#     axis.line = element_line(colour = "black"),
-#     # axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 1),
-#     # panel.grid.minor = element_blank(),
-#     panel.grid.major.x = element_blank(),
-#     panel.grid.minor.x = element_blank(),
-#     panel.border = element_blank()
-#   )
-
-
 
 gal_ind <- ggplot(data = gi_stats) +
   # Points: color and linetype mapped to condition in one aes() call
@@ -649,7 +706,7 @@ gly_ind_bar <- ggplot(data = gi_stats, aes(x = condition, y = mean_GI)) +
   # Unified legend title
   labs(
     x = "",
-    y = "Glycation_index (%)",
+    y = "Glycation index (%)",
     fill = "Strategy"
   ) +
   
@@ -705,3 +762,14 @@ ggsave("figures/galactosylation_glycation_index_barplot_facet_time.png",
        units = "mm",
        dpi = 600,
        bg = "white")
+
+
+ggarrange(gal_ind_bar_sig,gly_ind_bar, ncol = 2, common.legend = TRUE, legend = "bottom")  
+
+ggsave("figures/figure_5_c_d.png",
+       width = 210,
+       height = 85,
+       units = "mm",
+       dpi = 600,
+       bg = "white")
+

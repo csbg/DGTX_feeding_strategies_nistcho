@@ -14,16 +14,16 @@ corr_abud_file_path <- here::here("analysis", "corr_abundance_meta_subset_vol2.R
 
 load(file = corr_abud_file_path)
 
-# Define the colors
-color_mapping_condition <- c(
-  "A" = "#EE3377",
-  "B" = "#56B4E9",
-  "C" = "#009E73",
-  "G" = "#ffd800",
-  "D" = "#CC79A7",
-  "E" = "#EE7631",
-  "F" = "#0072B2"
-)
+# # Define the colors
+# color_mapping_condition <- c(
+#   "A" = "#EE3377",
+#   "B" = "#56B4E9",
+#   "C" = "#009E73",
+#   "G" = "#ffd800",
+#   "D" = "#CC79A7",
+#   "E" = "#EE7631",
+#   "F" = "#0072B2"
+# )
 
 color_mapping_condition_abrev <- c(
   "STD" = "grey50",
@@ -366,15 +366,15 @@ ggsave(filename = paste0("figures/all_glycans_mean_sd_D_E_clr_points.png"),
 
 # plot boxplot or individual points ---------------------------------------
 # Define the colors
-color_mapping_condition <- c(
-  "A" = "#EE3377",
-  "B" = "#56B4E9",
-  "C" = "#009E73",
-  "G" = "#ffd800",
-  "D" = "#CC79A7",
-  "E" = "#EE7631",
-  "F" = "#0072B2"
-)
+# color_mapping_condition <- c(
+#   "A" = "#EE3377",
+#   "B" = "#56B4E9",
+#   "C" = "#009E73",
+#   "G" = "#ffd800",
+#   "D" = "#CC79A7",
+#   "E" = "#EE7631",
+#   "F" = "#0072B2"
+# )
 
 clr_corr_abundance %>%
   separate(condition_br_tp_batch_anbatch, 
@@ -418,6 +418,9 @@ ggsave(filename = paste0("figures/statistical_analysis/barplots/clr_allglycans_F
 
 
 # paired lollipop plots ----------------------------------------------------
+clr_corr_abundance <- clr_corr_abundance %>%
+  mutate(glycoform1 = gsub("/", " · ", glycoform1))
+
 # one condition, two time points
 plot_lollipop_time_effects <- function(clr_data,
                                        condition_to_plot = "F") {
@@ -441,9 +444,10 @@ plot_lollipop_time_effects <- function(clr_data,
       condition_tp = paste(condition, timepoint, sep = "_"),
       glycoform1 = factor(
         glycoform1, 
-        levels = c("none/G0F", "none/G1F", "none/G2F",
-                   "G0/G0", "G0/G0F", "G0F/G0F",
-                   "G0F/G1F", "G1F/G1F", "G1F/G2F", "G2F/G2F")
+        levels = rev(c("G2F · G2F","G1F · G2F","G1F · G1F","G0F · G1F","G0F · G0F","G0 · G0F", "G0 · G0","none · G2F", "none · G1F", "none · G0F"))
+        # levels = c("none/G0F", "none/G1F", "none/G2F",
+        #            "G0/G0", "G0/G0F", "G0F/G0F",
+        #            "G0F/G1F", "G1F/G1F", "G1F/G2F", "G2F/G2F")
       )
     )
   
@@ -500,6 +504,7 @@ plot_lollipop_time_effects <- function(clr_data,
       ),
       axis.line = element_line(),
       axis.text = element_text(color = "black", size = 11),
+      axis.text.y = element_text(hjust = 0.5),
       axis.title.y = element_text(hjust = 0.5, face = "bold"),
       axis.title.x = element_text(hjust = 0.5, face = "bold"),
       panel.grid.major.x = element_blank(),
@@ -548,9 +553,9 @@ final_plot <- ggarrange(
 plot(final_plot)
 
 ggsave(
-  filename = "figures/br_4/clr_transformed/final_lollipop_plot_new_theme.png",
+  filename = "figures/br_4/clr_transformed/figure_k1.pdf",
   plot = final_plot,
-  device = "png",
+  # device = "png",
   width = 7.48,
   height = 9.45,
   units = "in",
@@ -571,15 +576,16 @@ data_for_lollipop <- clr_corr_abundance %>%
     condition == "E" ~ "HIP",
     condition == "F" ~ "HIP+") 
   ) %>%
-  filter(grepl("D|E|F", condition)) %>%
+  # filter(grepl("D|E|F", condition)) %>%
   mutate(
     timepoint = as.character(timepoint),  # Ensure it's a character for plotting
     condition_tp = paste(condition_abrev, timepoint, sep = "_"),
     glycoform1 = factor(
       glycoform1, 
-      levels = c("none/G0F", "none/G1F", "none/G2F",
-                 "G0/G0", "G0/G0F", "G0F/G0F",
-                 "G0F/G1F", "G1F/G1F", "G1F/G2F", "G2F/G2F")
+      levels = rev(c("G2F · G2F","G1F · G2F","G1F · G1F","G0F · G1F","G0F · G0F","G0 · G0F", "G0 · G0","none · G2F", "none · G1F", "none · G0F"))
+      # levels = c("none/G0F", "none/G1F", "none/G2F",
+      #            "G0/G0", "G0/G0F", "G0F/G0F",
+      #            "G0F/G1F", "G1F/G1F", "G1F/G2F", "G2F/G2F")
     )
   )
 
@@ -616,8 +622,8 @@ mean_df <- data_for_lollipop %>%
          into = c("condition","timepoint"),
          sep = "_") %>%
   filter(condition %in% condition_combinations,
-         # timepoint %in% c("264", "240"))
-        timepoint %in% c("264"))
+         timepoint %in% c("264", "240"))
+        # timepoint %in% c("264"))
 
 # Pivot wider for segment plotting
 mean_segments <- mean_df %>%
@@ -633,8 +639,8 @@ ggplot() +
   # Draw line segments only if both timepoints exist
       geom_segment(data = mean_segments,
                    aes(x = glycoform1, xend = glycoform1,
-                       y = `HIP+`,
-                       yend = `HiF`),
+                       y = `LoG+`,
+                       yend = `LoG`),
                    color = "grey", linewidth = 1) +
 
   scale_fill_manual('Strategy',
@@ -666,13 +672,13 @@ ggplot() +
     legend.text = element_text(),
     legend.box = "horizontal",
     
-    axis.text.x = element_blank()
-    # axis.text.x = element_text(angle = 90)
+    # axis.text.x = element_blank(),
+    axis.text.x = element_text(angle = 90)
   )
 
 
 ggsave(
-  filename = "figures/br_4/clr_transformed/hip+_hif_264.png",
+  filename = "figures/br_4/clr_transformed/log+_log_264.png",
   device = "png",
   width = 80,
   height = 50,
