@@ -39,9 +39,17 @@ rownames(design) <- colnames(data.matrix)
 Heatmap(design,
         rect_gp = gpar(col = "white", lwd = 2))
 
+# arrayWeights ------------------------------------------------------------
+
+# arrayw <- arrayWeights(clr_data.matrix, design = design)
+# barplot(arrayw, xlab = "Array", ylab = "Weight", col = "white", las = 2)
+# abline(h = 1, lwd = 1, lty = 2)
+
 # perform limma fits ------------------------------------------------------
 
 limmaFit <- lmFit(clr_data.matrix, design = design)
+
+# limmaFit <- lmFit(clr_data.matrix, design = design, weights = arrayw)
 
 head(coef(limmaFit))
 
@@ -241,7 +249,7 @@ res_twoConditions_timepoint[res_twoConditions_timepoint$coef == "Dif_B_A" & res_
 save(res_twoConditions_oneTimepoint,
      res_twoConditions_timepoint, 
      res_withinCondition_timepoint, 
-     file = "analysis/limma_results_subset_vol2.RData")
+     file = "analysis/limma_results_subset_arrw.RData")
 
 # plot vulcano & pval histogram ------------------------------------------------
 plot_vulcano_pval_histo <- function(results,
