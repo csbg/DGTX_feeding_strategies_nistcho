@@ -6,12 +6,12 @@ library(ggpubr)
 #gal_index_stats <- gi_stats
 #gal_index_summary <- gi_summary
 
-load(here("data/galactosylation_index_br4.RData"))
+load(here("analysis/galactosylation_index_br4.RData"))
 gal_index_stats <- gi_stats
 gal_index_summary <- gi_summary
 
 
-load(here("data/glycation_index.RData"))
+load(here("analysis/glycation_index.RData"))
 gly_index_stats <- gi_stats
 gly_index_summary <- gi_summary
 
@@ -114,150 +114,150 @@ ggsave(filename = "figures/galactosylation_index_barplot_facet_time.png",
        bg = "white")
 
 
-# now with statistics
-
-library(dplyr)
-library(purrr)
-library(broom)
-library(ggpubr)
-
-pairs_to_test <- list(
-  c("STD", "STD+"),
-  c("LoG", "LoG+"),
-  c("HIP", "HIP+")
-)
-
-t_test_results <- map_df(pairs_to_test, function(pair) {
-  map_df(c("exponential", "stationary"), function(phase) {
-    df_phase <- gal_index_summary %>% 
-      filter(time_group == phase,
-             condition %in% pair)
-    
-    t_res <- t.test(GI ~ condition, data = df_phase)
-    
-    tidy(t_res) %>%
-      mutate(
-        group1 = pair[1],
-        group2 = pair[2],
-        time_group = phase
-      )
-  })
-}) %>%
-  mutate(
-    Significance = case_when(
-      p.value < 0.001 ~ "***",
-      p.value < 0.01  ~ "**",
-      p.value < 0.05  ~ "*",
-      TRUE ~ "ns"
-    )
-  )
-
-# Find the highest bar top per facet
-top_heights <- gal_index_stats %>%
-  mutate(top = mean_GI + sd_GI) %>%
-  group_by(time_group) %>%
-  summarise(base_top = max(top), .groups = "drop")
-
-# Build annotation df
-t_test_anno <- t_test_results %>%
-  left_join(top_heights, by = "time_group") %>%
-  group_by(time_group) %>%
-  mutate(
-    p = p.value,
-    y.position = base_top + 1
-  ) %>%
-  ungroup() %>%
-  # make sure group1/2 match x-axis values
-  mutate(
-    group1 = factor(group1, levels = levels(gal_index_stats$condition)),
-    group2 = factor(group2, levels = levels(gal_index_stats$condition))
-  )
-
-
-
-gal_ind_bar_sig <- ggplot(data = gal_index_stats, aes(x = condition, y = mean_GI)) +
-  geom_col(aes(fill = condition),
-           position = position_dodge(width = 0.9),
-           color = "black") +
-  geom_errorbar(
-    aes(
-      ymin = mean_GI - sd_GI,
-      ymax = mean_GI + sd_GI,
-      group = condition
-    ),
-    position = position_dodge(.9),
-    width = .5,
-    linewidth = .25
-  ) +
-  # geom_text(
-  #   aes(label = condition, fill = condition, y = 2),  # include fill here!
-  #   position = position_dodge(width = 0.9),
-  #   vjust = 0,
-  #   hjust = 0, 
-  #   angle = 90,
-  #   colour = "white",
-  #   size = 3
-  # ) +
-  facet_wrap(~time_group, 
-             labeller = labeller(time_group = c("exponential" = "Exponential",
-                                                "stationary" = "Stationary"))
-             ) +
-  # # Lines: same combined mapping
-  # geom_line(
-  #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
-  #   linewidth = 1,
-  #   position = position_dodge(width = 0.9)
-  # ) +
-scale_fill_manual(
-  values = color_mapping_condition,
-  breaks = levels(gi_stats$condition)
-) +
-  # scale_color_manual(
-  #   values = color_mapping_condition,
-  #   breaks = names(color_mapping_condition)
-  # ) 
-# Unified legend title
-labs(
-  x = "",
-  y = "Galactosylation index (%)",
-  fill = "Strategy"
-) +
-  
-  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
-  theme_bw() +
-  theme(
-    text = element_text( 
-      size = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 11),
-    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-    axis.title.y = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  ) +
-  guides(fill = guide_legend(nrow = 1)) +
-  stat_pvalue_manual(
-    t_test_anno,
-    label = "Significance",   # column with the stars
-    y.position = "y.position",
-    xmin = "group1",
-    xmax = "group2",
-    #step.increase = 0,    
-    label.size = 3,
-    size = 0.3
-  )
-
-plot(gal_ind_bar_sig)
+# # now with statistics
+# 
+# library(dplyr)
+# library(purrr)
+# library(broom)
+# library(ggpubr)
+# 
+# pairs_to_test <- list(
+#   c("STD", "STD+"),
+#   c("LoG", "LoG+"),
+#   c("HIP", "HIP+")
+# )
+# 
+# t_test_results <- map_df(pairs_to_test, function(pair) {
+#   map_df(c("exponential", "stationary"), function(phase) {
+#     df_phase <- gal_index_summary %>% 
+#       filter(time_group == phase,
+#              condition %in% pair)
+#     
+#     t_res <- t.test(GI ~ condition, data = df_phase)
+#     
+#     tidy(t_res) %>%
+#       mutate(
+#         group1 = pair[1],
+#         group2 = pair[2],
+#         time_group = phase
+#       )
+#   })
+# }) %>%
+#   mutate(
+#     Significance = case_when(
+#       p.value < 0.001 ~ "***",
+#       p.value < 0.01  ~ "**",
+#       p.value < 0.05  ~ "*",
+#       TRUE ~ "ns"
+#     )
+#   )
+# 
+# # Find the highest bar top per facet
+# top_heights <- gal_index_stats %>%
+#   mutate(top = mean_GI + sd_GI) %>%
+#   group_by(time_group) %>%
+#   summarise(base_top = max(top), .groups = "drop")
+# 
+# # Build annotation df
+# t_test_anno <- t_test_results %>%
+#   left_join(top_heights, by = "time_group") %>%
+#   group_by(time_group) %>%
+#   mutate(
+#     p = p.value,
+#     y.position = base_top + 1
+#   ) %>%
+#   ungroup() %>%
+#   # make sure group1/2 match x-axis values
+#   mutate(
+#     group1 = factor(group1, levels = levels(gal_index_stats$condition)),
+#     group2 = factor(group2, levels = levels(gal_index_stats$condition))
+#   )
+# 
+# 
+# 
+# gal_ind_bar_sig <- ggplot(data = gal_index_stats, aes(x = condition, y = mean_GI)) +
+#   geom_col(aes(fill = condition),
+#            position = position_dodge(width = 0.9),
+#            color = "black") +
+#   geom_errorbar(
+#     aes(
+#       ymin = mean_GI - sd_GI,
+#       ymax = mean_GI + sd_GI,
+#       group = condition
+#     ),
+#     position = position_dodge(.9),
+#     width = .5,
+#     linewidth = .25
+#   ) +
+#   # geom_text(
+#   #   aes(label = condition, fill = condition, y = 2),  # include fill here!
+#   #   position = position_dodge(width = 0.9),
+#   #   vjust = 0,
+#   #   hjust = 0, 
+#   #   angle = 90,
+#   #   colour = "white",
+#   #   size = 3
+#   # ) +
+#   facet_wrap(~time_group, 
+#              labeller = labeller(time_group = c("exponential" = "Exponential",
+#                                                 "stationary" = "Stationary"))
+#              ) +
+#   # # Lines: same combined mapping
+#   # geom_line(
+#   #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
+#   #   linewidth = 1,
+#   #   position = position_dodge(width = 0.9)
+#   # ) +
+# scale_fill_manual(
+#   values = color_mapping_condition,
+#   breaks = levels(gi_stats$condition)
+# ) +
+#   # scale_color_manual(
+#   #   values = color_mapping_condition,
+#   #   breaks = names(color_mapping_condition)
+#   # ) 
+# # Unified legend title
+# labs(
+#   x = "",
+#   y = "Galactosylation index (%)",
+#   fill = "Strategy"
+# ) +
+#   
+#   scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
+#   theme_bw() +
+#   theme(
+#     text = element_text( 
+#       size = 11,
+#       family = "sans",
+#       colour = "black"
+#     ),
+#     axis.line = element_line(),
+#     axis.text = element_text(color = "black", size = 11),
+#     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+#     axis.title.y = element_text(hjust = 0.5, face = "bold"),
+#     axis.title.x = element_text(hjust = 0.5, face = "bold"),
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.minor.y = element_blank(),
+#     panel.border = element_blank(),
+#     legend.position = "bottom",
+#     legend.title = element_text(face = "bold"),
+#     legend.text = element_text(),
+#     legend.box = "horizontal"
+#   ) +
+#   guides(fill = guide_legend(nrow = 1)) +
+#   stat_pvalue_manual(
+#     t_test_anno,
+#     label = "Significance",   # column with the stars
+#     y.position = "y.position",
+#     xmin = "group1",
+#     xmax = "group2",
+#     #step.increase = 0,    
+#     label.size = 3,
+#     size = 0.3
+#   )
+# 
+# plot(gal_ind_bar_sig)
 
 # comparison for each condition over time (exp vs stat, paired t-test)
 library(dplyr)
@@ -556,7 +556,7 @@ gly_time_bar_sig <- gly_time_bar +
 
 
 gly_time_bar_sig
-￼
+
 ggarrange(gi_time_bar_sig,
           gly_time_bar_sig,
           ncol = 1,
