@@ -92,7 +92,14 @@ condition_levels <- c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")
 # Color palette used consistently across figures
 condition_colors <- c(
   "STD"  = "grey50",
-  "STD+" = "grey20",
+  "STD+" = "grey20"e.pdf
+##   - tukey_IVCD.csv
+##   - total_IVCD_last_timepoint_all_stat.pdf
+##   - IVCD_stat.pdf
+## -------------------------------------------------------------------
+
+library(tidyverse)
+library(ggpubr),
   "LoG+" = "#1f78b4",
   "HiF"  = "#f1a340",
   "HIP"  = "#b2df8a",
