@@ -327,7 +327,7 @@ qp_bar_all <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
     legend.text = element_text(),
     legend.box = "horizontal"
   ) +
-  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 5)) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 16, 2)) +
   scale_fill_manual(
     values = condition_colors,
     name   = "Feeding strategy",
