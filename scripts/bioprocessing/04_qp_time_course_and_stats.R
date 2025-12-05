@@ -299,7 +299,8 @@ tukey_df_anno <- tukey_df %>%
 
 # Subset: only comparisons vs STD
 tukey_anno_filtered <- tukey_df_anno %>%
-  filter(group1 == "STD" | group2 == "STD")
+  filter(group1 == "STD" | group2 == "STD") %>%
+  filter(Significance != "ns")  # keep only significant comparisons
 
 ## -------------------------------------------------------------------
 ## 8. Bar plot of average qp with ALL pairwise comparisons

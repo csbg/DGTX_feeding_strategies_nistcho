@@ -34,7 +34,7 @@ library(here)
 ## -------------------------------------------------------------------
 
 Glucose_pH_rawdata <- read_excel(
-  here("data", "05_glucose_pH_data.xlsx")
+  here("data", "05_glucose_data.xlsx")
 )
 
 ## Expected columns (minimum):
@@ -51,9 +51,9 @@ summary_data <- Glucose_pH_rawdata %>%
   filter(Condition %in% c("A", "B", "C", "D", "E", "F", "G")) %>%
   group_by(Condition, Hour) %>%
   summarise(
-    mean_glucose = mean(`Glucose_corr_[g/L]`, na.rm = TRUE),
-    se_glucose = sd(`Glucose_corr_[g/L]`, na.rm = TRUE) /
-      sqrt(sum(!is.na(`Glucose_corr_[g/L]`))),
+    mean_glucose = mean(Glucose_g.L, na.rm = TRUE),
+    se_glucose = sd(Glucose_g.L, na.rm = TRUE) /
+      sqrt(sum(!is.na(Glucose_g.L))),
     .groups = "drop"
   ) %>%
   # Remove rows where the mean is NaN (e.g. no measurements)
@@ -100,7 +100,7 @@ high_glc <- summary_data %>%
 
 high_glc_plt <- ggplot(high_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
   geom_point(size = 0.7) +
-  geom_line(size = 0.7) +
+  geom_line(linewidth = 0.7) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
@@ -155,7 +155,7 @@ med_glc <- summary_data %>%
 
 med_glc_plt <- ggplot(med_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
   geom_point(size = 0.7) +
-  geom_line(size = 0.7) +
+  geom_line(linewidth = 0.7) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
@@ -216,7 +216,7 @@ low_glc_plt <- ggplot(low_glc, aes(x = Hour, y = mean_glucose, color = Condition
   ) +
   geom_line(
     aes(group = Condition),
-    size      = 0.7,
+    linewidth      = 0.7,
     position  = position_dodge(width = 2)
   ) +
   geom_errorbar(
@@ -258,7 +258,7 @@ ggsave("results/glucose_low.png",
 ## 7. Combined arranged figure (panels a–c)
 ## -------------------------------------------------------------------
 
-glucose_arranged <- ggarrange(
+ggarrange(
   high_glc_plt,
   med_glc_plt,
   low_glc_plt,
