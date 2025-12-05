@@ -25,6 +25,7 @@ library(tidyverse)
 library(ggpubr)
 library(ggrepel)
 library(here)
+library(car)
 
 ## -------------------------------------------------------------------
 ## 1. Load raw ViCell data
@@ -92,14 +93,7 @@ condition_levels <- c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")
 # Color palette used consistently across figures
 condition_colors <- c(
   "STD"  = "grey50",
-  "STD+" = "grey20"e.pdf
-##   - tukey_IVCD.csv
-##   - total_IVCD_last_timepoint_all_stat.pdf
-##   - IVCD_stat.pdf
-## -------------------------------------------------------------------
-
-library(tidyverse)
-library(ggpubr),
+  "STD+" = "grey20",
   "LoG+" = "#1f78b4",
   "HiF"  = "#f1a340",
   "HIP"  = "#b2df8a",
@@ -302,6 +296,10 @@ IVCD_bar_all <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
     values = condition_colors,
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 6500),
+    breaks = seq(0, 3000, 500)
   ) +
   stat_pvalue_manual(
     tukey_df_anno,

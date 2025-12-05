@@ -252,8 +252,8 @@ titer <- titer %>%
 titer_avg <- titer %>%
   group_by(Condition, TP) %>%
   summarise(
-    mean_titer = mean(Titer_µg.mL),
-    se_titer   = sd(Titer_µg.mL) / sqrt(n()),
+    mean_titer = mean(Titer_ug.mL),
+    se_titer   = sd(Titer_ug.mL) / sqrt(n()),
     mean_hours = mean(Hours),
     .groups    = "drop"
   ) %>%
@@ -400,14 +400,12 @@ titer_last <- titer_avg %>%
 
 ## 6.1 ANOVA on final titer (µg/mL) across conditions
 
-anova_total_titer <- aov(Titer_µg.mL ~ Condition, data = last_timepoint)
+anova_total_titer <- aov(Titer_ug.mL ~ Condition, data = last_timepoint)
 summary(anova_total_titer)
 
 # Check normality of ANOVA residuals (Shapiro–Wilk)
 res <- residuals(anova_total_titer)
 shapiro.test(res)
-
-# (Levene test for homogeneity of variance was run interactively and passed.)
 
 # Tukey HSD post-hoc test
 tukey_result <- TukeyHSD(anova_total_titer)
@@ -447,7 +445,7 @@ totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     stat     = "identity",
     position = position_dodge(width = 0.95),
     color    = "black",
-    size     = 0.5
+    linewidth= 0.5
   ) +
   geom_errorbar(
     aes(
@@ -472,15 +470,7 @@ totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     legend.position = "none"
   ) +
   scale_fill_manual(
-    values = c(
-      "STD"  = "#ee3377",
-      "STD+" = "#56b4e9",
-      "LoG+" = "#009e73",
-      "HiF"  = "#cc79a7",
-      "HIP"  = "#ee7733",
-      "HIP+" = "#0072b2",
-      "LoG"  = "#ffd800"
-    ),
+    values = condition_colors,
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +

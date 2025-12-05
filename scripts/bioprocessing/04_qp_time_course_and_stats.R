@@ -64,23 +64,37 @@ titer_df <- titer_df %>%
   mutate(
     Condition = dplyr::recode(Condition, !!!condition_map),
     Condition = factor(Condition, levels = condition_levels)
-  )
+  ) %>%
+  select(-Hour)
 
 # IVCD time course per replicate (same Replicate/Condition/Hours structure)
 IVCD <- read.csv(here("results", "01_IVCD_individual.csv")) %>%
-  select(-...1)
+  select(-...1, -ID)
+
 
 ## -------------------------------------------------------------------
 ## 2. Merge titer + IVCD and calculate qp between time points
 ## -------------------------------------------------------------------
 
-merged_df <- IVCD %>%
-  left_join(titer_df, by = c("Replicate", "Condition", "TP")) %>%
-  select(Replicate, Condition, Hours, IVCD_sum, Titer_ug.mL, TP) %>%
-  mutate(
-    Hours = round(Hours, 0)  # round time to full hours (safety/consistency)
+merged_df <- titer_df %>%
+  left_join(
+    IVCD,
+    by = c("Condition", "TP", "Replicate")
   ) %>%
+  select(
+    Condition,
+    TP,
+    Replicate,
+    Titer_ug.mL,
+    IVCD_sum,
+    Hours
+  )%>%
   arrange(Condition, Replicate, Hours)
+
+  merged_df <- merged_df %>%
+    mutate(
+      Hours = round(Hours)
+    )
 
 # Calculate qp per interval: Δc / ΔIVCD per replicate & condition.
 # qp units depend on input; here we later plot qp * 24 as "pg/cell/day".
