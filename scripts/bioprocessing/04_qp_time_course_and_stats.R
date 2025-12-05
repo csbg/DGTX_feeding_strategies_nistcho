@@ -64,23 +64,37 @@ titer_df <- titer_df %>%
   mutate(
     Condition = dplyr::recode(Condition, !!!condition_map),
     Condition = factor(Condition, levels = condition_levels)
-  )
+  ) %>%
+  select(-Hour)
 
 # IVCD time course per replicate (same Replicate/Condition/Hours structure)
 IVCD <- read.csv(here("results", "01_IVCD_individual.csv")) %>%
-  select(-...1)
+  select(-...1, -ID)
+
 
 ## -------------------------------------------------------------------
 ## 2. Merge titer + IVCD and calculate qp between time points
 ## -------------------------------------------------------------------
 
-merged_df <- IVCD %>%
-  left_join(titer_df, by = c("Replicate", "Condition", "TP")) %>%
-  select(Replicate, Condition, Hours, IVCD_sum, Titer_ug.mL, TP) %>%
-  mutate(
-    Hours = round(Hours, 0)  # round time to full hours (safety/consistency)
+merged_df <- titer_df %>%
+  left_join(
+    IVCD,
+    by = c("Condition", "TP", "Replicate")
   ) %>%
+  select(
+    Condition,
+    TP,
+    Replicate,
+    Titer_ug.mL,
+    IVCD_sum,
+    Hours
+  )%>%
   arrange(Condition, Replicate, Hours)
+
+  merged_df <- merged_df %>%
+    mutate(
+      Hours = round(Hours)
+    )
 
 # Calculate qp per interval: Δc / ΔIVCD per replicate & condition.
 # qp units depend on input; here we later plot qp * 24 as "pg/cell/day".
@@ -285,7 +299,8 @@ tukey_df_anno <- tukey_df %>%
 
 # Subset: only comparisons vs STD
 tukey_anno_filtered <- tukey_df_anno %>%
-  filter(group1 == "STD" | group2 == "STD")
+  filter(group1 == "STD" | group2 == "STD") %>%
+  filter(Significance != "ns")  # keep only significant comparisons
 
 ## -------------------------------------------------------------------
 ## 8. Bar plot of average qp with ALL pairwise comparisons
@@ -327,7 +342,7 @@ qp_bar_all <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
     legend.text = element_text(),
     legend.box = "horizontal"
   ) +
-  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 5)) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 16, 2)) +
   scale_fill_manual(
     values = condition_colors,
     name   = "Feeding strategy",

@@ -79,12 +79,12 @@ base_theme <- theme_bw() +
 ## 2. Load glucose data and define feeding windows
 ## -------------------------------------------------------------------
 
-Glucose_pH_rawdata <- read_excel(here("data", "05_glucose_pH_data.xlsx"))
+Glucose_rawdata <- read_excel(here("data", "05_glucose_data.xlsx"))
 
 # Keep only fed-batch conditions A–G and remove NaNs in Glucose_corr_[g/L]
-summary_data_2 <- Glucose_pH_rawdata %>%
+summary_data_2 <- Glucose_rawdata %>%
   filter(Condition %in% c("A", "B", "C", "D", "E", "F", "G")) %>%
-  filter(!is.nan(`Glucose_corr_[g/L]`))
+  filter(!is.nan(Glucose_g.L))
 
 # Split by condition groups for renaming
 low_glc <- summary_data_2 %>%
@@ -133,7 +133,7 @@ window_df_STD <- merged_df %>%
       TRUE ~ NA_character_
     )
   ) %>%
-  filter(!is.na(`Glucose_corr_[g/L]`), !is.na(Feeding_Window))
+  filter(!is.na(Glucose_g.L), !is.na(Feeding_Window))
 
 window_df_LoG <- merged_df %>%
   filter(Condition %in% c("LoG", "LoG+")) %>%
@@ -145,7 +145,7 @@ window_df_LoG <- merged_df %>%
       TRUE ~ NA_character_
     )
   ) %>%
-  filter(!is.na(`Glucose_corr_[g/L]`), !is.na(Feeding_Window))
+  filter(!is.na(Glucose_g.L), !is.na(Feeding_Window))
 
 window_df_HIP <- merged_df %>%
   filter(Condition %in% c("HIP", "HIP+")) %>%
@@ -160,7 +160,7 @@ window_df_HIP <- merged_df %>%
       TRUE ~ NA_character_
     )
   ) %>%
-  filter(!is.na(`Glucose_corr_[g/L]`), !is.na(Feeding_Window))
+  filter(!is.na(Glucose_g.L), !is.na(Feeding_Window))
 
 window_df_HiF <- merged_df %>%
   filter(Condition %in% c("HiF")) %>%
@@ -176,11 +176,11 @@ window_df_HiF <- merged_df %>%
       TRUE ~ NA_character_
     )
   ) %>%
-  filter(!is.na(`Glucose_corr_[g/L]`), !is.na(Feeding_Window))
+  filter(!is.na(Glucose_g.L), !is.na(Feeding_Window))
 
 # Merge all feeding windows, keep only relevant columns
 window_df <- bind_rows(window_df_STD, window_df_LoG, window_df_HIP, window_df_HiF) %>%
-  select(Condition, Hour, `Glucose_corr_[g/L]`, Feeding_Window, TP, Replicate)
+  select(Condition, Hour, Glucose_g.L, Feeding_Window, TP, Replicate)
 
 window_df <- window_df %>%
   mutate(Replicate = paste0("R", Replicate)) %>%
@@ -194,6 +194,7 @@ window_df <- window_df %>%
   )
 
 
+
 ## -------------------------------------------------------------------
 ## 3. Merge with IVCD and compute cell-specific glucose rate (qGlc)
 ## -------------------------------------------------------------------
@@ -202,30 +203,54 @@ window_df <- window_df %>%
 IVCD <- read.csv(here("results", "01_IVCD_individual.csv")) %>%
   mutate(
     Condition = dplyr::recode(Condition, !!!recode_condition)
-  )
-
-IVCD <- IVCD %>%
-  mutate(
-    TP = as.character(TP),
-    Replicate = as.character(Replicate),
-    Condition = as.character(Condition)
-  )
+  ) %>%
+  select(-...1, -ID)
 
 # Perform the merge
 merged_df <- window_df %>%
-  left_join(IVCD, by = c("Condition", "TP", "Replicate"))
+  left_join(IVCD, by = c("Condition", "TP", "Replicate")) %>%
+  select(Condition, Replicate, Hours, Feeding_Window, Glucose_g.L, IVCD_sum)
+
+merged_df <- window_df %>%
+  left_join(
+    IVCD,
+    by = c("Condition", "TP", "Replicate")
+  ) %>%
+  select(
+    Condition,
+    TP,
+    Replicate,
+    Glucose_g.L,
+    IVCD_sum,
+    Hours,
+    Hour,
+    Feeding_Window
+  )
 
 
-# Fill IVCD_sum within each (Condition, Replicate) in case of missing intermediate rows
+# To account for missing IVCD_sum or Hours values, we perform a fill operation:
+# 1) Fill IVCD_sum within each (Condition, Replicate) in case of missing intermediate rows
 merged_df_filled <- merged_df %>%
   arrange(Condition, Replicate, Hour) %>%
   group_by(Condition, Replicate) %>%
   tidyr::fill(IVCD_sum, .direction = "down") %>%
   ungroup()
 
+# 2) Fill Hours: for NA rows use previous value + 1
+merged_df_filled <- merged_df_filled %>%
+  group_by(Condition, Replicate) %>%
+  mutate(
+    Hours = accumulate(
+      Hours,
+      ~ ifelse(is.na(.y), .x + 1, .y)
+    )
+  ) %>%
+  select(-Hour) %>%
+  ungroup()
+
 # Convert glucose to mM (Glucose M = 180.156 g/mol)
 merged_df_filled_mM <- merged_df_filled %>%
-  mutate(Glucose_mM = (`Glucose_corr_[g/L]` * 1000) / 180.156)
+  mutate(Glucose_mM = (Glucose_g.L * 1000) / 180.156)
 
 # For each (Condition, Feeding_Window, Replicate), fit Glucose_mM ~ IVCD_sum
 # The slope corresponds to cell-specific glucose consumption rate
@@ -241,7 +266,7 @@ qp_results <- merged_df_filled_mM %>%
   }) %>%
   ungroup()
 
-write.csv(qp_results, here("results", "qp_glucose_windows.csv"), row.names = FALSE)
+#write.csv(qp_results, here("results", "qp_glucose_windows.csv"), row.names = FALSE)
 
 ## -------------------------------------------------------------------
 ## 4. Summarise qGlc per feeding window and plot timecourse

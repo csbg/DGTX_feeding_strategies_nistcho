@@ -25,6 +25,7 @@ library(tidyverse)
 library(ggpubr)
 library(ggrepel)
 library(here)
+library(car)
 
 ## -------------------------------------------------------------------
 ## 1. Load raw ViCell data
@@ -295,6 +296,10 @@ IVCD_bar_all <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
     values = condition_colors,
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 6500),
+    breaks = seq(0, 3000, 500)
   ) +
   stat_pvalue_manual(
     tukey_df_anno,

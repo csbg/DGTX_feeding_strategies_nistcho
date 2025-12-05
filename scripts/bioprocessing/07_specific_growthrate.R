@@ -8,7 +8,7 @@
 ##     endpoint labels for each feeding strategy.
 ##
 ## Inputs:
-##   - data/vicell_sum_filtered.csv
+##   - data/01_ViCell_growth_data.csv
 ##       Contains Total_VCD, Hours, Condition (A–G), Replicate, etc.
 ##
 ## Outputs:
@@ -26,7 +26,7 @@ library(here)
 # 1. Load data
 # -------------------------------------------------------------------
 
-df <- read.csv(here("data", "vicell_sum_filtered.csv"))
+df <- read.csv(here("data", "01_ViCell_growth_data.csv"))
 
 # -------------------------------------------------------------------
 # 2. Define condition mapping and factor levels
@@ -92,14 +92,10 @@ df_mu_summary <- df_mu %>%
 # 5. Remove last timepoint of LoG and LoG+ (visual clarity)
 # -------------------------------------------------------------------
 # For LoG and LoG+ we drop their final timepoint so trends are easier to
-# compare visually (e.g. avoid noisy late points).
+# compare visually (e.g. avoid negative µ late points).
 
 df_mu_summary <- df_mu_summary %>%
-  group_by(Condition) %>%
-  filter(
-    !(Condition %in% c("LoG", "LoG+") & Hours == max(Hours))
-  ) %>%
-  ungroup()
+  filter(!(Condition %in% c("LoG", "LoG+") & Hours %in% c(216, 217, 240, 245)))
 
 # -------------------------------------------------------------------
 # 6. Flag last timepoint per condition for endpoint labelling
