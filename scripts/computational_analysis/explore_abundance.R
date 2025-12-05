@@ -856,6 +856,45 @@ spearman_correlations(clr_data.matrix_264,
                       cluster_columns = TRUE)
 dev.off()
 
+
+# PERMANOVA ---------------------------------------------------------------
+all(colnames(clr_data.matrix) == meta$sample_name)
+library(vegan)
+
+#on clr-trasnformed data
+dist.eu <- dist(t(clr_data.matrix))
+
+res1 <- adonis2(dist.eu ~ phase + condition_abrev, data = meta, permutations = 999)
+res1
+
+res2 <- adonis2(dist.eu ~ phase * condition_abrev, data = meta, permutations = 999)
+res2
+
+disp <- betadisper(dist.eu, meta$condition_abrev)
+anova(disp)
+
+disp2 <- betadisper(dist.eu, meta$phase)
+anova(disp2)
+
+#check assumption: multivariate dispersion
+#PERMANOVA assumes homogeneous group dispersions.
+#If unequal, results may reflect dispersion, not centroid differences.
+mod <- betadisper(dist.eu, meta$condition_abrev)
+anova(mod)
+plot(mod)
+boxplot(mod)
+
+mod <- betadisper(dist.eu, meta$phase)
+anova(mod)
+plot(mod)
+boxplot(mod)
+
+mod <- betadisper(dist.eu, meta$condition_abrev_tp)
+anova(mod)
+plot(mod)
+boxplot(mod)
+
+
 # save all data -----------------------------------------------------------
 
 save(data.matrix, 
