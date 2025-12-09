@@ -9,8 +9,8 @@
 ##     and comparisons vs STD).
 ##
 ## Inputs (in /data):
-##   - 01_ViCell_growth_data.csv      (raw ViCell data)
-##   - IVCD_FB2+FB4_individual.csv    (optional: precomputed IVCD; see below)
+##   - 01_ViCell_growth_data.csv   
+##   - 01_IVCD_individual.csv    
 ##
 ## Outputs (in /results):
 ##   - 01_IVCD_individual.csv
