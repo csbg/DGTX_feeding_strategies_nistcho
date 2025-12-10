@@ -235,6 +235,11 @@ qp_cond <- qp_repl %>%
     .groups    = "drop"
   )
 
+write.csv(
+  qp_repl,
+  here("results", "qp_timecourse.csv"),
+  row.names = FALSE
+)
 ## -------------------------------------------------------------------
 ## 6. Statistical testing: One-way ANOVA + Tukey HSD
 ## -------------------------------------------------------------------

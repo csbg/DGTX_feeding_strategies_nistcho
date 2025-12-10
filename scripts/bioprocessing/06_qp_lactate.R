@@ -235,6 +235,11 @@ p_lactate_qp <- ggplot(
 
 plot(p_lactate_qp)
 
+# save as .csv
+write.csv(lactate_qp_summary2,
+  file = here("results", "lactate_qp_summary.csv")
+)
+
 # -------------------------------------------------------------------
 # 8. Save plot
 # -------------------------------------------------------------------
