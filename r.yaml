@@ -19,4 +19,5 @@ dependencies:
   - r-pheatmap
   - bioconductor-complexheatmap
   - r-pracma
+  - r-factoextra
   
