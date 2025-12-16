@@ -11,7 +11,9 @@ library(ggforce)
 
 # load data ---------------------------------------------------------------
 
-input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
+# input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
+input_file_path <- here::here("analysis", "matrix_meta_four_br.RData")
+
 
 load(file = input_file_path)
 data.matrix
@@ -798,6 +800,8 @@ spearman_correlations <- function(data,
     name = "Correlations",
     na_col = "grey",
     col = f2,
+    column_title = "Samples",
+    row_title = "Samples",
     top_annotation = ha,
     show_heatmap_legend = TRUE,       # heatmap legend visible
     column_labels = meta_data$condition_abrev_tp,
@@ -822,6 +826,12 @@ png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp_new_theme
     height = 5,
     units = "in",
     res = 600)
+
+png(filename = "figures/br_4/explore_abundance/figure_3b.png",
+    width = 130,
+    height = 130,
+    units = "mm",
+    res = 600)
 spearman_correlations(clr_data.matrix,
                       meta_data = meta,
                       show_row_names = FALSE,
@@ -831,11 +841,7 @@ spearman_correlations(clr_data.matrix,
 
 dev.off()
 
-png(filename = "figures/br_4/explore_abundance/figure_3b.png",
-    width = 130,
-    height = 120,
-    units = "mm",
-    res = 600)
+
 
 spearman_correlations(clr_data.matrix_120,
                       meta_data = meta_120,
@@ -856,43 +862,6 @@ spearman_correlations(clr_data.matrix_264,
                       cluster_columns = TRUE)
 dev.off()
 
-
-# PERMANOVA ---------------------------------------------------------------
-all(colnames(clr_data.matrix) == meta$sample_name)
-library(vegan)
-
-#on clr-trasnformed data
-dist.eu <- dist(t(clr_data.matrix))
-
-res1 <- adonis2(dist.eu ~ phase + condition_abrev, data = meta, permutations = 999)
-res1
-
-res2 <- adonis2(dist.eu ~ phase * condition_abrev, data = meta, permutations = 999)
-res2
-
-disp <- betadisper(dist.eu, meta$condition_abrev)
-anova(disp)
-
-disp2 <- betadisper(dist.eu, meta$phase)
-anova(disp2)
-
-#check assumption: multivariate dispersion
-#PERMANOVA assumes homogeneous group dispersions.
-#If unequal, results may reflect dispersion, not centroid differences.
-mod <- betadisper(dist.eu, meta$condition_abrev)
-anova(mod)
-plot(mod)
-boxplot(mod)
-
-mod <- betadisper(dist.eu, meta$phase)
-anova(mod)
-plot(mod)
-boxplot(mod)
-
-mod <- betadisper(dist.eu, meta$condition_abrev_tp)
-anova(mod)
-plot(mod)
-boxplot(mod)
 
 
 # save all data -----------------------------------------------------------
