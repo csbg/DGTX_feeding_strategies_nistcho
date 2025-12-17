@@ -20,9 +20,6 @@ data.matrix
 meta
 clr_data.matrix
 
-# ilr_data.matrix
-
-# log2_data.matrix
 
 # design model.matrix -----------------------------------------------------
 meta$condition_timepoint <- paste(meta$condition, meta$timepoint, sep = "_")
