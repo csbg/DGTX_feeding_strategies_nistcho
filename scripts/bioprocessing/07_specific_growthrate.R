@@ -187,6 +187,11 @@ growth_plot <- ggplot(
 
 plot(growth_plot)
 
+
+# save as .csv
+write.csv(df_mu_summary,
+  file = here("results", "specific_growth_rate.csv")
+)
 # -------------------------------------------------------------------
 # 8. Save plot
 # -------------------------------------------------------------------

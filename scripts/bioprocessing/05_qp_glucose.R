@@ -340,3 +340,5 @@ ggsave("results/qp_glucose_windows.pdf",
   height = 15,
   units  = "cm"
 )
+
+write.csv(qp_results_avg, here("results", "qp_glucose_windows_avg.csv"), row.names = FALSE)

@@ -458,11 +458,9 @@ totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
   labs(
     x     = "Condition",
     y     = "Final cNISTmAb titer [g/L]",
-    title = "Total cNISTmAb titer"
   ) +
   theme_classic() +
   theme(
-    plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
     axis.title.x = element_text(size = 10, face = "bold"),
     axis.text.x = element_text(size = 8, color = "black"),
     axis.title.y = element_text(size = 10, face = "bold"),
@@ -487,7 +485,7 @@ plot(totaltiter_all)
 ggsave("results/total_titer_all_stat.pdf",
   plot   = totaltiter_all,
   units  = "cm",
-  height = 10,
+  height = 15,
   width  = 15,
   bg     = "white",
   dpi    = 600
