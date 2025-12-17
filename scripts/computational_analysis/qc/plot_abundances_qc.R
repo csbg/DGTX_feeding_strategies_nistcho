@@ -77,7 +77,7 @@ if (pngase == "none") {
 # unique(abundance_data_averaged$condition_br_tp)
 
 save(abundance_data,
-     abundance_data_averaged,
+     # abundance_data_averaged,
      file = paste0("analysis/abundance_data_",pngase,"_qc.RData"))
 
 write_csv(abundance_data_averaged, "analysis/abundance_data_",pngase,"_qc.csv")
@@ -89,6 +89,7 @@ abundance_data_twoglyc <- abundance_data %>%
   filter(modcom_name %in% c("A2G1F/A2G0F", "A2G1F/A2G1F")) %>%
   mutate(acquisition_number = factor(acquisition_number, levels = c("11", "14","41", "77","95", "99",
                                                                     "105", "128", "161", "194", "260","227", "293",
+                                                                    "326", "359",
                                                                     "385", "423", "456", "489","527", "560")),
          modcom_name = gsub("/", " · ", modcom_name),
          modcom_name = gsub("A2", "", modcom_name),

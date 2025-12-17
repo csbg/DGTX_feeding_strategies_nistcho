@@ -182,6 +182,6 @@ calculate_abundance <- function(mzml_full_path,
 # pwalk(data_merged_subset, calculate_abundance, .progress = TRUE)
 # pwalk(data_merged[67:72,], calculate_abundance, .progress = TRUE)
 
-pwalk(data_merged, calculate_abundance, .progress = TRUE)
+pwalk(data_merged[4:5,], calculate_abundance, .progress = TRUE)
 
 
