@@ -8,7 +8,7 @@ library(RColorBrewer)
 
 samples_table <- read_csv("analysis/overview_pngase_merged_2.csv")
 
-samples_table <- samples_table[-1:-3,]
+# samples_table <- samples_table[-1:-3,]
 
 # load abundances using a for loop  ---------------------------------------
 
@@ -38,60 +38,6 @@ abundance_data <- abundance_data %>%
   mutate(condition_br_tp = paste(condition,biological_replicate,timepoint, sep = "_")) 
 
 
-# plot heatmap ------------------------------------------------------------
-
-## wrangle dataframe into matrix -------------------------------------------
-data.matrix <- abundance_data %>%
-  mutate(sample_name = paste(CHO_cell_variant_bio_replicate,tech_replicate, sep = "_")) %>%
-  select("sample_name", "modcom_name", "frac_ab") %>%
-  pivot_wider(names_from = sample_name, values_from = frac_ab) %>%
-  column_to_rownames("modcom_name") %>%
-  as.matrix()
-
-## calculate z-score & plot heatmap -------------------------------------
-
-scaled.data.matrix = t(scale(t(data.matrix))) # for scaling by row  
-
-#check for sanity
-mean(data.matrix[1,])
-sd(data.matrix[1,])
-(data.matrix[1] - mean(data.matrix[1,]))/sd(data.matrix[1,])
-(data.matrix[1,2] - mean(data.matrix[1,]))/sd(data.matrix[1,])
-
-
-#set the correct color scheme
-# min(scaled.data.matrix)
-# max(scaled.data.matrix) 
-f1 = colorRamp2(seq(-max(abs(scaled.data.matrix)),
-                    max(abs(scaled.data.matrix)),
-                    length = 9),
-                c("seagreen4",
-                  "seagreen3",
-                  "seagreen2",
-                  "seagreen1",
-                  "gold",
-                  "darkorchid1",
-                  "darkorchid2",
-                  "darkorchid3",
-                  "darkorchid4"),
-                space = "RGB")
-f1 = colorRamp2(seq(-max(abs(scaled.data.matrix)),
-                    max(abs(scaled.data.matrix)),
-                    length = 9),
-                brewer.pal(n = 9, name = "RdYlBu"),
-                space = "RGB")
-
-png(filename = "figures/2_nglycans_quantification/2_2_pngaseF_cpb/hexosylation_heatmap.png",    
-    height = 2000,
-    width = 3000,
-    units = "px",
-    res = 300)
-
-Heatmap(scaled.data.matrix,
-        col = f1,
-        rect_gp = gpar(col = "white", lwd = 2)) #height and width
-
-dev.off()
 
 # calculate mean and sd and plot ------------------------------------------
 abundance_data_averaged <- abundance_data %>% 
@@ -100,7 +46,12 @@ abundance_data_averaged <- abundance_data %>%
             error = sd(frac_ab)) %>%
   # mutate(condition_br_tp = factor(condition_br_tp, levels = c("A19_2","A19_1", "A16_2","A16_1","A8_2", "A8_1","A4_2", "A4_1","A3_2", "A3_1","A2_2", "A2_1"))) %>%
   mutate(modcom_name = factor(modcom_name, levels = c("3xHex","2xHex","1xHex","none"))) %>%
-  {.}
+  mutate(condition_br_tp = case_when(
+    condition_br_tp == "G_4_246" ~ "G_4_240",
+    condition_br_tp == "C_4_246" ~ "C_4_240",
+    TRUE ~ condition_br_tp
+  ))
+
 
 
 
