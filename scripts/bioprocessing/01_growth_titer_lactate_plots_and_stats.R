@@ -73,25 +73,22 @@ condition_colors <- c(
 # Base theme for line and bar plots
 base_theme <- theme_bw() +
   theme(
-    text = element_text(
-      size = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line         = element_line(),
-    axis.text         = element_text(color = "black", size = 11),
-    axis.title.y      = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x      = element_text(hjust = 0.5, face = "bold"),
+    text = element_text(family = "sans", color = "black", size = 11),
+    # Keep the panel clean
     panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
+    #panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
-    panel.border      = element_blank(),
-    legend.position   = "bottom",
-    legend.title      = element_text(face = "bold"),
-    legend.text       = element_text(),
-    legend.box        = "horizontal"
-  )
+    panel.border = element_blank(),
 
+    # Ensure the axis and ticks are visible
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"), # This makes sure ticks exist!
+
+    axis.title.y = element_text(hjust = 0.5),
+    axis.title.x = element_text(hjust = 0.5),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
 ## -------------------------------------------------------------------
 ## 3. Growth curves: VCD, viability, diameter
 ## -------------------------------------------------------------------
@@ -106,13 +103,15 @@ avg_df <- avg_df %>%
 # Figure 1
 # 3A Viable cell density (VCD) over time
 vcd <- avg_df %>%
-  ggplot(aes(x = mean_hours, y = mean_vcd, color = Condition)) +
+  ggplot(aes(x = mean_hours / 24, y = mean_vcd, color = Condition)) +
   geom_line(linewidth = 0.6, na.rm = FALSE) +
   geom_point(size = 1) +
   geom_errorbar(
-    aes(ymin = mean_vcd - se_vcd,
-        ymax = mean_vcd + se_vcd),
-    width = 3,
+    aes(
+      ymin = mean_vcd - se_vcd,
+      ymax = mean_vcd + se_vcd
+    ),
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -121,13 +120,13 @@ vcd <- avg_df %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 10,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
-    y = expression(bold("Viable cell density") ~ bold("[10"^6 * " cells/mL]"))
+    x = "Culture duration [d]",
+    y = expression(bold("Viable cell density") ~ bold("[10"^6 * " cells" %.% "mL"^-1 * "]"))
   ) +
   base_theme +
   scale_color_manual(
@@ -135,9 +134,12 @@ vcd <- avg_df %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 295, 48)) +
-  scale_y_continuous(limits = c(0, 25), breaks = seq(0, 25, 5))
-
+  scale_y_continuous(limits = c(0, 25), breaks = seq(0, 25, 5)) +
+  scale_x_continuous(
+      limits = c(0, 12.5),
+      breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
+      minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    )
 plot(vcd)
 
 ggsave("results/VCD_averaged.pdf",
@@ -150,13 +152,15 @@ ggsave("results/VCD_averaged.pdf",
 
 # 3B Viability over time
 via <- avg_df %>%
-  ggplot(aes(x = mean_hours, y = mean_via, color = Condition)) +
+  ggplot(aes(x = mean_hours / 24, y = mean_via, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
-    aes(ymin = mean_via - se_via,
-        ymax = mean_via + se_via),
-    width = 3,
+    aes(
+      ymin = mean_via - se_via,
+      ymax = mean_via + se_via
+    ),
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -164,12 +168,12 @@ via <- avg_df %>%
     aes(label = Condition),
     size = 2.5,
     fontface = "bold",
-    nudge_x = 10,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Viability [%]"
   ) +
   base_theme +
@@ -178,8 +182,12 @@ via <- avg_df %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 295, 48)) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20))
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
+    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+  )
 
 plot(via)
 
@@ -193,15 +201,15 @@ ggsave("results/VIA_averaged.pdf",
 )
 
 # Figure 1
-# 3C Average cell diameter over time
+# 3C Axverage cell diameter over time
 dia <- avg_df %>%
-  ggplot(aes(x = mean_hours, y = mean_dia, color = Condition)) +
+  ggplot(aes(x = mean_hours/24, y = mean_dia, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
     aes(ymin = mean_dia - se_dia,
         ymax = mean_dia + se_dia),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -210,22 +218,26 @@ dia <- avg_df %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Average cell diameter [µm]"
   ) +
-  base_theme +
+  #base_theme +
   scale_color_manual(
     values = condition_colors,
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
-  ) +
-  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48))
-
+  ) + 
+  base_theme +
+  scale_x_continuous(
+    limits = c(0, 12.5), 
+    breaks = seq(1, 12, 2),       # Major ticks: 0, 2, 4, 6, 8, 10, 12
+    minor_breaks = seq(0, 11, 1)  # Minor ticks: adds 1, 3, 5, 7, 9, 11
+  )
 plot(dia)
 
 ggsave("results/DIA_averaged.pdf",
@@ -265,7 +277,7 @@ titer_avg <- titer %>%
 # 1H Titer over time (converted from µg/mL to g/L for plotting)
 
 titer_plot <- titer_avg %>%
-  ggplot(aes(x = mean_hours, y = mean_titer / 1000, color = Condition)) +
+  ggplot(aes(x = mean_hours/24, y = mean_titer / 1000, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
@@ -273,7 +285,7 @@ titer_plot <- titer_avg %>%
       ymin = (mean_titer - se_titer) / 1000,
       ymax = (mean_titer + se_titer) / 1000
     ),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -282,7 +294,7 @@ titer_plot <- titer_avg %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 10,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
@@ -296,8 +308,12 @@ titer_plot <- titer_avg %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48)) +
-  scale_y_continuous(limits = c(0, 2.25), breaks = seq(0, 2, 0.5))
+  scale_y_continuous(limits = c(0, 2.25), breaks = seq(0, 2, 0.5)) +
+    scale_x_continuous(
+      limits = c(0, 12.5),
+      breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
+      minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    )
 
 plot(titer_plot)
 
@@ -337,7 +353,7 @@ lactate_avg <- lactate %>%
 # Figure 1
 # 1G Extracellular lactate over time
 lactate_plot <- lactate_avg %>%
-  ggplot(aes(x = mean_hours, y = mean_lactate_mM, color = Condition)) +
+  ggplot(aes(x = mean_hours/24, y = mean_lactate_mM, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
@@ -345,7 +361,7 @@ lactate_plot <- lactate_avg %>%
       ymin = mean_lactate_mM - se_lactate_mM,
       ymax = mean_lactate_mM + se_lactate_mM
     ),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -354,7 +370,7 @@ lactate_plot <- lactate_avg %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 13,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
@@ -368,8 +384,12 @@ lactate_plot <- lactate_avg %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48)) +
-  scale_y_continuous(limits = c(0, 16), breaks = seq(0, 16, 2))
+  scale_y_continuous(limits = c(0, 16), breaks = seq(0, 16, 2))+
+    scale_x_continuous(
+      limits = c(0, 12.5),
+      breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
+      minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    )
 
 plot(lactate_plot)
 
