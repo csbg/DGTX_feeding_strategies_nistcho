@@ -76,7 +76,7 @@ base_theme <- theme_bw() +
     text = element_text(family = "sans", color = "black", size = 11),
     # Keep the panel clean
     panel.grid.major.x = element_blank(),
-    #panel.grid.minor.x = element_blank(),
+   # panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
     panel.border = element_blank(),
 

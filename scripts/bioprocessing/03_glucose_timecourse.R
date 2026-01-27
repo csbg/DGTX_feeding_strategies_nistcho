@@ -75,7 +75,6 @@ base_theme <- theme_bw() +
     axis.title.y = element_text(hjust = 0.5, face = "bold"),
     axis.title.x = element_text(hjust = 0.5, face = "bold"),
     panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
     panel.border = element_blank(),
     legend.position = "bottom",
@@ -98,20 +97,20 @@ high_glc <- summary_data %>%
     )
   )
 
-high_glc_plt <- ggplot(high_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
-  geom_point(size = 0.7) +
+high_glc_plt <- ggplot(high_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
+  geom_point(size = 1) +
   geom_line(linewidth = 0.7) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
       ymax = mean_glucose + se_glucose
     ),
-    width = 3,
+    width = 0.2,
     size = 0.5
   ) +
   base_theme +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Glucose [g/L]"
   ) +
   scale_color_manual(
@@ -122,7 +121,11 @@ high_glc_plt <- ggplot(high_glc, aes(x = Hour, y = mean_glucose, color = Conditi
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 270), breaks = seq(24, 270, 48)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
+    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+  )+
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
 plot(high_glc_plt)
@@ -153,20 +156,20 @@ med_glc <- summary_data %>%
   # Remove problematic/excluded timepoints
   filter(!(Hour %in% c("72", "73", "96")))
 
-med_glc_plt <- ggplot(med_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
-  geom_point(size = 0.7) +
-  geom_line(linewidth = 0.7) +
+med_glc_plt <- ggplot(med_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
+  geom_point(size = 1) +
+  geom_line(linewidth = 0.6) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
       ymax = mean_glucose + se_glucose
     ),
-    width = 3,
+    width = 0.2,
     size = 0.5
   ) +
   base_theme +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Glucose [g/L]"
   ) +
   scale_color_manual(
@@ -178,7 +181,11 @@ med_glc_plt <- ggplot(med_glc, aes(x = Hour, y = mean_glucose, color = Condition
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 270), breaks = seq(24, 270, 48)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
+    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+  )+
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
 plot(med_glc_plt)
@@ -208,28 +215,28 @@ low_glc <- summary_data %>%
   # Remove problematic/excluded timepoints
   filter(!(Hour %in% c("72", "73", "96")))
 
-low_glc_plt <- ggplot(low_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
+low_glc_plt <- ggplot(low_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
   geom_point(
     aes(group = Condition),
     size      = 0.7,
-    position  = position_dodge(width = 2)
+    position  = position_dodge(width = 0.1)
   ) +
   geom_line(
     aes(group = Condition),
-    linewidth      = 0.7,
-    position  = position_dodge(width = 2)
+    linewidth = 0.6,
+    position = position_dodge(width = 0.1)
   ) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
       ymax = mean_glucose + se_glucose
     ),
-    width = 3,
+    width = 0.2,
     size = 0.5
   ) +
   base_theme +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Glucose [g/L]"
   ) +
   scale_color_manual(
@@ -240,7 +247,11 @@ low_glc_plt <- ggplot(low_glc, aes(x = Hour, y = mean_glucose, color = Condition
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(-1, 271), breaks = seq(24, 270, 48)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
+    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+  ) +
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
 plot(low_glc_plt)
