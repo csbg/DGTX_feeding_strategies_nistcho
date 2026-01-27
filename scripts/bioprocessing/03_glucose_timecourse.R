@@ -34,7 +34,7 @@ library(here)
 ## -------------------------------------------------------------------
 
 Glucose_pH_rawdata <- read_excel(
-  here("data", "05_glucose_data.xlsx")
+  here("data", "05_glucose_data copy.xlsx")
 )
 
 ## Expected columns (minimum):
@@ -152,7 +152,7 @@ med_glc <- summary_data %>%
       "C" = "LoG+",
       "D" = "HiF"
     )
-  ) %>%
+  ) #%>%
   # Remove problematic/excluded timepoints
   filter(!(Hour %in% c("72", "73", "96")))
 
@@ -211,7 +211,7 @@ low_glc <- summary_data %>%
       "E" = "HIP",
       "F" = "HIP+"
     )
-  ) %>%
+  ) #%>%
   # Remove problematic/excluded timepoints
   filter(!(Hour %in% c("72", "73", "96")))
 
