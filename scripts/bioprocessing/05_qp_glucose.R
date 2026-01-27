@@ -79,7 +79,7 @@ base_theme <- theme_bw() +
 ## 2. Load glucose data and define feeding windows
 ## -------------------------------------------------------------------
 
-Glucose_rawdata <- read_excel(here("data", "05_glucose_data.xlsx"))
+Glucose_rawdata <- read_excel(here("data", "05_glucose_data copy.xlsx"))
 
 # Keep only fed-batch conditions A–G and remove NaNs in Glucose_corr_[g/L]
 summary_data_2 <- Glucose_rawdata %>%
@@ -94,20 +94,19 @@ low_glc <- summary_data_2 %>%
       "E" = "HIP",
       "F" = "HIP+"
     )
-  ) %>%
-  filter(!Hour %in% c("72", "73", "96"))
+  )
 
-med_glc <- summary_data_2 %>%
-  filter(Condition %in% c("G", "C", "D")) %>%
-  mutate(
-    Condition = dplyr::recode(Condition,
-      "G" = "LoG",
-      "C" = "LoG+",
-      "D" = "HiF"
+
+  med_glc <- summary_data_2 %>%
+    filter(Condition %in% c("G", "C", "D")) %>%
+    mutate(
+      Condition = dplyr::recode(Condition,
+        "G" = "LoG",
+        "C" = "LoG+",
+        "D" = "HiF"
+      )
     )
-  ) %>%
-  filter(!Hour %in% c("72", "73", "96"))
-
+  
 high_glc <- summary_data_2 %>%
   filter(Condition %in% c("A", "B")) %>%
   mutate(
@@ -139,7 +138,8 @@ window_df_LoG <- merged_df %>%
   filter(Condition %in% c("LoG", "LoG+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 121 ~ "120",
+      Hour >= 0 & Hour < 73 ~ "72",
+      Hour >= 73  & Hour < 121 ~ "120",
       Hour >= 121 & Hour < 169 ~ "168",
       Hour >= 169 & Hour < 217 ~ "216",
       TRUE ~ NA_character_
@@ -151,7 +151,9 @@ window_df_HIP <- merged_df %>%
   filter(Condition %in% c("HIP", "HIP+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 145 ~ "144",
+      Hour >= 0 & Hour < 73 ~ "72",
+      Hour >= 73 & Hour < 121 ~ "120",
+      Hour >= 121 & Hour < 145 ~ "144",
       Hour >= 145 & Hour < 169 ~ "168",
       Hour >= 169 & Hour < 193 ~ "192",
       Hour >= 193 & Hour < 217 ~ "216",
@@ -166,7 +168,8 @@ window_df_HiF <- merged_df %>%
   filter(Condition %in% c("HiF")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 121 ~ "120",
+      Hour >= 0 & Hour < 73 ~ "72",
+      Hour >= 73 & Hour < 121 ~ "120",
       Hour >= 121 & Hour < 145 ~ "144",
       Hour >= 145 & Hour < 169 ~ "168",
       Hour >= 169 & Hour < 193 ~ "192",
@@ -328,7 +331,7 @@ qp_gluc <- ggplot(
     guide  = guide_legend(nrow = 1)
   ) +
   scale_x_continuous(limits = c(0, 295), breaks = seq(24, 264, 48)) +
-  scale_y_continuous(breaks = seq(-4, 0, by = 0.5))
+  scale_y_continuous(breaks = seq(-6, 0, by = 1))
 
 plot(qp_gluc)
 
