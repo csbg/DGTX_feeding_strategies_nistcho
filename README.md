@@ -1,5 +1,4 @@
-# Systematic Evaluation of Fed-Batch Feeding Strategies in NISTCHO Linking Culture Performance to Product Quality Attributes on Intact cNISTmAb
-
+# Effects of feeding strategies on culture performance and product quality in NISTCHO
 ## 📄 Overview
 
 This repository contains the analysis scripts and figure-generation R codes for the publication.
@@ -33,7 +32,7 @@ Below is an overview of the purpose and outputs of each script:
 
 The full raw dataset for this study is archived and publicly available on Zenodo:
 
-Zenodo DOI: INSERT_DOI_HERE
+Zenodo DOI:[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17046013.svg)](https://doi.org/10.5281/zenodo.17046013)
 
 The processed data provided in this repository were generated entirely from the Zenodo raw data using the scripts in /scripts.
 
@@ -59,3 +58,4 @@ University of Salzburg
 University of Salzburg
 📧 **veronika.schaepertoens@plus.ac.at**  
 🔗 **GitHub:** [@VSchaepertoens](https://github.com/VSchaepertoens) 
+

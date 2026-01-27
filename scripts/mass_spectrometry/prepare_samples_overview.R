@@ -25,5 +25,5 @@ df <- tibble(raw_full_path = dir_ls(path = path_abs,regexp =  ".*\\.raw"),) %>%
   mutate(condition_br_tp = paste(condition,biological_replicate,timepoint, sep = "_"))
 
 write_csv(x = df, 
-          file = "data/mzml_to_convert/samples_overview.csv")
+          file = "data/mzml_to_convert/samples_overview_qc.csv")
 
