@@ -165,7 +165,7 @@ lactate_qp_summary2 <- lactate_qp_summary %>%
 
 p_lactate_qp <- ggplot(
   lactate_qp_summary2,
-  aes(x = h, y = mean_qLac * 24, colour = Condition)
+  aes(x = h / 24, y = mean_qLac * 24, colour = Condition)
 ) +
   geom_point(size = 1) +
   geom_line(linewidth = 0.6, na.rm = FALSE) +
@@ -174,11 +174,11 @@ p_lactate_qp <- ggplot(
       ymin = (mean_qLac - se_qLac) * 24,
       ymax = (mean_qLac + se_qLac) * 24
     ),
-    width = 3
+    width = 0.2
   ) +
   labs(
     x = "Culture duration [h]",
-    y = "qLac [pmol/cell/day]"
+    y = expression(bold(q)[Lac] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
   ) +
   geom_text_repel(
     data = filter(lactate_qp_summary2, is_last),
@@ -187,31 +187,12 @@ p_lactate_qp <- ggplot(
     size = 2.5,
     angle = 0,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   geom_hline(yintercept = 0, colour = "grey60", linetype = "dashed") +
-  theme_bw() +
-  theme(
-    text = element_text(
-      size   = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(colour = "black", size = 11),
-    axis.title.y = element_text(face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  ) +
+  base_theme +
   scale_color_manual(
     values = c(
       "STD"  = "grey50",
@@ -226,14 +207,15 @@ p_lactate_qp <- ggplot(
     guide = guide_legend(nrow = 1)
   ) +
   scale_x_continuous(
-    limits = c(0, 295),
-    breaks = seq(24, 264, 48)
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
   ) +
   scale_y_continuous(
     limits = c(-0.6, 0.3)
   )
 
 plot(p_lactate_qp)
+
 
 # save as .csv
 write.csv(lactate_qp_summary2,
@@ -249,7 +231,8 @@ ggsave(
   plot     = p_lactate_qp,
   units    = "cm",
   height   = 10,
-  width    = 20,
+  width    = 15,
   dpi      = 300
 )
+
 

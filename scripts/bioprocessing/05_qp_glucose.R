@@ -124,11 +124,11 @@ window_df_STD <- merged_df %>%
   filter(Condition %in% c("STD", "STD+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 73 ~ "72",
-      Hour >= 73 & Hour < 121 ~ "120",
-      Hour >= 121 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 217 ~ "216",
-      Hour >= 217 & Hour < 265 ~ "264",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73 & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 217 ~ "9",
+      Hour >= 217 & Hour < 265 ~ "11",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -138,10 +138,10 @@ window_df_LoG <- merged_df %>%
   filter(Condition %in% c("LoG", "LoG+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 73 ~ "72",
-      Hour >= 73  & Hour < 121 ~ "120",
-      Hour >= 121 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 217 ~ "216",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73  & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 217 ~ "9",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -151,14 +151,14 @@ window_df_HIP <- merged_df %>%
   filter(Condition %in% c("HIP", "HIP+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 73 ~ "72",
-      Hour >= 73 & Hour < 121 ~ "120",
-      Hour >= 121 & Hour < 145 ~ "144",
-      Hour >= 145 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 193 ~ "192",
-      Hour >= 193 & Hour < 217 ~ "216",
-      Hour >= 217 & Hour < 241 ~ "240",
-      Hour >= 241 & Hour < 265 ~ "264",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73 & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 145 ~ "6",
+      Hour >= 145 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 193 ~ "8",
+      Hour >= 193 & Hour < 217 ~ "9",
+      Hour >= 217 & Hour < 241 ~ "10",
+      Hour >= 241 & Hour < 265 ~ "11",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -168,14 +168,14 @@ window_df_HiF <- merged_df %>%
   filter(Condition %in% c("HiF")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 73 ~ "72",
-      Hour >= 73 & Hour < 121 ~ "120",
-      Hour >= 121 & Hour < 145 ~ "144",
-      Hour >= 145 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 193 ~ "192",
-      Hour >= 193 & Hour < 217 ~ "216",
-      Hour >= 217 & Hour < 241 ~ "240",
-      Hour >= 241 & Hour < 265 ~ "264",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73 & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 145 ~ "6",
+      Hour >= 145 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 193 ~ "8",
+      Hour >= 193 & Hour < 217 ~ "9",
+      Hour >= 217 & Hour < 241 ~ "10",
+      Hour >= 241 & Hour < 265 ~ "11",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -292,37 +292,41 @@ qp_results_avg <- qp_results %>%
   mutate(is_last = Feeding_Window == max(Feeding_Window)) %>%
   ungroup()
 
-# Line plot of qGlc over feeding windows (converted to per day by *24)
+# Line plot of qGlc over feeding windows
 qp_gluc <- ggplot(
   qp_results_avg,
   aes(
-    x = Feeding_Window, y = avg_Rate_pmol_c_h * 24,
-    color = Condition, group = Condition
+    x = Feeding_Window,
+    # Use abs() here if you want positive consumption rates,
+    # or leave as is to show negative flux
+    y = avg_Rate_pmol_c_h * 24,
+    color = Condition,
+    group = Condition
   )
 ) +
-  geom_point(size = 1) +
-  geom_line(linewidth = 0.6) +
+  geom_point(size = 1.5) +
+  geom_line(linewidth = 0.8) +
   geom_errorbar(
     aes(
       ymin = (avg_Rate_pmol_c_h - SE_Rate_pmol_c_h) * 24,
       ymax = (avg_Rate_pmol_c_h + SE_Rate_pmol_c_h) * 24
     ),
-    width = 3
+    width = 0.2
   ) +
   geom_text_repel(
     data = filter(qp_results_avg, is_last),
     aes(label = Condition),
-    hjust = 0,
-    size = 2.5,
+    size = 3,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 0.5,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
-  geom_hline(yintercept = 0, color = "grey60", linetype = "dashed") +
+  geom_hline(yintercept = 0, colour = "grey60", linetype = "dashed") +
   labs(
-    x = "Culture duration [h]",
-    y = "qGlc [pmol/c/d]"
+    x = "Culture duration [d]",
+    # Using the professional expression we created
+    y = expression(bold(q)[Glc] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
   ) +
   base_theme +
   scale_color_manual(
@@ -330,8 +334,11 @@ qp_gluc <- ggplot(
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 264, 48)) +
-  scale_y_continuous(breaks = seq(-6, 0, by = 1))
+  scale_x_continuous(limits = c(0, 12.5), breaks = seq(0, 11, 1)) +
+  scale_y_continuous(
+    limits = c(-6, 0.2) ,
+    breaks = seq(-6, 0, 1)
+  )
 
 plot(qp_gluc)
 
@@ -339,7 +346,7 @@ ggsave("results/qp_glucose_windows.pdf",
   plot   = qp_gluc,
   bg     = "white",
   dpi    = 600,
-  width  = 23,
+  width  = 10,
   height = 15,
   units  = "cm"
 )

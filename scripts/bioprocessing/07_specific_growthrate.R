@@ -49,7 +49,7 @@ condition_map <- c(
 df <- df %>%
   mutate(
     Hours     = round(Hours), # optional: round to integer hours
-    Condition = recode(Condition, !!!condition_map),
+    Condition = dplyr::recode(Condition, !!!condition_map),
     Condition = factor(Condition, levels = condition_levels)
   )
 
@@ -115,7 +115,7 @@ df_mu_summary <- df_mu_summary %>%
 
 growth_plot <- ggplot(
   df_mu_summary,
-  aes(x = Hours, y = mean_mu * 24, colour = Condition)
+  aes(x = Hours/24, y = mean_mu * 24, colour = Condition)
 ) +
   geom_line(linewidth = 0.6, na.rm = FALSE) +
   geom_point(size = 1) +
@@ -124,11 +124,11 @@ growth_plot <- ggplot(
       ymin = (mean_mu - se_mu) * 24,
       ymax = (mean_mu + se_mu) * 24
     ),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = expression(bold("Specific growth rate") ~ bold(mu) ~ bold("[" * d^-1 * "]"))
   ) +
   geom_text_repel(
@@ -138,31 +138,12 @@ growth_plot <- ggplot(
     size = 2.5,
     angle = 0,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   geom_hline(yintercept = 0, colour = "grey60", linetype = "dashed") +
-  theme_bw() +
-  theme(
-    text = element_text(
-      size   = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(colour = "black", size = 11),
-    axis.title.y = element_text(face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  ) +
+  base_theme +
   scale_color_manual(
     values = c(
       "STD"  = "grey50",
@@ -177,12 +158,12 @@ growth_plot <- ggplot(
     guide = guide_legend(nrow = 1)
   ) +
   scale_x_continuous(
-    limits = c(0, 295),
-    breaks = seq(24, 264, 48)
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
   ) +
   scale_y_continuous(
-    limits = c(-0.2, 1),
-    breaks = seq(-0.2, 1, 0.2)
+    limits = c(-0.1, 0.95),
+    breaks = seq(-0.1, 0.9, 0.2)
   )
 
 plot(growth_plot)

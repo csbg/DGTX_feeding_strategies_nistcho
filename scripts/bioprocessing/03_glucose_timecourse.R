@@ -65,24 +65,25 @@ summary_data <- Glucose_pH_rawdata %>%
 
 base_theme <- theme_bw() +
   theme(
-    text = element_text(
-      size   = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 10),
-    axis.title.y = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  )
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
 
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
 ## -------------------------------------------------------------------
 ## 4. High-glucose feeding strategies: STD (A) & STD+ (B)
 ## -------------------------------------------------------------------
@@ -123,8 +124,7 @@ high_glc_plt <- ggplot(high_glc, aes(x = Hour/24, y = mean_glucose, color = Cond
   ) +
   scale_x_continuous(
     limits = c(0, 12.5),
-    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
-    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    breaks = seq(0, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
   )+
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
@@ -152,9 +152,7 @@ med_glc <- summary_data %>%
       "C" = "LoG+",
       "D" = "HiF"
     )
-  ) #%>%
-  # Remove problematic/excluded timepoints
-  filter(!(Hour %in% c("72", "73", "96")))
+  )
 
 med_glc_plt <- ggplot(med_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
   geom_point(size = 1) +
@@ -183,8 +181,7 @@ med_glc_plt <- ggplot(med_glc, aes(x = Hour/24, y = mean_glucose, color = Condit
   ) +
   scale_x_continuous(
     limits = c(0, 12.5),
-    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
-    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    breaks = seq(0, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
   )+
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
@@ -211,9 +208,7 @@ low_glc <- summary_data %>%
       "E" = "HIP",
       "F" = "HIP+"
     )
-  ) #%>%
-  # Remove problematic/excluded timepoints
-  filter(!(Hour %in% c("72", "73", "96")))
+  )
 
 low_glc_plt <- ggplot(low_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
   geom_point(
@@ -249,8 +244,7 @@ low_glc_plt <- ggplot(low_glc, aes(x = Hour/24, y = mean_glucose, color = Condit
   ) +
   scale_x_continuous(
     limits = c(0, 12.5),
-    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
-    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    breaks = seq(0, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
   ) +
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 

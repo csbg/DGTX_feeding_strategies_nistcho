@@ -104,23 +104,24 @@ condition_colors <- c(
 # Base theme for line and bar plots
 base_theme <- theme_bw() +
   theme(
-    text = element_text(
-      size = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 10),
-    axis.title.y = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
     panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
+
+    # Clean borders and solid black lines
     panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
     legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
+    legend.title = element_text(face = "bold")
   )
 
 ## -------------------------------------------------------------------
@@ -248,7 +249,7 @@ tukey_df_anno <- tukey_df %>%
   separate(Comparison, into = c("group1", "group2"), sep = "-") %>%
   mutate(
     .y.        = "mean_IVCD", # response variable in the barplot below
-    y.position = 3200 # vertical position for brackets (adjust to your scale)
+    y.position = 130 # vertical position for brackets (adjust to your scale)
   )
 
 ## Save annotations for reproducibility
@@ -266,7 +267,7 @@ IVCD_last_cond <- IVCD_avg %>%
 
 ### Barplot with all pairwise comparisons annotated
 
-IVCD_bar_all <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
+IVCD_bar_all <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD/24)) +
   geom_bar(
     aes(fill = Condition),
     stat     = "identity",
@@ -276,17 +277,15 @@ IVCD_bar_all <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
   ) +
   geom_errorbar(
     aes(
-      ymin = mean_IVCD - se_IVCD,
-      ymax = mean_IVCD + se_IVCD
+      ymin = mean_IVCD/24 - se_IVCD/24,
+      ymax = mean_IVCD/24 + se_IVCD/24
     ),
     width = 0.2,
     position = position_dodge(0.9)
   ) +
   labs(
     x = "Condition",
-    y = expression(bold("IVCD") ~ bold("[") * bold(10)^6 * bold(" cells·h·mL"^-1) * bold("]")),
-    title = "Integral viable cell density (final time point)"
-  ) +
+    y = expression(bold("IVCD") ~ "[" * 10^6 ~ cells %.% day %.% mL^-1 * "]")) +
   base_theme +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5, face = "bold"),
@@ -298,8 +297,8 @@ IVCD_bar_all <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
     guide = guide_legend(nrow = 1)
   ) +
   scale_y_continuous(
-    limits = c(0, 6500),
-    breaks = seq(0, 3000, 500)
+    limits = c(0, 275),
+    breaks = seq(0, 125, 25)
   ) +
   stat_pvalue_manual(
     tukey_df_anno,
@@ -327,7 +326,7 @@ tukey_df_STD_anno <- tukey_df_anno %>%
   filter(group1 == "STD" | group2 == "STD") %>%
   filter(Significance != "ns")
 
-IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
+IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD/24)) +
   geom_bar(
     aes(fill = Condition),
     stat     = "identity",
@@ -337,16 +336,15 @@ IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
   ) +
   geom_errorbar(
     aes(
-      ymin = mean_IVCD - se_IVCD,
-      ymax = mean_IVCD + se_IVCD
+      ymin = mean_IVCD/24 - se_IVCD/24,
+      ymax = mean_IVCD/24 + se_IVCD/24
     ),
     width = 0.2,
     position = position_dodge(0.9)
   ) +
   labs(
     x = "Condition",
-    y = expression(bold("IVCD") ~ bold("[") * bold(10)^6 * bold(" cells·h·mL"^-1) * bold("]"))
-  ) +
+    y = expression(bold("IVCD") ~ "[" * 10^6 ~ cells %.% day %.% mL^-1 * "]")) +
   base_theme +
   scale_fill_manual(
     values = condition_colors,
@@ -361,8 +359,8 @@ IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD)) +
     size = 1
   ) +
   scale_y_continuous(
-    limits = c(0, 3500),
-    breaks = seq(0, 3000, 500)
+    limits = c(0, 150),
+    breaks = seq(0, 150, 25)
   )
 
 plot(IVCD_bar_STD)

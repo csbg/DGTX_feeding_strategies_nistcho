@@ -25,6 +25,7 @@ library(tidyverse)
 library(ggpubr)
 library(ggrepel)
 library(here)
+library(car)
 
 ## -------------------------------------------------------------------
 ## 1. Load data
@@ -73,19 +74,22 @@ condition_colors <- c(
 # Base theme for line and bar plots
 base_theme <- theme_bw() +
   theme(
+    # Set global text color to black
     text = element_text(family = "sans", color = "black", size = 11),
-    # Keep the panel clean
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
     panel.grid.major.x = element_blank(),
-   # panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
+
+    # Clean borders and solid black lines
     panel.border = element_blank(),
-
-    # Ensure the axis and ticks are visible
     axis.line = element_line(color = "black"),
-    axis.ticks = element_line(color = "black"), # This makes sure ticks exist!
-
-    axis.title.y = element_text(hjust = 0.5),
-    axis.title.x = element_text(hjust = 0.5),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
     legend.position = "bottom",
     legend.title = element_text(face = "bold")
   )
@@ -126,7 +130,7 @@ vcd <- avg_df %>%
   ) +
   labs(
     x = "Culture duration [d]",
-    y = expression(bold("Viable cell density") ~ bold("[10"^6 * " cells" %.% "mL"^-1 * "]"))
+    y = expression("Viable cell density" ~ "[10"^6 ~ "cells" %.% "mL"^-1 * "]")
   ) +
   base_theme +
   scale_color_manual(
@@ -136,10 +140,9 @@ vcd <- avg_df %>%
   ) +
   scale_y_continuous(limits = c(0, 25), breaks = seq(0, 25, 5)) +
   scale_x_continuous(
-      limits = c(0, 12.5),
-      breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
-      minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
-    )
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 plot(vcd)
 
 ggsave("results/VCD_averaged.pdf",
@@ -185,8 +188,7 @@ via <- avg_df %>%
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)) +
   scale_x_continuous(
     limits = c(0, 12.5),
-    breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
-    minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    breaks = seq(0, 11, 1)
   )
 
 plot(via)
@@ -234,9 +236,8 @@ dia <- avg_df %>%
   ) + 
   base_theme +
   scale_x_continuous(
-    limits = c(0, 12.5), 
-    breaks = seq(1, 12, 2),       # Major ticks: 0, 2, 4, 6, 8, 10, 12
-    minor_breaks = seq(0, 11, 1)  # Minor ticks: adds 1, 3, 5, 7, 9, 11
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
   )
 plot(dia)
 
@@ -309,11 +310,10 @@ titer_plot <- titer_avg %>%
     guide  = guide_legend(nrow = 1)
   ) +
   scale_y_continuous(limits = c(0, 2.25), breaks = seq(0, 2, 0.5)) +
-    scale_x_continuous(
-      limits = c(0, 12.5),
-      breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
-      minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
-    )
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 
 plot(titer_plot)
 
@@ -385,11 +385,10 @@ lactate_plot <- lactate_avg %>%
     guide  = guide_legend(nrow = 1)
   ) +
   scale_y_continuous(limits = c(0, 16), breaks = seq(0, 16, 2))+
-    scale_x_continuous(
-      limits = c(0, 12.5),
-      breaks = seq(1, 12, 2), # Major ticks: 0, 2, 4, 6, 8, 10, 12
-      minor_breaks = seq(0, 11, 1) # Minor ticks: adds 1, 3, 5, 7, 9, 11
-    )
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 
 plot(lactate_plot)
 
@@ -419,13 +418,15 @@ titer_last <- titer_avg %>%
   select(Condition, mean_titer, se_titer)
 
 ## 6.1 ANOVA on final titer (µg/mL) across conditions
-
 anova_total_titer <- aov(Titer_ug.mL ~ Condition, data = last_timepoint)
 summary(anova_total_titer)
 
 # Check normality of ANOVA residuals (Shapiro–Wilk)
 res <- residuals(anova_total_titer)
 shapiro.test(res)
+
+# Levene test for homogeneity of variances
+leveneTest(Titer_ug.mL ~ Condition, data = last_timepoint)
 
 # Tukey HSD post-hoc test
 tukey_result <- TukeyHSD(anova_total_titer)
@@ -462,10 +463,10 @@ write.csv(tukey_df_anno, "results/tukey_total_titer.csv", row.names = FALSE)
 totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) +
   geom_bar(
     aes(fill = Condition),
-    stat     = "identity",
+    stat = "identity",
     position = position_dodge(width = 0.95),
-    color    = "black",
-    linewidth= 0.5
+    color = "black",
+    linewidth = 0.5
   ) +
   geom_errorbar(
     aes(
@@ -479,14 +480,7 @@ totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     x     = "Condition",
     y     = "Final cNISTmAb titer [g/L]",
   ) +
-  theme_classic() +
-  theme(
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 8, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "none"
-  ) +
+  base_theme +
   scale_fill_manual(
     values = condition_colors,
     name = "Feeding Strategy",
@@ -498,7 +492,8 @@ totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     step.increase = 0.1,
     label.size = 3,
     size = 1
-  )
+  ) +
+  scale_y_continuous(limits = c(0, 5), breaks = seq(0, 2, 0.5))
 
 plot(totaltiter_all)
 
@@ -511,7 +506,7 @@ ggsave("results/total_titer_all_stat.pdf",
   dpi    = 600
 )
 
-# Figure 1 
+# Figure 1
 ## 1I Barplot of final titer with only comparisons vs STD
 
 # Filter Tukey results to comparisons involving STD and remove non-significant ones
@@ -519,13 +514,21 @@ titer_STD_anno <- tukey_df_anno %>%
   filter(group1 == "STD" | group2 == "STD") %>%
   filter(Significance != "ns")
 
+# 1. Extract the p-value
+stats_results <- summary(anova_total_titer)[[1]]
+p_val_raw <- stats_results["Condition", "Pr(>F)"]
+
+# 2. Format to exactly "3.8e-09" style
+# digits = 2 gives you the two significant figures (3 and 8)
+anova_lab <- paste0("Anova, p = ", format(p_val_raw, scientific = TRUE, digits = 2))
+# 2. Add it to your plot
 totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) +
   geom_bar(
     aes(fill = Condition),
-    stat     = "identity",
+    stat = "identity",
     position = position_dodge(width = 0.95),
-    color    = "black",
-    size     = 0.5
+    color = "black",
+    linewidth = 0.5 # 'size' is deprecated in newer ggplot2 for lines
   ) +
   geom_errorbar(
     aes(
@@ -535,10 +538,11 @@ totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     width = 0.2,
     position = position_dodge(0.9)
   ) +
+  # Add the Global P-value as a text annotation
+  annotate("text", x = 0.5, y = 3, label = anova_lab, hjust = 0, size = 3) +
   labs(
     x = "Condition",
-    y = "Final cNISTmAb titer [g/L]"
-  ) +
+    y = "Final cNISTmAb titer [g/L]") +
   base_theme +
   scale_fill_manual(
     values = condition_colors,
@@ -548,13 +552,13 @@ totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
   stat_pvalue_manual(
     titer_STD_anno,
     label = "Significance",
-    step.increase = 0.1,
-    label.size = 5,
-    size = 2.5
+    step.increase = 0.07,
+    label.size = 3,
+    tip.length = 0.01
   ) +
   scale_y_continuous(
-    limits = c(0, 2.8),
-    breaks = seq(0, 2, 0.5)
+    limits = c(0, 3.0), # Increased slightly to make room for bars
+    breaks = seq(0, 2.5, 0.5)
   )
 
 plot(totaltiter_STD)
