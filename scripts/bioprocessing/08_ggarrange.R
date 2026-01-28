@@ -1,6 +1,6 @@
-
+# Figure 2 
 ggarrange(
-    IVCD_plot, qp_entire, titer_qp, growth, qp_gluc, lactate_qp,
+    IVCD_bar_STD, qp_bar_STD, qp_timecourse, growth_plot, qp_gluc, p_lactate_qp,
     labels = c("A", "B", "C", "D", "E", "F"),
     common.legend = TRUE,
     legend = "bottom",
@@ -12,9 +12,9 @@ ggsave("results/IVCD_csr.pdf",
     bg = "white",
     dpi = 600
 )
-desired_legend <- get_legend(qp_entire)
+desired_legend <- get_legend(qp_bar_STD)
 
-ggarrange(vcd, via, dia, high_glc_plt, med_glc_plt, low_glc_plt, lactate_plot, titer_plot, totaltiter,
+ggarrange(vcd, via, dia, high_glc_plt, med_glc_plt, low_glc_plt, lactate_plot, titer_plot, totaltiter_STD,
     labels = c("A", "B", "C", "D", "E", "F", "G", "H", "I"),
     common.legend = TRUE,
     legend = "bottom",
