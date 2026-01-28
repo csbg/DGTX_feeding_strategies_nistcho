@@ -30,6 +30,28 @@ library(car)
 ## -------------------------------------------------------------------
 ## 1. Load raw ViCell data
 ## -------------------------------------------------------------------
+base_theme <- theme_bw() +
+  theme(
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
+
 
 df <- read.csv(here("data", "01_ViCell_growth_data.csv"))
 
@@ -178,9 +200,7 @@ IVCD_timecourse <- ggplot(IVCD_avg, aes(x = mean_hours, y = mean_IVCD, color = C
   ) +
   labs(
     x = "Culture duration [h]",
-    y = expression(bold("IVCD") ~ bold("[") * bold(10)^6 * bold(" cells·h·mL"^-1) * bold("]")),
-    title = "Integral viable cell density (IVCD)"
-  ) +
+    y = expression(IVCD ~ "[" * 10^6 ~ cells %.% h %.% mL^-1 * "]")  ) +
   base_theme +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5, face = "bold")
@@ -321,12 +341,18 @@ ggsave("results/IVCD_last_timepoint_all_stat.pdf",
 
 # Figure 2
 ### 2A Barplot with only comparisons vs STD (significant only)
+# 1. Extract the p-value
+stats_results <- summary(anova_IVCD)[[1]]
+p_val_raw <- stats_results["Condition", "Pr(>F)"]
+
+anova_lab <- paste0("Anova, p = ", format(p_val_raw, scientific = TRUE, digits = 2))
+
 
 tukey_df_STD_anno <- tukey_df_anno %>%
   filter(group1 == "STD" | group2 == "STD") %>%
   filter(Significance != "ns")
 
-IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD/24)) +
+IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD / 24)) +
   geom_bar(
     aes(fill = Condition),
     stat     = "identity",
@@ -336,31 +362,32 @@ IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD/24)) +
   ) +
   geom_errorbar(
     aes(
-      ymin = mean_IVCD/24 - se_IVCD/24,
-      ymax = mean_IVCD/24 + se_IVCD/24
+      ymin = mean_IVCD / 24 - se_IVCD / 24,
+      ymax = mean_IVCD / 24 + se_IVCD / 24
     ),
     width = 0.2,
     position = position_dodge(0.9)
   ) +
   labs(
     x = "Condition",
-    y = expression(bold("IVCD") ~ "[" * 10^6 ~ cells %.% day %.% mL^-1 * "]")) +
+    y = expression(IVCD ~ "[" * 10^6 ~ cells %.% h %.% mL^-1 * "]")) +
   base_theme +
   scale_fill_manual(
     values = condition_colors,
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
+    annotate("text", x = 0.7, y = 150, label = anova_lab, hjust = 0, size = 4) +
   stat_pvalue_manual(
     tukey_df_STD_anno,
     label = "Significance",
-    step.increase = 0.1,
+    step.increase = 0.08,
     label.size = 3,
     size = 1
   ) +
   scale_y_continuous(
     limits = c(0, 150),
-    breaks = seq(0, 150, 25)
+    breaks = seq(0, 125, 25)
   )
 
 plot(IVCD_bar_STD)

@@ -300,7 +300,7 @@ titer_plot <- titer_avg %>%
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "cNISTmAb titer [g/L]"
   ) +
   base_theme +
@@ -375,7 +375,7 @@ lactate_plot <- lactate_avg %>%
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Extracellular lactate [mM]"
   ) +
   base_theme +
@@ -518,8 +518,7 @@ titer_STD_anno <- tukey_df_anno %>%
 stats_results <- summary(anova_total_titer)[[1]]
 p_val_raw <- stats_results["Condition", "Pr(>F)"]
 
-# 2. Format to exactly "3.8e-09" style
-# digits = 2 gives you the two significant figures (3 and 8)
+
 anova_lab <- paste0("Anova, p = ", format(p_val_raw, scientific = TRUE, digits = 2))
 # 2. Add it to your plot
 totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) +

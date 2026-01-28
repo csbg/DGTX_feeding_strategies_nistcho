@@ -318,7 +318,7 @@ qp_gluc <- ggplot(
     aes(label = Condition),
     size = 3,
     fontface = "bold",
-    nudge_x = 0.5,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
@@ -326,7 +326,7 @@ qp_gluc <- ggplot(
   labs(
     x = "Culture duration [d]",
     # Using the professional expression we created
-    y = expression(bold(q)[Glc] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
+    y = expression(q[Glc] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
   ) +
   base_theme +
   scale_color_manual(
@@ -334,7 +334,7 @@ qp_gluc <- ggplot(
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 12.5), breaks = seq(0, 11, 1)) +
+  scale_x_continuous(limits = c(2.7, 12.5), breaks = seq(3, 11, 1)) +
   scale_y_continuous(
     limits = c(-6, 0.2) ,
     breaks = seq(-6, 0, 1)

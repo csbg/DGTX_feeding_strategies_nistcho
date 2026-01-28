@@ -129,7 +129,7 @@ growth_plot <- ggplot(
   ) +
   labs(
     x = "Culture duration [d]",
-    y = expression(bold("Specific growth rate") ~ bold(mu) ~ bold("[" * d^-1 * "]"))
+    y = expression("Specific growth rate" ~ mu ~ "[" * day^-1 * "]")
   ) +
   geom_text_repel(
     data = filter(df_mu_summary, is_last),
@@ -158,11 +158,11 @@ growth_plot <- ggplot(
     guide = guide_legend(nrow = 1)
   ) +
   scale_x_continuous(
-    limits = c(0, 12.5),
-    breaks = seq(0, 11, 1)
+    limits = c(2.7, 12.5),
+    breaks = seq(3, 11, 1)
   ) +
   scale_y_continuous(
-    limits = c(-0.1, 0.95),
+    limits = c(-0.15, 0.95),
     breaks = seq(-0.1, 0.9, 0.2)
   )
 

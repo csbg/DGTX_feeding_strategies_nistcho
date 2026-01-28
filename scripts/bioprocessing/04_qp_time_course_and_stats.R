@@ -137,6 +137,33 @@ titer_qp_clean <- titer_qp %>%
 ## -------------------------------------------------------------------
 ## 3. Summary over time for qp time course plot
 ## -------------------------------------------------------------------
+# 1. Define Molecular Weight of NISTmAb (g/mol)
+mw_cnistmab <- 145416
+
+# 2. Perform the conversion
+titer_qp_converted <- titer_qp_clean %>%
+  mutate(
+    # qp is currently pg/cell/h. Convert to pmol/cell/h:
+    qp_pmol_cell_h = qp / mw_cnistmab,
+
+    # Convert to daily rate: pmol/cell/day
+    qp_pmol_cell_day = qp_pmol_cell_h * 24
+  )
+
+# 3. Create the summary for plotting
+titer_qp_summary_pmol <- titer_qp_converted %>%
+  group_by(Condition, Hours) %>%
+  summarise(
+    mean_qp = mean(qp_pmol_cell_day, na.rm = TRUE),
+    sd_qp   = sd(qp_pmol_cell_day, na.rm = TRUE),
+    n       = sum(!is.na(qp_pmol_cell_day)),
+    se_qp   = sd_qp / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    Condition = factor(Condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")),
+    is_last   = Hours == max(Hours)
+  )
 
 titer_qp_summary <- titer_qp_clean %>%
   group_by(Condition, Hours) %>%
@@ -164,12 +191,40 @@ titer_qp_summary <- titer_qp_clean %>%
 ## -------------------------------------------------------------------
 # remove the last TP from LoG and LoG+ (as qp cannot actually be negative = consumption)
 
-titer_qp_summary <- titer_qp_summary %>%
-  filter(!(Condition %in% c("LoG", "LoG+") & Hour_ID == 245))
+titer_qp_summary_pmol <- titer_qp_summary_pmol %>%
+  filter(!(Condition %in% c("LoG", "LoG+") & Hours == 245))
+
+
+qp_timecourse <- ggplot(
+  titer_qp_summary_pmol,
+  aes(x = Hours / 24, y = mean_qp, color = Condition)
+) +
+  geom_point(size = 1.5) +
+  geom_line(linewidth = 0.8) +
+  geom_errorbar(
+    aes(ymin = mean_qp - se_qp, ymax = mean_qp + se_qp),
+    width = 0.2
+  ) +
+  labs(
+    x = "Culture duration [d]",
+    y = expression(q[p] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
+  ) +
+  base_theme +
+  scale_color_manual(
+    values = condition_colors,
+    name   = "Feeding strategy",
+    guide  = guide_legend(nrow = 1)
+  ) +
+  scale_x_continuous(
+    limits = c(3, 12.5),
+    breaks = seq(3, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
+  )+
+  scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
+plot(qp_timecourse)
 
 qp_timecourse <- ggplot(
   titer_qp_summary,
-  aes(x = Hours/24, y = mean_qp * 24, color = Condition)
+  aes(x = Hours / 24, y = mean_qp * 24, color = Condition)
 ) +
   geom_point(size = 1) +
   geom_line(linewidth = 0.6) +
@@ -193,7 +248,8 @@ qp_timecourse <- ggplot(
   ) +
   labs(
     x = "Culture duration [d]",
-    y = expression(bold(q[p]) ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")) +
+    y = expression(q[p] ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")
+  ) +
   base_theme +
   scale_color_manual(
     values = condition_colors,
@@ -389,17 +445,15 @@ ggsave(
 ## -------------------------------------------------------------------
 # Extract global p-value for qp
 qp_p_raw <- summary(anova_qp)[[1]]["Condition", "Pr(>F)"]
-
-# Format to your requested "3.8e-09" style (2 significant digits)
 qp_anova_lab <- paste0("Anova, p = ", format(qp_p_raw, scientific = TRUE, digits = 2))
 
 
 qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   geom_bar(
     aes(fill = Condition),
-    stat     = "identity",
+    stat = "identity",
     position = position_dodge(width = 0.95),
-    color    = "black",
+    color = "black",
     linewidth = 0.5
   ) +
   geom_errorbar(
@@ -412,8 +466,9 @@ qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   ) +
   labs(
     x = "Condition",
-    y = expression(q[p]) ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")+
-  base_theme +
+    y = expression(q[p] ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")
+  )+
+    base_theme +
   scale_fill_manual(
     values = condition_colors,
     name   = "Feeding strategy",
@@ -428,7 +483,7 @@ qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   )+
   annotate(
     "text",
-    x = 0.5, y = 23,
+    x = 0.7, y = 22,
     label = qp_anova_lab,
     hjust = 0,
     size = 4

@@ -177,8 +177,8 @@ p_lactate_qp <- ggplot(
     width = 0.2
   ) +
   labs(
-    x = "Culture duration [h]",
-    y = expression(bold(q)[Lac] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
+    x = "Culture duration [d]",
+    y = expression(q[Lac] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
   ) +
   geom_text_repel(
     data = filter(lactate_qp_summary2, is_last),
@@ -207,11 +207,11 @@ p_lactate_qp <- ggplot(
     guide = guide_legend(nrow = 1)
   ) +
   scale_x_continuous(
-    limits = c(0, 12.5),
-    breaks = seq(0, 11, 1)
+    limits = c(2.7, 12.5),
+    breaks = seq(3, 11, 1)
   ) +
   scale_y_continuous(
-    limits = c(-0.6, 0.3)
+    limits = c(-0.6, 0.38
   )
 
 plot(p_lactate_qp)
