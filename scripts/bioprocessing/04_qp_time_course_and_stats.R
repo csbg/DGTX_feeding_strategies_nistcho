@@ -137,26 +137,14 @@ titer_qp_clean <- titer_qp %>%
 ## -------------------------------------------------------------------
 ## 3. Summary over time for qp time course plot
 ## -------------------------------------------------------------------
-# 1. Define Molecular Weight of NISTmAb (g/mol)
-mw_cnistmab <- 145416
-
-# 2. Perform the conversion
-titer_qp_converted <- titer_qp_clean %>%
-  mutate(
-    # qp is currently pg/cell/h. Convert to pmol/cell/h:
-    qp_pmol_cell_h = qp / mw_cnistmab,
-
-    # Convert to daily rate: pmol/cell/day
-    qp_pmol_cell_day = qp_pmol_cell_h * 24
-  )
 
 # 3. Create the summary for plotting
-titer_qp_summary_pmol <- titer_qp_converted %>%
+titer_qp_summary_pmol <- titer_qp_clean %>%
   group_by(Condition, Hours) %>%
   summarise(
-    mean_qp = mean(qp_pmol_cell_day, na.rm = TRUE),
-    sd_qp   = sd(qp_pmol_cell_day, na.rm = TRUE),
-    n       = sum(!is.na(qp_pmol_cell_day)),
+    mean_qp = mean(qp, na.rm = TRUE),
+    sd_qp   = sd(qp, na.rm = TRUE),
+    n       = sum(!is.na(qp)),
     se_qp   = sd_qp / sqrt(n),
     .groups = "drop"
   ) %>%
@@ -191,36 +179,8 @@ titer_qp_summary <- titer_qp_clean %>%
 ## -------------------------------------------------------------------
 # remove the last TP from LoG and LoG+ (as qp cannot actually be negative = consumption)
 
-titer_qp_summary_pmol <- titer_qp_summary_pmol %>%
+titer_qp_summary <- titer_qp_summary %>%
   filter(!(Condition %in% c("LoG", "LoG+") & Hours == 245))
-
-
-qp_timecourse <- ggplot(
-  titer_qp_summary_pmol,
-  aes(x = Hours / 24, y = mean_qp, color = Condition)
-) +
-  geom_point(size = 1.5) +
-  geom_line(linewidth = 0.8) +
-  geom_errorbar(
-    aes(ymin = mean_qp - se_qp, ymax = mean_qp + se_qp),
-    width = 0.2
-  ) +
-  labs(
-    x = "Culture duration [d]",
-    y = expression(q[p] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
-  ) +
-  base_theme +
-  scale_color_manual(
-    values = condition_colors,
-    name   = "Feeding strategy",
-    guide  = guide_legend(nrow = 1)
-  ) +
-  scale_x_continuous(
-    limits = c(3, 12.5),
-    breaks = seq(3, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
-  )+
-  scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
-plot(qp_timecourse)
 
 qp_timecourse <- ggplot(
   titer_qp_summary,
@@ -258,8 +218,8 @@ qp_timecourse <- ggplot(
   ) +
   scale_y_continuous(limits = c(1, 30), breaks = seq(0, 30, 5)) +
   scale_x_continuous(
-    limits = c(0, 12.5),
-    breaks = seq(0, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
+    limits = c(3, 12.5),
+    breaks = seq(3, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
   ) 
 plot(qp_timecourse)
 

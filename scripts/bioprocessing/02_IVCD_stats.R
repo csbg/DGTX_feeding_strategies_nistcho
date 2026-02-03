@@ -370,7 +370,7 @@ IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD / 24)) +
   ) +
   labs(
     x = "Condition",
-    y = expression(IVCD ~ "[" * 10^6 ~ cells %.% h %.% mL^-1 * "]")) +
+    y = expression(IVCD ~ "[" * 10^6 ~ cells %.% day %.% mL^-1 * "]")) +
   base_theme +
   scale_fill_manual(
     values = condition_colors,

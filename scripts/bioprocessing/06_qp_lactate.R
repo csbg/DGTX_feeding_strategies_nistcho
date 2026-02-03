@@ -35,6 +35,30 @@ library(here)
 lactate <- read.csv(here("data", "04_lactate.csv"))
 IVCD <- read.csv(here("results", "01_IVCD_individual.csv"))
 
+
+# theme 
+
+base_theme <- theme_bw() +
+  theme(
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, size = 10, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
 # -------------------------------------------------------------------
 # 1. Define condition mapping and factor levels
 # -------------------------------------------------------------------
@@ -211,7 +235,7 @@ p_lactate_qp <- ggplot(
     breaks = seq(3, 11, 1)
   ) +
   scale_y_continuous(
-    limits = c(-0.6, 0.38
+    limits = c(-0.6, 0.38)
   )
 
 plot(p_lactate_qp)

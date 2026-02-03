@@ -1,6 +1,6 @@
 # Figure 2 
 ggarrange(
-    IVCD_bar_STD, qp_bar_STD, growth_plot, qp_timecourse, qp_gluc, p_lactate_qp,
+    IVCD_bar_STD, qp_bar_STD, qp_timecourse, growth_plot, qp_gluc, p_lactate_qp,
     labels = c("A", "B", "C", "D", "E", "F"),
     common.legend = TRUE,
     legend = "bottom",

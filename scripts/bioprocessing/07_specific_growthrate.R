@@ -53,6 +53,29 @@ df <- df %>%
     Condition = factor(Condition, levels = condition_levels)
   )
 
+
+base_theme <- theme_bw() +
+  theme(
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
+
 # -------------------------------------------------------------------
 # 3. Calculate specific growth rate µ per time interval and replicate
 # -------------------------------------------------------------------
@@ -163,7 +186,7 @@ growth_plot <- ggplot(
   ) +
   scale_y_continuous(
     limits = c(-0.15, 0.95),
-    breaks = seq(-0.1, 0.9, 0.2)
+    breaks = seq(-0.2, 1, 0.2)
   )
 
 plot(growth_plot)
