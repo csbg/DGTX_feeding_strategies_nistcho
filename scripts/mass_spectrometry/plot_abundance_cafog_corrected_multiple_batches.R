@@ -397,11 +397,12 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/fig
     condition == "E" ~ "HIP",
     condition == "F" ~ "HIP+")
   ) %>%
-  mutate(condition_abrev = factor(condition_abrev, levels = c("STD","STD+","LoG","LoG+","HiF","HIP","HIP+"))) %>%
+    mutate(phase = ifelse(timepoint == "120", "exp", "sta") ) %>%
+    mutate(condition_abrev = factor(condition_abrev, levels = c("STD","STD+","LoG","LoG+","HiF","HIP","HIP+"))) %>%
   {.}
   
   
-  g0_g0 <- ggplot(data_to_plot, aes(x = timepoint, y = frac_abundance, fill = condition_abrev)) +
+  g0_g0 <- ggplot(data_to_plot, aes(x = phase, y = frac_abundance, fill = condition_abrev)) +
     geom_col(position = position_dodge(width = 0.9), color = "black") +
     geom_errorbar(aes(ymin = frac_abundance - error,
                       ymax = frac_abundance + error,
@@ -436,7 +437,7 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/fig
       panel.border = element_blank(),
       plot.title = element_text(face = "bold")
     ) +
-    labs(x = "Timepoint [h]", y = "Fractional abundance (%)", fill = "Condition", 
+    labs(x = "Phase", y = "Fractional abundance (%)", fill = "Condition", 
          title = "G0 · G0")
   
   # Print the plot to the screen
@@ -462,11 +463,12 @@ ggsave(filename = paste0("figures/br_4/statistical_analysis/frac_ab_dotplots/fig
       condition == "E" ~ "HIP",
       condition == "F" ~ "HIP+")
     ) %>%
+    mutate(phase = ifelse(timepoint == "120", "exp", "sta") ) %>%
     mutate(condition_abrev = factor(condition_abrev, levels = c("STD","STD+","LoG","LoG+","HiF","HIP","HIP+"))) %>%
     {.}
   
   
-  g0f_g0f <- ggplot(data_to_plot, aes(x = timepoint, y = frac_abundance, fill = condition_abrev)) +
+  g0f_g0f <- ggplot(data_to_plot, aes(x = phase, y = frac_abundance, fill = condition_abrev)) +
     geom_col(position = position_dodge(width = 0.9),color = "black") +
     geom_errorbar(aes(ymin = frac_abundance - error,
                       ymax = frac_abundance + error,
