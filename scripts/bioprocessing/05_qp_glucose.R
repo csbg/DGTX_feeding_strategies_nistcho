@@ -56,30 +56,31 @@ condition_colors <- c(
 
 base_theme <- theme_bw() +
   theme(
-    text = element_text(
-      size = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 11),
-    axis.title.y = element_text(face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
     panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
+
+    # Clean borders and solid black lines
     panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
     legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
+    legend.title = element_text(face = "bold")
   )
 
 ## -------------------------------------------------------------------
 ## 2. Load glucose data and define feeding windows
 ## -------------------------------------------------------------------
 
-Glucose_rawdata <- read_excel(here("data", "05_glucose_data.xlsx"))
+Glucose_rawdata <- read_excel(here("data", "05_glucose_data copy.xlsx"))
 
 # Keep only fed-batch conditions A–G and remove NaNs in Glucose_corr_[g/L]
 summary_data_2 <- Glucose_rawdata %>%
@@ -94,20 +95,19 @@ low_glc <- summary_data_2 %>%
       "E" = "HIP",
       "F" = "HIP+"
     )
-  ) %>%
-  filter(!Hour %in% c("72", "73", "96"))
+  )
 
-med_glc <- summary_data_2 %>%
-  filter(Condition %in% c("G", "C", "D")) %>%
-  mutate(
-    Condition = dplyr::recode(Condition,
-      "G" = "LoG",
-      "C" = "LoG+",
-      "D" = "HiF"
+
+  med_glc <- summary_data_2 %>%
+    filter(Condition %in% c("G", "C", "D")) %>%
+    mutate(
+      Condition = dplyr::recode(Condition,
+        "G" = "LoG",
+        "C" = "LoG+",
+        "D" = "HiF"
+      )
     )
-  ) %>%
-  filter(!Hour %in% c("72", "73", "96"))
-
+  
 high_glc <- summary_data_2 %>%
   filter(Condition %in% c("A", "B")) %>%
   mutate(
@@ -125,11 +125,11 @@ window_df_STD <- merged_df %>%
   filter(Condition %in% c("STD", "STD+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 73 ~ "72",
-      Hour >= 73 & Hour < 121 ~ "120",
-      Hour >= 121 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 217 ~ "216",
-      Hour >= 217 & Hour < 265 ~ "264",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73 & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 217 ~ "9",
+      Hour >= 217 & Hour < 265 ~ "11",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -139,9 +139,10 @@ window_df_LoG <- merged_df %>%
   filter(Condition %in% c("LoG", "LoG+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 121 ~ "120",
-      Hour >= 121 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 217 ~ "216",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73  & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 217 ~ "9",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -151,12 +152,14 @@ window_df_HIP <- merged_df %>%
   filter(Condition %in% c("HIP", "HIP+")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 145 ~ "144",
-      Hour >= 145 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 193 ~ "192",
-      Hour >= 193 & Hour < 217 ~ "216",
-      Hour >= 217 & Hour < 241 ~ "240",
-      Hour >= 241 & Hour < 265 ~ "264",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73 & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 145 ~ "6",
+      Hour >= 145 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 193 ~ "8",
+      Hour >= 193 & Hour < 217 ~ "9",
+      Hour >= 217 & Hour < 241 ~ "10",
+      Hour >= 241 & Hour < 265 ~ "11",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -166,13 +169,14 @@ window_df_HiF <- merged_df %>%
   filter(Condition %in% c("HiF")) %>%
   mutate(
     Feeding_Window = case_when(
-      Hour >= 0 & Hour < 121 ~ "120",
-      Hour >= 121 & Hour < 145 ~ "144",
-      Hour >= 145 & Hour < 169 ~ "168",
-      Hour >= 169 & Hour < 193 ~ "192",
-      Hour >= 193 & Hour < 217 ~ "216",
-      Hour >= 217 & Hour < 241 ~ "240",
-      Hour >= 241 & Hour < 265 ~ "264",
+      Hour >= 0 & Hour < 73 ~ "3",
+      Hour >= 73 & Hour < 121 ~ "5",
+      Hour >= 121 & Hour < 145 ~ "6",
+      Hour >= 145 & Hour < 169 ~ "7",
+      Hour >= 169 & Hour < 193 ~ "8",
+      Hour >= 193 & Hour < 217 ~ "9",
+      Hour >= 217 & Hour < 241 ~ "10",
+      Hour >= 241 & Hour < 265 ~ "11",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -289,37 +293,41 @@ qp_results_avg <- qp_results %>%
   mutate(is_last = Feeding_Window == max(Feeding_Window)) %>%
   ungroup()
 
-# Line plot of qGlc over feeding windows (converted to per day by *24)
+# Line plot of qGlc over feeding windows
 qp_gluc <- ggplot(
   qp_results_avg,
   aes(
-    x = Feeding_Window, y = avg_Rate_pmol_c_h * 24,
-    color = Condition, group = Condition
+    x = Feeding_Window,
+    # Use abs() here if you want positive consumption rates,
+    # or leave as is to show negative flux
+    y = avg_Rate_pmol_c_h * 24,
+    color = Condition,
+    group = Condition
   )
 ) +
-  geom_point(size = 1) +
-  geom_line(linewidth = 0.6) +
+  geom_point(size = 1.5) +
+  geom_line(linewidth = 0.8) +
   geom_errorbar(
     aes(
       ymin = (avg_Rate_pmol_c_h - SE_Rate_pmol_c_h) * 24,
       ymax = (avg_Rate_pmol_c_h + SE_Rate_pmol_c_h) * 24
     ),
-    width = 3
+    width = 0.2
   ) +
   geom_text_repel(
     data = filter(qp_results_avg, is_last),
     aes(label = Condition),
-    hjust = 0,
-    size = 2.5,
+    size = 3,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
-  geom_hline(yintercept = 0, color = "grey60", linetype = "dashed") +
+  geom_hline(yintercept = 0, colour = "grey60", linetype = "dashed") +
   labs(
-    x = "Culture duration [h]",
-    y = "qGlc [pmol/c/d]"
+    x = "Culture duration [d]",
+    # Using the professional expression we created
+    y = expression(q[Glc] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
   ) +
   base_theme +
   scale_color_manual(
@@ -327,8 +335,11 @@ qp_gluc <- ggplot(
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 264, 48)) +
-  scale_y_continuous(breaks = seq(-4, 0, by = 0.5))
+  scale_x_continuous(limits = c(2.7, 12.5), breaks = seq(3, 11, 1)) +
+  scale_y_continuous(
+    limits = c(-6, 0.2) ,
+    breaks = seq(-6, 0, 1)
+  )
 
 plot(qp_gluc)
 
@@ -336,7 +347,7 @@ ggsave("results/qp_glucose_windows.pdf",
   plot   = qp_gluc,
   bg     = "white",
   dpi    = 600,
-  width  = 23,
+  width  = 10,
   height = 15,
   units  = "cm"
 )

@@ -49,8 +49,31 @@ condition_map <- c(
 df <- df %>%
   mutate(
     Hours     = round(Hours), # optional: round to integer hours
-    Condition = recode(Condition, !!!condition_map),
+    Condition = dplyr::recode(Condition, !!!condition_map),
     Condition = factor(Condition, levels = condition_levels)
+  )
+
+
+base_theme <- theme_bw() +
+  theme(
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
   )
 
 # -------------------------------------------------------------------
@@ -115,7 +138,7 @@ df_mu_summary <- df_mu_summary %>%
 
 growth_plot <- ggplot(
   df_mu_summary,
-  aes(x = Hours, y = mean_mu * 24, colour = Condition)
+  aes(x = Hours/24, y = mean_mu * 24, colour = Condition)
 ) +
   geom_line(linewidth = 0.6, na.rm = FALSE) +
   geom_point(size = 1) +
@@ -124,12 +147,12 @@ growth_plot <- ggplot(
       ymin = (mean_mu - se_mu) * 24,
       ymax = (mean_mu + se_mu) * 24
     ),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   labs(
-    x = "Culture duration [h]",
-    y = expression(bold("Specific growth rate") ~ bold(mu) ~ bold("[" * d^-1 * "]"))
+    x = "Culture duration [d]",
+    y = expression("Specific growth rate" ~ mu ~ "[" * day^-1 * "]")
   ) +
   geom_text_repel(
     data = filter(df_mu_summary, is_last),
@@ -138,31 +161,12 @@ growth_plot <- ggplot(
     size = 2.5,
     angle = 0,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   geom_hline(yintercept = 0, colour = "grey60", linetype = "dashed") +
-  theme_bw() +
-  theme(
-    text = element_text(
-      size   = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(colour = "black", size = 11),
-    axis.title.y = element_text(face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  ) +
+  base_theme +
   scale_color_manual(
     values = c(
       "STD"  = "grey50",
@@ -177,11 +181,11 @@ growth_plot <- ggplot(
     guide = guide_legend(nrow = 1)
   ) +
   scale_x_continuous(
-    limits = c(0, 295),
-    breaks = seq(24, 264, 48)
+    limits = c(2.7, 12.5),
+    breaks = seq(3, 11, 1)
   ) +
   scale_y_continuous(
-    limits = c(-0.2, 1),
+    limits = c(-0.15, 0.95),
     breaks = seq(-0.2, 1, 0.2)
   )
 

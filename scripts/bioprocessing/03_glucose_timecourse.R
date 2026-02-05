@@ -34,7 +34,7 @@ library(here)
 ## -------------------------------------------------------------------
 
 Glucose_pH_rawdata <- read_excel(
-  here("data", "05_glucose_data.xlsx")
+  here("data", "05_glucose_data copy.xlsx")
 )
 
 ## Expected columns (minimum):
@@ -65,25 +65,25 @@ summary_data <- Glucose_pH_rawdata %>%
 
 base_theme <- theme_bw() +
   theme(
-    text = element_text(
-      size   = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 10),
-    axis.title.y = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  )
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
 
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
 ## -------------------------------------------------------------------
 ## 4. High-glucose feeding strategies: STD (A) & STD+ (B)
 ## -------------------------------------------------------------------
@@ -98,20 +98,20 @@ high_glc <- summary_data %>%
     )
   )
 
-high_glc_plt <- ggplot(high_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
-  geom_point(size = 0.7) +
+high_glc_plt <- ggplot(high_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
+  geom_point(size = 1) +
   geom_line(linewidth = 0.7) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
       ymax = mean_glucose + se_glucose
     ),
-    width = 3,
+    width = 0.2,
     size = 0.5
   ) +
   base_theme +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Glucose [g/L]"
   ) +
   scale_color_manual(
@@ -122,7 +122,10 @@ high_glc_plt <- ggplot(high_glc, aes(x = Hour, y = mean_glucose, color = Conditi
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 270), breaks = seq(24, 270, 48)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
+  )+
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
 plot(high_glc_plt)
@@ -149,24 +152,22 @@ med_glc <- summary_data %>%
       "C" = "LoG+",
       "D" = "HiF"
     )
-  ) %>%
-  # Remove problematic/excluded timepoints
-  filter(!(Hour %in% c("72", "73", "96")))
+  )
 
-med_glc_plt <- ggplot(med_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
-  geom_point(size = 0.7) +
-  geom_line(linewidth = 0.7) +
+med_glc_plt <- ggplot(med_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
+  geom_point(size = 1) +
+  geom_line(linewidth = 0.6) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
       ymax = mean_glucose + se_glucose
     ),
-    width = 3,
+    width = 0.2,
     size = 0.5
   ) +
   base_theme +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Glucose [g/L]"
   ) +
   scale_color_manual(
@@ -178,7 +179,10 @@ med_glc_plt <- ggplot(med_glc, aes(x = Hour, y = mean_glucose, color = Condition
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 270), breaks = seq(24, 270, 48)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
+  )+
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
 plot(med_glc_plt)
@@ -204,32 +208,30 @@ low_glc <- summary_data %>%
       "E" = "HIP",
       "F" = "HIP+"
     )
-  ) %>%
-  # Remove problematic/excluded timepoints
-  filter(!(Hour %in% c("72", "73", "96")))
+  )
 
-low_glc_plt <- ggplot(low_glc, aes(x = Hour, y = mean_glucose, color = Condition)) +
+low_glc_plt <- ggplot(low_glc, aes(x = Hour/24, y = mean_glucose, color = Condition)) +
   geom_point(
     aes(group = Condition),
     size      = 0.7,
-    position  = position_dodge(width = 2)
+    position  = position_dodge(width = 0.1)
   ) +
   geom_line(
     aes(group = Condition),
-    linewidth      = 0.7,
-    position  = position_dodge(width = 2)
+    linewidth = 0.6,
+    position = position_dodge(width = 0.1)
   ) +
   geom_errorbar(
     aes(
       ymin = mean_glucose - se_glucose,
       ymax = mean_glucose + se_glucose
     ),
-    width = 3,
+    width = 0.2,
     size = 0.5
   ) +
   base_theme +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Glucose [g/L]"
   ) +
   scale_color_manual(
@@ -240,7 +242,10 @@ low_glc_plt <- ggplot(low_glc, aes(x = Hour, y = mean_glucose, color = Condition
     name = "Feeding Strategy",
     guide = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(-1, 271), breaks = seq(24, 270, 48)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
+  ) +
   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))
 
 plot(low_glc_plt)

@@ -1,5 +1,4 @@
-# Systematic Evaluation of Fed-Batch Feeding Strategies in NISTCHO Linking Culture Performance to Product Quality Attributes on Intact cNISTmAb
-
+# Effects of feeding strategies on culture performance and product quality in NISTCHO
 ## 📄 Overview
 
 This repository contains the analysis scripts and figure-generation R codes for the publication.
@@ -59,3 +58,4 @@ University of Salzburg
 University of Salzburg
 📧 **veronika.schaepertoens@plus.ac.at**  
 🔗 **GitHub:** [@VSchaepertoens](https://github.com/VSchaepertoens) 
+

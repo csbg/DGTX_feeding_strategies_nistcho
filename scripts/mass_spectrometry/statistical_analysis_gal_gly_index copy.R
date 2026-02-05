@@ -263,6 +263,12 @@ labs(
 
 plot(gal_ind_bar_sig)
 
+
+#write csv
+write.csv(t_test_results,
+          file = here("results/galactosylation_index_t_tests.csv"),
+          row.names = FALSE)
+
 # comparison for each condition over time (exp vs stat, paired t-test)
 
 # 1) Prepare wide table for paired t-tests ------------------------------
@@ -644,9 +650,9 @@ max_gly_exp <- gly_index_stats %>%
   pull(mean_GI) %>%
   max(na.rm = TRUE)
 
-gly_t_test_anno_time <- dunn_exp %>%
+gly_t_test_anno_time_exp <- dunn_exp %>%
   filter(p.adj.signif != "ns") %>% # only significant pairs
-  transmute(
+  mutate(
     time_group = "exponential", # facet variable
     group1,
     group2,
@@ -751,3 +757,7 @@ ggsave(
 )
 
 
+# write csv
+write.csv(gly_t_test_anno_time_exp,
+          file = here("results/gly_t_test_anno_time_exp.csv"),
+          row.names = FALSE)

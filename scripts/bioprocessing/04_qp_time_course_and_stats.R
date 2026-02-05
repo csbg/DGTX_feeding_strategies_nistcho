@@ -30,6 +30,28 @@ library(car)
 # 0. Condition mapping and factor levels
 ## -------------------------------------------------------------------
 
+base_theme <- theme_bw() +
+  theme(
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
+
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10),
+    axis.title.x = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
+
 condition_levels <- c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")
 
 condition_map <- c(
@@ -116,6 +138,21 @@ titer_qp_clean <- titer_qp %>%
 ## 3. Summary over time for qp time course plot
 ## -------------------------------------------------------------------
 
+# 3. Create the summary for plotting
+titer_qp_summary_pmol <- titer_qp_clean %>%
+  group_by(Condition, Hours) %>%
+  summarise(
+    mean_qp = mean(qp, na.rm = TRUE),
+    sd_qp   = sd(qp, na.rm = TRUE),
+    n       = sum(!is.na(qp)),
+    se_qp   = sd_qp / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    Condition = factor(Condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")),
+    is_last   = Hours == max(Hours)
+  )
+
 titer_qp_summary <- titer_qp_clean %>%
   group_by(Condition, Hours) %>%
   summarise(
@@ -137,14 +174,17 @@ titer_qp_summary <- titer_qp_clean %>%
   ungroup()
 
 
-
 ## -------------------------------------------------------------------
 ## 4. qp time course plot (pg/cell/day)
 ## -------------------------------------------------------------------
+# remove the last TP from LoG and LoG+ (as qp cannot actually be negative = consumption)
+
+titer_qp_summary <- titer_qp_summary %>%
+  filter(!(Condition %in% c("LoG", "LoG+") & Hours == 245))
 
 qp_timecourse <- ggplot(
   titer_qp_summary,
-  aes(x = Hours, y = mean_qp * 24, color = Condition)
+  aes(x = Hours / 24, y = mean_qp * 24, color = Condition)
 ) +
   geom_point(size = 1) +
   geom_line(linewidth = 0.6) +
@@ -153,7 +193,7 @@ qp_timecourse <- ggplot(
       ymin = (mean_qp - se_qp) * 24,
       ymax = (mean_qp + se_qp) * 24
     ),
-    width = 3
+    width = 0.2
   ) +
   geom_text_repel(
     data = filter(titer_qp_summary, is_last),
@@ -161,39 +201,26 @@ qp_timecourse <- ggplot(
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE,
     direction = "x"
   ) +
-  geom_hline(yintercept = 0, color = "grey60", linetype = "dashed") +
   labs(
-    x = "Culture duration [h]",
-    y = "qp [pg/cell/day]"
+    x = "Culture duration [d]",
+    y = expression(q[p] ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")
   ) +
-  theme_bw() +
-  theme(
-    text = element_text(size = 11, family = "sans", colour = "black"),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 11),
-    axis.title.y = element_text(face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  ) +
+  base_theme +
   scale_color_manual(
     values = condition_colors,
     name   = "Feeding strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 264, 48))
-
+  scale_y_continuous(limits = c(1, 30), breaks = seq(0, 30, 5)) +
+  scale_x_continuous(
+    limits = c(3, 12.5),
+    breaks = seq(3, 11, 1) # Major ticks: 0, 2, 4, 6, 8, 10, 12
+  ) 
 plot(qp_timecourse)
 
 ggsave(
@@ -376,13 +403,17 @@ ggsave(
 ## -------------------------------------------------------------------
 ## 9. Bar plot of average qp with only comparisons vs STD
 ## -------------------------------------------------------------------
+# Extract global p-value for qp
+qp_p_raw <- summary(anova_qp)[[1]]["Condition", "Pr(>F)"]
+qp_anova_lab <- paste0("Anova, p = ", format(qp_p_raw, scientific = TRUE, digits = 2))
+
 
 qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   geom_bar(
     aes(fill = Condition),
-    stat     = "identity",
+    stat = "identity",
     position = position_dodge(width = 0.95),
-    color    = "black",
+    color = "black",
     linewidth = 0.5
   ) +
   geom_errorbar(
@@ -395,24 +426,9 @@ qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   ) +
   labs(
     x = "Condition",
-    y = "Average qp [pg/cell/day]"
-  ) +
-  theme_bw() +
-  theme(
-    text = element_text(size = 11, family = "sans", colour = "black"),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 10),
-    axis.title.y = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  ) +
+    y = expression(q[p] ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")
+  )+
+    base_theme +
   scale_fill_manual(
     values = condition_colors,
     name   = "Feeding strategy",
@@ -421,9 +437,16 @@ qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   stat_pvalue_manual(
     tukey_anno_filtered,
     label         = "Significance",
-    step.increase = 0.1,
+    step.increase = 0.08,
     label.size    = 3,
     size          = 0.6
+  )+
+  annotate(
+    "text",
+    x = 0.7, y = 22,
+    label = qp_anova_lab,
+    hjust = 0,
+    size = 4
   )
 
 plot(qp_bar_STD)

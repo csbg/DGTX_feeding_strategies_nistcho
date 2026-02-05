@@ -25,6 +25,7 @@ library(tidyverse)
 library(ggpubr)
 library(ggrepel)
 library(here)
+library(car)
 
 ## -------------------------------------------------------------------
 ## 1. Load data
@@ -73,25 +74,25 @@ condition_colors <- c(
 # Base theme for line and bar plots
 base_theme <- theme_bw() +
   theme(
-    text = element_text(
-      size = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line         = element_line(),
-    axis.text         = element_text(color = "black", size = 11),
-    axis.title.y      = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x      = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border      = element_blank(),
-    legend.position   = "bottom",
-    legend.title      = element_text(face = "bold"),
-    legend.text       = element_text(),
-    legend.box        = "horizontal"
-  )
+    # Set global text color to black
+    text = element_text(family = "sans", color = "black", size = 11),
 
+    # Target axis labels (numbers) specifically to override theme_bw defaults
+    axis.text = element_text(color = "black"),
+
+    # Remove all minor grid lines
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+
+    # Clean borders and solid black lines
+    panel.border = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.title.y = element_text(hjust = 0.5, size = 10, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, size = 10, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
 ## -------------------------------------------------------------------
 ## 3. Growth curves: VCD, viability, diameter
 ## -------------------------------------------------------------------
@@ -106,13 +107,15 @@ avg_df <- avg_df %>%
 # Figure 1
 # 3A Viable cell density (VCD) over time
 vcd <- avg_df %>%
-  ggplot(aes(x = mean_hours, y = mean_vcd, color = Condition)) +
+  ggplot(aes(x = mean_hours / 24, y = mean_vcd, color = Condition)) +
   geom_line(linewidth = 0.6, na.rm = FALSE) +
   geom_point(size = 1) +
   geom_errorbar(
-    aes(ymin = mean_vcd - se_vcd,
-        ymax = mean_vcd + se_vcd),
-    width = 3,
+    aes(
+      ymin = mean_vcd - se_vcd,
+      ymax = mean_vcd + se_vcd
+    ),
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -121,13 +124,13 @@ vcd <- avg_df %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 10,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
-    y = expression(bold("Viable cell density") ~ bold("[10"^6 * " cells/mL]"))
+    x = "Culture duration [d]",
+    y = expression("Viable cell density" ~ "[10"^6 ~ "cells" %.% "mL"^-1 * "]")
   ) +
   base_theme +
   scale_color_manual(
@@ -135,9 +138,11 @@ vcd <- avg_df %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 295, 48)) +
-  scale_y_continuous(limits = c(0, 25), breaks = seq(0, 25, 5))
-
+  scale_y_continuous(limits = c(0, 25), breaks = seq(0, 25, 5)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 plot(vcd)
 
 ggsave("results/VCD_averaged.pdf",
@@ -150,13 +155,15 @@ ggsave("results/VCD_averaged.pdf",
 
 # 3B Viability over time
 via <- avg_df %>%
-  ggplot(aes(x = mean_hours, y = mean_via, color = Condition)) +
+  ggplot(aes(x = mean_hours / 24, y = mean_via, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
-    aes(ymin = mean_via - se_via,
-        ymax = mean_via + se_via),
-    width = 3,
+    aes(
+      ymin = mean_via - se_via,
+      ymax = mean_via + se_via
+    ),
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -164,12 +171,12 @@ via <- avg_df %>%
     aes(label = Condition),
     size = 2.5,
     fontface = "bold",
-    nudge_x = 10,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Viability [%]"
   ) +
   base_theme +
@@ -178,8 +185,11 @@ via <- avg_df %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 295), breaks = seq(24, 295, 48)) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20))
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 
 plot(via)
 
@@ -193,15 +203,15 @@ ggsave("results/VIA_averaged.pdf",
 )
 
 # Figure 1
-# 3C Average cell diameter over time
+# 3C Axverage cell diameter over time
 dia <- avg_df %>%
-  ggplot(aes(x = mean_hours, y = mean_dia, color = Condition)) +
+  ggplot(aes(x = mean_hours/24, y = mean_dia, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
     aes(ymin = mean_dia - se_dia,
         ymax = mean_dia + se_dia),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -210,22 +220,25 @@ dia <- avg_df %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 15,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Average cell diameter [µm]"
   ) +
-  base_theme +
+  #base_theme +
   scale_color_manual(
     values = condition_colors,
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
-  ) +
-  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48))
-
+  ) + 
+  base_theme +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 plot(dia)
 
 ggsave("results/DIA_averaged.pdf",
@@ -265,7 +278,7 @@ titer_avg <- titer %>%
 # 1H Titer over time (converted from µg/mL to g/L for plotting)
 
 titer_plot <- titer_avg %>%
-  ggplot(aes(x = mean_hours, y = mean_titer / 1000, color = Condition)) +
+  ggplot(aes(x = mean_hours/24, y = mean_titer / 1000, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
@@ -273,7 +286,7 @@ titer_plot <- titer_avg %>%
       ymin = (mean_titer - se_titer) / 1000,
       ymax = (mean_titer + se_titer) / 1000
     ),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -282,12 +295,12 @@ titer_plot <- titer_avg %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 10,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "cNISTmAb titer [g/L]"
   ) +
   base_theme +
@@ -296,8 +309,11 @@ titer_plot <- titer_avg %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48)) +
-  scale_y_continuous(limits = c(0, 2.25), breaks = seq(0, 2, 0.5))
+  scale_y_continuous(limits = c(0, 2.25), breaks = seq(0, 2, 0.5)) +
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 
 plot(titer_plot)
 
@@ -337,7 +353,7 @@ lactate_avg <- lactate %>%
 # Figure 1
 # 1G Extracellular lactate over time
 lactate_plot <- lactate_avg %>%
-  ggplot(aes(x = mean_hours, y = mean_lactate_mM, color = Condition)) +
+  ggplot(aes(x = mean_hours/24, y = mean_lactate_mM, color = Condition)) +
   geom_line(linewidth = 0.6) +
   geom_point(size = 1) +
   geom_errorbar(
@@ -345,7 +361,7 @@ lactate_plot <- lactate_avg %>%
       ymin = mean_lactate_mM - se_lactate_mM,
       ymax = mean_lactate_mM + se_lactate_mM
     ),
-    width = 3,
+    width = 0.2,
     na.rm = TRUE
   ) +
   geom_text_repel(
@@ -354,12 +370,12 @@ lactate_plot <- lactate_avg %>%
     hjust = 0,
     size = 2.5,
     fontface = "bold",
-    nudge_x = 13,
+    nudge_x = 1,
     segment.linetype = "dashed",
     show.legend = FALSE
   ) +
   labs(
-    x = "Culture duration [h]",
+    x = "Culture duration [d]",
     y = "Extracellular lactate [mM]"
   ) +
   base_theme +
@@ -368,8 +384,11 @@ lactate_plot <- lactate_avg %>%
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-  scale_x_continuous(limits = c(0, 320), breaks = seq(24, 288, 48)) +
-  scale_y_continuous(limits = c(0, 16), breaks = seq(0, 16, 2))
+  scale_y_continuous(limits = c(0, 16), breaks = seq(0, 16, 2))+
+  scale_x_continuous(
+    limits = c(0, 12.5),
+    breaks = seq(0, 11, 1)
+  )
 
 plot(lactate_plot)
 
@@ -399,13 +418,15 @@ titer_last <- titer_avg %>%
   select(Condition, mean_titer, se_titer)
 
 ## 6.1 ANOVA on final titer (µg/mL) across conditions
-
 anova_total_titer <- aov(Titer_ug.mL ~ Condition, data = last_timepoint)
 summary(anova_total_titer)
 
 # Check normality of ANOVA residuals (Shapiro–Wilk)
 res <- residuals(anova_total_titer)
 shapiro.test(res)
+
+# Levene test for homogeneity of variances
+leveneTest(Titer_ug.mL ~ Condition, data = last_timepoint)
 
 # Tukey HSD post-hoc test
 tukey_result <- TukeyHSD(anova_total_titer)
@@ -442,10 +463,10 @@ write.csv(tukey_df_anno, "results/tukey_total_titer.csv", row.names = FALSE)
 totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) +
   geom_bar(
     aes(fill = Condition),
-    stat     = "identity",
+    stat = "identity",
     position = position_dodge(width = 0.95),
-    color    = "black",
-    linewidth= 0.5
+    color = "black",
+    linewidth = 0.5
   ) +
   geom_errorbar(
     aes(
@@ -459,14 +480,7 @@ totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     x     = "Condition",
     y     = "Final cNISTmAb titer [g/L]",
   ) +
-  theme_classic() +
-  theme(
-    axis.title.x = element_text(size = 10, face = "bold"),
-    axis.text.x = element_text(size = 8, color = "black"),
-    axis.title.y = element_text(size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    legend.position = "none"
-  ) +
+  base_theme +
   scale_fill_manual(
     values = condition_colors,
     name = "Feeding Strategy",
@@ -478,7 +492,8 @@ totaltiter_all <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     step.increase = 0.1,
     label.size = 3,
     size = 1
-  )
+  ) +
+  scale_y_continuous(limits = c(0, 5), breaks = seq(0, 2, 0.5))
 
 plot(totaltiter_all)
 
@@ -491,7 +506,7 @@ ggsave("results/total_titer_all_stat.pdf",
   dpi    = 600
 )
 
-# Figure 1 
+# Figure 1
 ## 1I Barplot of final titer with only comparisons vs STD
 
 # Filter Tukey results to comparisons involving STD and remove non-significant ones
@@ -499,13 +514,20 @@ titer_STD_anno <- tukey_df_anno %>%
   filter(group1 == "STD" | group2 == "STD") %>%
   filter(Significance != "ns")
 
+# 1. Extract the p-value
+stats_results <- summary(anova_total_titer)[[1]]
+p_val_raw <- stats_results["Condition", "Pr(>F)"]
+
+
+anova_lab <- paste0("Anova, p = ", format(p_val_raw, scientific = TRUE, digits = 2))
+# 2. Add it to your plot
 totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) +
   geom_bar(
     aes(fill = Condition),
-    stat     = "identity",
+    stat = "identity",
     position = position_dodge(width = 0.95),
-    color    = "black",
-    size     = 0.5
+    color = "black",
+    linewidth = 0.5 # 'size' is deprecated in newer ggplot2 for lines
   ) +
   geom_errorbar(
     aes(
@@ -515,10 +537,11 @@ totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     width = 0.2,
     position = position_dodge(0.9)
   ) +
+  # Add the Global P-value as a text annotation
+  annotate("text", x = 0.5, y = 3, label = anova_lab, hjust = 0, size = 3) +
   labs(
     x = "Condition",
-    y = "Final cNISTmAb titer [g/L]"
-  ) +
+    y = "Final cNISTmAb titer [g/L]") +
   base_theme +
   scale_fill_manual(
     values = condition_colors,
@@ -528,13 +551,13 @@ totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
   stat_pvalue_manual(
     titer_STD_anno,
     label = "Significance",
-    step.increase = 0.1,
-    label.size = 5,
-    size = 2.5
+    step.increase = 0.07,
+    label.size = 3,
+    tip.length = 0.01
   ) +
   scale_y_continuous(
-    limits = c(0, 2.8),
-    breaks = seq(0, 2, 0.5)
+    limits = c(0, 3.0), # Increased slightly to make room for bars
+    breaks = seq(0, 2.5, 0.5)
   )
 
 plot(totaltiter_STD)
