@@ -418,6 +418,7 @@ ggsave(filename = paste0("figures/statistical_analysis/barplots/clr_allglycans_F
 
 
 # paired lollipop plots ----------------------------------------------------
+## --- for supplementary figure 9 ---
 clr_corr_abundance <- clr_corr_abundance %>%
   mutate(glycoform1 = gsub("/", " · ", glycoform1))
 
@@ -469,7 +470,7 @@ plot_lollipop_time_effects <- function(clr_data,
     pivot_wider(names_from = timepoint, values_from = mean_clr)
   
   # Dynamically define shape codes
-  shape_vals <- c("120" = 22, "240" = 23, "264" = 24)
+  shape_vals <- c("120" = 22, "240" = 24, "264" = 24)
   shapes_used <- shape_vals[available_timepoints]
   
   # Plot
@@ -487,14 +488,14 @@ plot_lollipop_time_effects <- function(clr_data,
     geom_point(data = mean_df,
                aes(x = glycoform1, y = mean_clr, shape = timepoint),
                size = 3, stroke = 0.5, color = "black", fill = "lightgreen") + 
-    scale_shape_manual(values = shapes_used) +
+    scale_shape_manual(values = shapes_used, labels = c("120" = "exp", "264" = "sta")) +
     coord_flip() +
     theme_bw() +
     labs(
       title = paste("Strategy:", condition_label),
       x = "Glycoform",
       y = "",
-      shape = "Timepoint"
+      shape = "Phase"
     ) +
     theme(
       text = element_text( 
@@ -553,7 +554,7 @@ final_plot <- ggarrange(
 plot(final_plot)
 
 ggsave(
-  filename = "figures/br_4/clr_transformed/figure_k1.pdf",
+  filename = "figures/br_4/clr_transformed/supplementary_figure_9.pdf",
   plot = final_plot,
   # device = "png",
   width = 7.48,
@@ -562,7 +563,7 @@ ggsave(
   dpi = 600
 )
 # two conditions, two time points
-
+## --- for supplementary figures 10 & 11 ---
 data_for_lollipop <- clr_corr_abundance %>%
   separate(condition_br_tp_batch_anbatch, 
            into = c("condition", "br", "timepoint", "fed_batch", "analytical_batch"),
