@@ -11,8 +11,8 @@ library(ggforce)
 
 # load data ---------------------------------------------------------------
 
-# input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
-input_file_path <- here::here("analysis", "matrix_meta_four_br.RData")
+input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
+# input_file_path <- here::here("analysis", "matrix_meta_four_br.RData")
 
 
 load(file = input_file_path)
@@ -21,12 +21,6 @@ meta
 
 #Reordering of the matrix by timepoint and the feeding strategy
 colnames(data.matrix)
-
-desired_order <- c("A_1_120_fb4_Dec24", "A_2_120_fb4_Dec24", "A_3_120_fb4_Dec24","A_4_120_fb4_Apr25",
-                  "B_1_120_fb4_Dec24", "B_2_120_fb4_Dec24", "B_3_120_fb4_Dec24", "B_4_120_fb4_Dec24",
-                  "C_1_120_fb4_Dec24", "C_2_120_fb4_Dec24", "C_3_120_fb4_Dec24", 
-                   
-)
 
 data.matrix_120 <- data.matrix[, grepl("120", colnames(data.matrix))]
 data.matrix_264 <- data.matrix[, grepl("264|240", colnames(data.matrix))]
@@ -45,10 +39,10 @@ mutate(condition_abrev = case_when(
   condition == "E" ~ "HIP",
   condition == "F" ~ "HIP+")
 ) %>%
-  mutate(phase = ifelse(timepoint == "120", "early", "late") ) %>%
+  mutate(phase = ifelse(timepoint == "120", "exp", "sta") ) %>%
   mutate(condition_abrev = factor(condition_abrev, levels = strategy_order),
-         phase = factor(phase,levels = c("early", "late"))) %>%
-  mutate(condition_abrev_tp = paste(condition_abrev, timepoint, sep = "_"))
+         phase = factor(phase,levels = c("exp", "sta"))) %>%
+  mutate(condition_abrev_tp = paste(condition_abrev, phase, sep = "_"))
   
 meta <- meta %>%
     arrange(phase, condition_abrev)
@@ -66,29 +60,10 @@ clr_data.matrix <- t(as.matrix(clr_data.matrix))
 
 clr_data.matrix
 
-# # Perform ILR transformation
-# ilr_data.matrix <- ilr(t(data.matrix))
-# # Convert the ALR-transformed data back to a matrix
-# ilr_data.matrix <- t(as.matrix(ilr_data.matrix))
-# 
-# rownames(ilr_data.matrix) <- rownames(clr_data.matrix[1:nrow(clr_data.matrix)-1,])
-# 
-# ilr_data.matrix
-
-# #Perform log2 transformation
-# log2_data.matrix <- log2(t(data.matrix))
-# log2_data.matrix <- t(as.matrix(log2_data.matrix))
-# 
-# log2_data.matrix
 # subset transformed data by timepoint ------------------------------------
 clr_data.matrix_120 <- clr_data.matrix[, grepl("120", colnames(clr_data.matrix))]
 clr_data.matrix_264 <- clr_data.matrix[, grepl("264|240", colnames(clr_data.matrix))]
 
-# ilr_data.matrix_120 <- ilr_data.matrix[, grepl("120", colnames(ilr_data.matrix))]
-# ilr_data.matrix_264 <- ilr_data.matrix[, grepl("264", colnames(ilr_data.matrix))]
-# 
-# log2_data.matrix_120 <- log2_data.matrix[, grepl("120", colnames(log2_data.matrix))]
-# log2_data.matrix_264 <- log2_data.matrix[, grepl("264", colnames(log2_data.matrix))]
 
 # data exploration --------------------------------------------------------
 boxplot(data.matrix,
@@ -99,262 +74,22 @@ boxplot(clr_data.matrix,
         las = 2,
         ylab = "CLR transformed fractional abundance")
 
-# boxplot(ilr_data.matrix,
-#         las = 2,
-#         ylab = "ILR transformed fractional abundance")
-# 
-# boxplot(log2_data.matrix,
-#         las = 2,
-#         ylab = "Log2 transformed fractional abundance")
 
-
-# plot PCA ----------------------------------------------------------------
-plot_pca <- function(data = data.matrix,
-                     point_labels = meta,
-                     color_labels = FALSE,
-                     plot120 = FALSE) {
-  set.seed(123)
-  # Set colors depending on color_labels flag
-  if (color_labels) {
-    if (plot120) {
-      png("figures/br_4/explore_abundance/pca_clr_120_shapes_abr.png",
-          width = 1200,            # Increased width for more space
-          height = 1000,            # Increased height for more space
-          res = 300)               # High resolution
-      
-      point_shape <- rep(22, ncol(data))  
-      
-      color_mapping <- c(
-        rep("#EE3377", 4), rep("#56B4E9", 4),
-        rep("#009E73", 4), rep("#CC79A7", 3),
-        rep("#EE7631", 3), rep("#0072B2", 3),
-        rep("#ffd800", 4) 
-      )
-      
-    } else {
-    png("figures/br_4/explore_abundance/pca_clr_264_shapes_abr.png",
-        width = 1200,            # Increased width for more space
-        height = 1000,            # Increased height for more space
-        res = 300)               # High resolution
-    
-    point_shape <- c(rep(c(24), length.out = 8), 
-                     rep(c(23), length.out = 4), 
-                     rep(c(24), length.out = 9),
-                     rep(c(23), length.out = 4)
-                     ) 
-    
-    color_mapping <- c(
-      rep("#EE3377", 4), rep("#56B4E9", 4),
-      rep("#009E73", 4), rep("#CC79A7", 3),
-      rep("#EE7631", 3), rep("#0072B2", 3),
-      rep("#ffd800", 4)
-    )
-    }
-  } else {
-    # png("figures/br_4/explore_abundance/pca_clr_shapes_abr.png",
-    #     width = 1200,            # Increased width for more space
-    #     height = 1000,            # Increased height for more space
-    #     res = 300)               # Lower resolution
-    svg("figures/br_4/explore_abundance/pca_clr_shapes_abr.svg",
-            width = 4,            # Increased width for more space
-            height = 3.5)
-    
-    point_shape <- c(rep(c(22, 24), length.out = 16), 
-                     rep(c(22, 23), length.out = 8),
-                     rep(c(22, 24), length.out = 18), 
-                     rep(c(22, 23), length.out = 8))
-    
-    color_mapping <- c(
-      rep("#EE3377", 8), rep("#56B4E9", 8),
-      rep("#009E73", 8), rep("#CC79A7", 6),
-      rep("#EE7631", 6), rep("#0072B2", 6),
-      rep("#ffd800", 8)
-    )
-  }
-  
-  # Increase margins for better fitting
-  # par(mar = c(bottom, left, top, right))
-  par(mar = c(5, 4, 2, 5), xpd = TRUE)
-  
-  # Plot MDS with consistent settings
-  plotMDS(x = data,
-          bg = color_mapping,
-          pch = point_shape,
-          gene.selection = "common",
-          var.explained = TRUE,
-          cex.axis = 0.8,         # Decrease axis label size to about font size 10
-          cex.main = 0.8,         # Decrease title size to about font size 10
-          cex.lab = 0.8)
-  
-  if (color_labels) {
-    if (plot120) {
-        legend("topright",inset = c(-0.3, 0),  # position of the legend
-               legend = c("120"),  # labels
-               pt.bg = "white",                  # fill color inside shapes
-               col = "black",                    # border color
-               pch = c(22),              # your point shapes
-               pt.cex = 1,                       # point size in legend
-               bty = "n",
-               title = "Timepoint",
-               cex = 0.8)              # no box around the legend 
-      } else {
-        legend("topright",inset = c(-0.3, 0),  # position of the legend
-               legend = c("240","264"),  # labels
-               pt.bg = "white",                  # fill color inside shapes
-               col = "black",                    # border color
-               pch = c(23, 24),              # your point shapes
-               pt.cex = 1,                       # point size in legend
-               bty = "n",
-               title = "Timepoint",
-               cex = 0.8)              # no box around the legend 
-    }
-  } else {
-  # Timepoint legend
-  legend("topright",inset = c(-0.3, 0),  # position of the legend
-         legend = c("120", "240", "264"),  # labels
-         pt.bg = "white",                  # fill color inside shapes
-         col = "black",                    # border color
-         pch = c(22, 23, 24),              # your point shapes
-         pt.cex = 1,                       # point size in legend
-         bty = "n",
-         title = "Timepoint",
-         cex = 0.8)              # no box around the legend
-  }
-  
-  # Condition legend (horizontal)
-  legend("topright", inset = c(-0.3, 0.5),
-         legend = c("STD", "STD+","LoG", "LoG+", "HiF", "HIP", "HIP+"),
-         pt.bg = c("#EE3377", "#56B4E9", "#ffd800","#009E73", "#CC79A7", "#EE7631", "#0072B2"),
-         col = "black",              # outline of the shape
-         pch = 21,                   # filled circle
-         pt.cex = 1,
-         bty = "n",
-         title = "Condition",
-         # horiz = TRUE,
-         cex = 0.8)
-  # Close the device to save the file
-  dev.off()
-}
-
-# not transformed
-plot_pca(data = data.matrix,
-         point_labels = meta$condition_tp)
-
-
-plot_pca(data = data.matrix_120,
-         point_labels = meta_120$condition_tp,
-         color_labels = TRUE)
-
-plot_pca(data = data.matrix_264,
-         point_labels = meta_264$condition_tp,
-         color_labels = TRUE)
-
-# clr transformed
-plot_pca(data = clr_data.matrix,
-         point_labels = meta$condition_tp)
-
-plot_pca(data = clr_data.matrix_120,
-         point_labels = meta_120$condition_tp,
-         color_labels = TRUE,
-         plot120 = TRUE)
-
-
-plot_pca(data = clr_data.matrix_264,
-         point_labels = meta_264$condition_tp,
-         color_labels = TRUE,
-         plot120 = FALSE)
 
 # pca using prcomp --------------------------------------------------------
-
-plot_pca <- function(data = data.matrix,
-                     point_labels = meta,
-                     color_labels = FALSE,
-                     plot120 = FALSE) {
-  set.seed(123)
-  
-  # PCA calculation
-  pca_result <- prcomp(t(data), scale. = TRUE)
-  pca_data <- as.data.frame(pca_result$x)
-  pca_data$Sample <- colnames(data)
-  
-  # Merge metadata
-  pca_data <- cbind(pca_data, point_labels)
-  
-  # Ensure factors
-  pca_data$timepoint <- as.factor(pca_data$timepoint)
-  pca_data$condition_abrev <- as.factor(pca_data$condition_abrev)
-  
-  # Explained variance
-  pve <- round(100 * (pca_result$sdev^2 / sum(pca_result$sdev^2)), 1)
-  
-  # Manual mappings
-  timepoint_shapes <- c("120" = 22, "240" = 23, "264" = 24)
-  condition_colors <- c(
-    "STD" = "#EE3377",
-    "STD+" = "#56B4E9",
-    "LoG" = "#ffd800",
-    "LoG+" = "#009E73",
-    "HiF" = "#CC79A7",
-    "HIP" = "#EE7631",
-    "HIP+" = "#0072B2"
-  )
-  
-  p <- ggplot(pca_data, aes(x = PC1, y = PC2,
-                       shape = timepoint, fill = condition_abrev)) +
-    geom_point(aes(shape = timepoint, fill = condition_abrev), 
-               size = 3, stroke = 0.7, colour = "black") +
-    scale_shape_manual(values = timepoint_shapes) +
-    scale_fill_manual(values = condition_colors) +
-    labs(
-      x = paste0("PC1 (", pve[1], "%)"),
-      y = paste0("PC2 (", pve[2], "%)"),
-      shape = "Timepoint",
-      fill = "Condition",
-    ) +
-    theme_minimal(base_size = 12) +
-    theme(legend.position = "right") +
-    guides(
-      fill = guide_legend(override.aes = list(
-        shape = 21,                              # Use filled square in legend
-        fill = condition_colors,                # Correct fill colors
-        colour = "black"                        # Outline color for legend symbols
-      )) 
-      )
-  
-  # Save
-  file_name <- if (color_labels) {
-    if (plot120) {
-      "figures/br_4/explore_abundance/pca_clr_120_shapes_abr_new.png"
-    } else {
-      "figures/br_4/explore_abundance/pca_clr_264_shapes_abr_new.png"
-    }
-  } else {
-    "figures/br_4/explore_abundance/pca_clr_shapes_abr_new.png"
-  }
-  
-  ggsave(file_name, plot = p, width = 8, height = 7, bg = "white", dpi = 300)
-}
-
-plot_pca(data = clr_data.matrix,
-         point_labels = meta,
-         color_labels = FALSE)
-
-plot_pca(data = clr_data.matrix_264,
-         point_labels = meta_264,
-         color_labels = TRUE)
-
-plot_pca(data = clr_data.matrix_120,
-         point_labels = meta_120,
-         color_labels = TRUE,
-         plot120 = TRUE)
-
-
-
 # Individual pca plot for all data
 # PCA calculation
 set.seed(123)
 
 pca_result <- prcomp(t(clr_data.matrix), scale. = TRUE)
+
+# enforce stable orientation for PC2
+if (sum(pca_result$rotation[, 2]) < 0) {
+  pca_result$x[, 2]        <- -pca_result$x[, 2]
+  pca_result$rotation[, 2] <- -pca_result$rotation[, 2]
+}
+
+
 pca_data <- as.data.frame(pca_result$x)
 pca_data$Sample <- colnames(clr_data.matrix)
 
@@ -364,7 +99,7 @@ pca_data <- cbind(pca_data, meta)
 # Ensure factors and handle missing values
 pca_data$timepoint <- as.factor(pca_data$timepoint)
 pca_data$condition_abrev <- as.factor(pca_data$condition_abrev)
-pca_data$condition_abrev_tp <- paste(pca_data$condition_abrev,pca_data$timepoint, sep = "_")
+pca_data$condition_abrev_tp <- paste(pca_data$condition_abrev,pca_data$phase, sep = "_")
 pca_data <- pca_data %>%
   filter(!is.na(condition_abrev) & !is.na(timepoint))
 
@@ -475,7 +210,8 @@ ggsave("figures/br_4/explore_abundance/pca_loadings_top10.png",
 pca_data$group <- interaction(pca_data$condition_abrev, pca_data$timepoint)
 
 # Manual mappings
-timepoint_shapes <- c("120" = 22, "240" = 23, "264" = 24)
+phase_shapes <- c("exp" = 22, "sta" = 24)
+
 condition_colors <- c(
   "STD" = "grey50",
   "STD+" = "grey20",
@@ -485,29 +221,31 @@ condition_colors <- c(
   "HIP+" = "#33a02c",
   "LoG" = "#a6cee3"
 )
+
+
 condition_colors_tp <- c(
-  "STD_120" = "grey50",
-  "STD_264" = "grey50",
-  "STD+_120" = "grey20",
-  "STD+_264" = "grey20",
-  "LoG_120" = "#a6cee3",
-  "LoG_240" = "#a6cee3",
-  "LoG+_120" = "#1f78b4",
-  "LoG+_240" = "#1f78b4",
-  "HiF_120" = "#f1a340",
-  "HiF_264" = "#f1a340",
-  "HIP_120" = "#b2df8a",
-  "HIP_264" = "#b2df8a",
-  "HIP+_120" = "#33a02c",
-  "HIP+_264" = "#33a02c"
+  "STD_exp" = "grey50",
+  "STD_sta" = "grey50",
+  "STD+_exp" = "grey20",
+  "STD+_sta" = "grey20",
+  "LoG_exp" = "#a6cee3",
+  "LoG_sta" = "#a6cee3",
+  "LoG+_exp" = "#1f78b4",
+  "LoG+_sta" = "#1f78b4",
+  "HiF_exp" = "#f1a340",
+  "HiF_sta" = "#f1a340",
+  "HIP_exp" = "#b2df8a",
+  "HIP_sta" = "#b2df8a",
+  "HIP+_exp" = "#33a02c",
+  "HIP+_sta" = "#33a02c"
 )
 
 # Plot with hulls and labels
 hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
   geom_point(
-    aes(shape = timepoint, fill = condition_abrev_tp, , color = condition_abrev), 
+    aes(shape = phase, fill = condition_abrev_tp, , color = condition_abrev), 
         size = 3, stroke = 0.7) +
-  scale_shape_manual(values = timepoint_shapes) +
+  scale_shape_manual(values = phase_shapes) +
   scale_fill_manual(values = condition_colors_tp, guide = "none") +
   scale_color_manual(values = condition_colors) +
   geom_mark_hull(aes(group = condition_abrev_tp, 
@@ -530,7 +268,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
   labs(
     x = paste0("PC1 (", pve[1], "%)"),
     y = paste0("PC2 (", pve[2], "%)"),
-    shape = "Timepoint",
+    shape = "Phase",
     color = "Strategy"
   ) +
   theme_bw() +
@@ -563,7 +301,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
 
 plot(hull_plot)
   
-ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
+ggsave("figures/br_4/explore_abundance/pca_clr_phase.png", 
          plot = hull_plot, 
          width = 5.5, height = 5, bg = "white", dpi = 300)
 
@@ -573,9 +311,9 @@ ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png",
 # Plot with hulls and labels
 hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC3)) +
   geom_point(
-    aes(shape = timepoint, fill = condition_abrev_tp, , color = condition_abrev), 
+    aes(shape = phase, fill = condition_abrev_tp, , color = condition_abrev), 
     size = 3, stroke = 0.7) +
-  scale_shape_manual(values = timepoint_shapes) +
+  scale_shape_manual(values = phase_shapes) +
   scale_fill_manual(values = condition_colors_tp, guide = "none") +
   scale_color_manual(values = condition_colors) +
   geom_mark_hull(aes(group = condition_abrev_tp, 
@@ -598,7 +336,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC3)) +
   labs(
     x = paste0("PC1 (", pve[1], "%)"),
     y = paste0("PC3 (", pve[3], "%)"),
-    shape = "Timepoint",
+    shape = "Phase",
     color = "Strategy"
   ) +
   theme_bw() +
@@ -631,7 +369,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC3)) +
 
 plot(hull_plot)
 
-ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color_pc1_pc3.png", 
+ggsave("figures/br_4/explore_abundance/pca_clr_phase_pc1_pc3.png", 
        plot = hull_plot, 
        width = 5.5, height = 5, bg = "white", dpi = 300)
 
@@ -640,9 +378,9 @@ ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color_pc1_pc
 # Plot with hulls and labels
 hull_plot <- ggplot(pca_data, aes(x = PC2, y = PC3)) +
   geom_point(
-    aes(shape = timepoint, fill = condition_abrev_tp, , color = condition_abrev), 
+    aes(shape = phase, fill = condition_abrev_tp, , color = condition_abrev), 
     size = 3, stroke = 0.7) +
-  scale_shape_manual(values = timepoint_shapes) +
+  scale_shape_manual(values = phase_shapes) +
   scale_fill_manual(values = condition_colors_tp, guide = "none") +
   scale_color_manual(values = condition_colors) +
   geom_mark_hull(aes(group = condition_abrev_tp, 
@@ -665,7 +403,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC2, y = PC3)) +
   labs(
     x = paste0("PC2 (", pve[2], "%)"),
     y = paste0("PC3 (", pve[3], "%)"),
-    shape = "Timepoint",
+    shape = "Phase",
     color = "Strategy"
   ) +
   theme_bw() +
@@ -698,26 +436,9 @@ hull_plot <- ggplot(pca_data, aes(x = PC2, y = PC3)) +
 
 plot(hull_plot)
 
-ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color_pc2_pc3.png", 
+ggsave("figures/br_4/explore_abundance/pca_clr_phase_pc2_pc3.png", 
        plot = hull_plot, 
        width = 5.5, height = 5, bg = "white", dpi = 300)
-
-
-# ggsave("figures/br_4/explore_abundance/pca_clr_shapes_abr_new_theme_color.png", 
-#        plot = hull_plot, 
-#        width = 170, height = 160, bg = "white", dpi = 300, units = "mm")
-
-# renaming conditions A-F with the new names in the colnames of da --------
-
-# replacements <- c("A_" = "STD_", "B_" = "STD+_", "C_" = "LoG_",
-#                   "G_" = "LoG+_", "D_" = "HiF_", "E_" = "HIP_", "F_" = "HIP+_")
-# for (prefix in names(replacements)) {
-#   colnames(clr_data.matrix) <- sub(paste0("^", prefix), replacements[prefix], colnames(clr_data.matrix))
-# }
-
-
-
-
 
 
 # plot heatmap of Spearman correlations ------------------------------------
@@ -770,13 +491,16 @@ spearman_correlations <- function(data,
   # Annotations
   ha <- HeatmapAnnotation(
     Strategy = meta_data$condition_abrev,
-    Timepoint = meta_data$timepoint,
+    Phase = meta_data$phase,
+    # Timepoint = meta_data$timepoint,
     show_legend = c(Strategy = FALSE, Timepoint = TRUE),  # hide Strategy, show Timepoint
     gap = unit(1, "mm"),  # controls vertical spacing between annotation tracks
     col = list(
-      Timepoint = c("120" = "#fde0dd",
-                    "240" = "#fa9fb5",
-                    "264" = "#c51b8a"),
+      # Timepoint = c("120" = "#fde0dd",
+      #               "240" = "#fa9fb5",
+      #               "264" = "#c51b8a"),
+      Phase = c("exp" = "#fde0dd",
+                "sta" = "#c51b8a"),
       Strategy = c(
         "STD" = "grey50",
         "STD+" = "grey20",
@@ -788,7 +512,8 @@ spearman_correlations <- function(data,
       )
     ),
     annotation_legend_param = list(
-      Timepoint = list(title = "Timepoint [h]", nrow = 1, title_gp = gpar(fontface = "bold"))
+      Phase = list(title = "Phase", nrow = 1, title_gp = gpar(fontface = "bold"))
+      # Timepoint = list(title = "Timepoint [h]", nrow = 1, title_gp = gpar(fontface = "bold"))
     ),
     annotation_name_gp = gpar(fontsize = 11),
     gp = gpar(col = "black")
@@ -821,13 +546,13 @@ spearman_correlations <- function(data,
 }
 
 # clr transformed
-png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp_new_theme_color.png",
-    width = 5,
-    height = 5,
-    units = "in",
-    res = 600)
+# png(filename = "figures/br_4/explore_abundance/hc_clr_ann_condition_tp_new_theme_color.png",
+#     width = 5,
+#     height = 5,
+#     units = "in",
+#     res = 600)
 
-png(filename = "figures/br_4/explore_abundance/figure_3b.png",
+png(filename = "figures/br_4/explore_abundance/figure_3b_phase.png",
     width = 130,
     height = 130,
     units = "mm",
@@ -843,24 +568,24 @@ dev.off()
 
 
 
-spearman_correlations(clr_data.matrix_120,
-                      meta_data = meta_120,
-                      annotation_legend_side = "bottom",
-                      cluster_rows = TRUE,
-                      cluster_columns = TRUE)
-dev.off()
+# spearman_correlations(clr_data.matrix_120,
+#                       meta_data = meta_120,
+#                       annotation_legend_side = "bottom",
+#                       cluster_rows = TRUE,
+#                       cluster_columns = TRUE)
+# dev.off()
 
-png(filename = "figures/br_4/explore_abundance/hc_clr_264_ann_condition_tp.png",
-    width = 130,
-    height = 120,
-    units = "mm",
-    res = 600)
-spearman_correlations(clr_data.matrix_264,
-                      meta_data = meta_264,
-                      annotation_legend_side = "bottom",
-                      cluster_rows = TRUE,
-                      cluster_columns = TRUE)
-dev.off()
+# png(filename = "figures/br_4/explore_abundance/hc_clr_264_ann_condition_tp.png",
+#     width = 130,
+#     height = 120,
+#     units = "mm",
+#     res = 600)
+# spearman_correlations(clr_data.matrix_264,
+#                       meta_data = meta_264,
+#                       annotation_legend_side = "bottom",
+#                       cluster_rows = TRUE,
+#                       cluster_columns = TRUE)
+# dev.off()
 
 
 
