@@ -36,10 +36,10 @@ Below is an overview of the purpose and outputs of each script:
             - `/analyse_all_files_qc.R`: Using the package fragquaxi, quantifies the abundance of N-glycans in the input mzml files.
             - `/plot_abundances_qc.R`: Plots two most abundant N-glycans of the reference antibody NISTmAb RM8671 as a fractional abundance bar plot & calculates RSD.
 
-**Note: Copy [subprocess_cafog.ipynb](subprocess_cafog.ipynb) to cafog folder to run directly from the source & base_folder in .ipynb must be changed to match the directory of `analysis/cafog`.
-
     - `/computational_analysis`: This directory contains all R scripts used for the exploratory data analysis & PERMANOVA, statistical analysis for the condition and the time effects & the visualization.
 Below is an overview of the purpose and outputs of each script:
+
+**Note: Copy [subprocess_cafog.ipynb](subprocess_cafog.ipynb) to cafog folder to run directly from the source & base_folder in .ipynb must be changed to match the directory of `analysis/cafog`.
     
 ## 📦 Data Access (Zenodo)
 
