@@ -6,13 +6,13 @@ library(fs)
 
 # load abundance data -----------------------------------------------------
 
-load("analysis/abundance_data_none_2.RData")
+load("analysis/abundance_data_none_3.RData")
 
 glycosylation <-  abundance_data_averaged  
 
 # load glycation data -----------------------------------------------------
 
-load("analysis/abundance_data_pngase_2.RData")
+load("analysis/abundance_data_pngase_3.RData")
 
 glycation <-  abundance_data_averaged 
 
@@ -65,4 +65,4 @@ for (coef in coefs) {
 
 ## Remove NAs from glycan library manually
 ## Run CAFOG analysis using subprocess_cafog.ipynb from Anaconda --> vs studio
-## Continue with plotting the corrected results --> plot_cafog_corrected.R
+## Continue with plotting the corrected results --> 04_plot_abundance_cafog_corrected.R
