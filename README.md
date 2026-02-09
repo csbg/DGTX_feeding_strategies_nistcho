@@ -31,12 +31,12 @@ Below is an overview of the purpose and outputs of each script:
         - `/02_plot_abundances.R`: Collects N-glycan abundances from all files & plots as barplots for first glimpse of the data. Change line 7 to "pngase" to visualise & assemble glycation data from PNGaseF-digested samples.  
         - `/03_prepare_data_cafog.R`: Assembles all data required for the CAFOG analysis
           - `/subprocess_cafog.ipynb`: Uses the hexose bias correction algorithm [cafog](https://github.com/cdl-biosimilars/cafog) to correct N-glycan abundances for hexosylation bias.
-
-**Note: Copy [subprocess_cafog.ipynb](subprocess_cafog.ipynb) to cafog folder to run directly from the source & base_folder in .ipynb must be changed to match the directory of `analysis/cafog`.
         - `/04_plot_abundance_cafog_corrected.R`:
           - `/qc`: Quality control analysis for reference antibody NISTmAb RM8671. 
             - `/analyse_all_files_qc.R`: Using the package fragquaxi, quantifies the abundance of N-glycans in the input mzml files.
             - `/plot_abundances_qc.R`: Plots two most abundant N-glycans of the reference antibody NISTmAb RM8671 as a fractional abundance bar plot & calculates RSD.
+
+**Note: Copy [subprocess_cafog.ipynb](subprocess_cafog.ipynb) to cafog folder to run directly from the source & base_folder in .ipynb must be changed to match the directory of `analysis/cafog`.
 
     - `/computational_analysis`: This directory contains all R scripts used for the exploratory data analysis & PERMANOVA, statistical analysis for the condition and the time effects & the visualization.
 Below is an overview of the purpose and outputs of each script:
