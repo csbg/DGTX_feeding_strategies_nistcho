@@ -11,9 +11,7 @@ library(ggforce)
 
 # load data ---------------------------------------------------------------
 
-input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
-# input_file_path <- here::here("analysis", "matrix_meta_four_br.RData")
-
+input_file_path <- here::here("analysis", "matrix_meta_four_br_3.RData")
 
 load(file = input_file_path)
 data.matrix
