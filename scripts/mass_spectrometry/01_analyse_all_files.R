@@ -26,7 +26,7 @@ library(tidyverse)
 
 # define analysis of pngase F digested or not digested data ---------------
 
-pngase <- "none" # "none"
+pngase <- "none" # "none" or "pngase"
 
 # constants ---------------------------------------------------------------
 
@@ -57,10 +57,6 @@ cs_rt_data <- read_csv("data/mzml/rt_seconds.csv") %>%
   filter(pngase %in% !!pngase) %>% # !! operator (pronounced "bang-bang") to evaluate the variable pngase inside the filter() function
   select(sample_name, rt_start, rt_end, scan_number_start, scan_number_end, rt_start_sec, rt_end_sec)
 
-# if (pngase == "pngase") {
-#   cs_rt_data <- cs_rt_data[-1:-2,]
-# }
-
 # merge df and cs_rt_data ------------------------------------------------
 
 data_merged <- df %>% 
@@ -78,9 +74,6 @@ if (pngase == "none") {
     "none/A2G0F", 3, 4, 0, 1, 2, # "3 Hex, 4 HexNAc, 0 Neu5Gc, 1 Fuc, 2 Pyrro"
     "none/A2G1F", 4, 4, 0, 1, 2, # "4 Hex, 4 HexNAc, 0 Neu5Gc, 1 Fuc, 2 Pyrro"
     "none/A2G2F", 5, 4, 0, 1, 2, # "4 Hex, 4 HexNAc, 0 Neu5Gc, 1 Fuc, 2 Pyrro"
-    #"A1G1F/A1G0", 7, 6, 0, 1, 2, # "7 Hex, 6 HexNAc, 0 Neu5Gc, 1 Fuc, 2 Pyrro"
-    # "FA1G0/A1G0", 6, 6, 0, 1, 2, # "6 Hex, 6 HexNAc, 0 Neu5Gc, 1 Fuc, 2 Pyrro"
-    #"A2G0F/A1G0F", 6, 7, 0, 2, 2,  # "6 Hex, 7 HexNAc, 0 Neu5Gc, 2 Fuc, 2 Pyrro"
     "A2G0/A2G0F", 6, 8, 0, 1, 2, 
     "A2G0/A2G0", 6, 8, 0, 0, 2, 
     "A2G0F/A2G0F", 6, 8, 0, 2, 2, 
@@ -88,10 +81,6 @@ if (pngase == "none") {
     "A2G1F/A2G1F", 8, 8, 0, 2, 2, 
     "A2G2F/A2G1F", 9, 8, 0, 2, 2, 
     "A2G2F/A2G2F", 10, 8, 0, 2, 2, 
-    # "A2G2F/A2G2F +1 Hex", 11, 8, 0, 2, 2, 
-    # "A2G2F/A2G2F +2 Hex", 12, 8, 0, 2, 2, 
-    # "A2G2F/A2G2F +3 Hex", 13, 8, 0, 2, 2, # "13 Hex, 8 HexNAc, 0 Neu5Gc, 2 Fuc, 2 Pyrro"
-    # "FA2G2/FA2G2 +4 Hex - PYRRO", 14, 8, 0, 2, 0, # "14 Hex, 8 HexNAc, 0 Neu5Gc, 2 Fuc, 0 Pyrro"
   ) %>% 
     define_ptm_compositions()
   
