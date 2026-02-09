@@ -4,14 +4,14 @@ library(tidyverse)
 
 # define analysis of pngase F digested or not digested data ---------------
 
-pngase <- "pngase" # "none"
+pngase <- "none" # "none" or "pngase"
 
 # load an overview table of data & analysis paths -------------------------
 
-samples_table <- read_csv(paste0("analysis/overview_",pngase,"_merged_2.csv"))
-if (pngase == "pngase") {
-  samples_table <- samples_table[-1:-3,]
-}
+samples_table <- read_csv(paste0("analysis/overview_",pngase,"_merged.csv"))
+# if (pngase == "pngase") {
+#   samples_table <- samples_table[-1:-3,]
+# }
 
 # load abundances using a for loop  ---------------------------------------
 
@@ -148,7 +148,7 @@ plot_vertical_barplot(abundance_data_averaged,
 
 plot_vertical_barplot(abundance_data_averaged, 
                       condition = "[A]",
-                      timepoint = "264") 
+                      timepoint = "120") 
 
 
 plot_vertical_barplot(abundance_data_averaged, 
