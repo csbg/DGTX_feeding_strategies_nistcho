@@ -25,8 +25,18 @@ Below is an overview of the purpose and outputs of each script:
         - `/06_qp_lactate.R`: Computes cell-specific lactate production/consumption rate (qLac) between consecutive time points.
         - `/07_specific_growthrate.R`: Calculates specific growth rate (µ) from VCD measurements.
 
-    - `/mass_spectrometry`:
-    - `/computational_analysis`:
+    - `/mass_spectrometry`: This directory contains all R scripts used for the analysis of CHO fed-batch mass spectrometry data, including N-glycans quantification, correction for hexosylation bias, galactosylation and glycation index calculation, and the quality control.
+Below is an overview of the purpose and outputs of each script:
+        - `/01_analyse_all_files.R`: Using the package fragquaxi, quantifies the abundance of N-glycans in the input mzml files. For quantification of glycation in PNGaseF-digested mzml files, change line 29 to "pngase". 
+        - `/02_plot_abundances.R`: Collects N-glycan abundances from all files & plots as barplots for first glimpse of the data. Change line 7 to "pngase" to visualise & assemble glycation data from PNGAseF-digested samples.  
+        - `/03_prepare_data_cafog.R`: 
+        - `/04_plot_abundance_cafog_corrected.R`:
+          - `/qc`: 
+            - `/analyse_all_files_qc.R`: Using the package fragquaxi, quantifies the abundance of N-glycans in the input mzml files.
+            - `/plot_abundances_qc.R`:Plot two most abundant N-glycans of the reference antibody NISTmAb RM8671 as a fractional abundance bar plot & calculates RSD.
+
+    - `/computational_analysis`: This directory contains all R scripts used for the exploratory data analysis & PERMANOVA, statistical analysis for the condition and the time effects & the visualization.
+Below is an overview of the purpose and outputs of each script:
     
 ## 📦 Data Access (Zenodo)
 
@@ -34,7 +44,7 @@ The full raw dataset for this study is archived and publicly available on Zenodo
 
 Zenodo DOI:[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17046013.svg)](https://doi.org/10.5281/zenodo.17046013)
 
-The processed data provided in this repository were generated entirely from the Zenodo raw data using the scripts in /scripts.
+The processed data provided in this repository were generated entirely from the Zenodo data using the scripts in /scripts.
 
 ## 📝 Citation
 If you use the code or data, please cite:
@@ -48,12 +58,7 @@ BOKU University
 📧 **larissa.hofer@boku.ac.at**  
 🔗 **GitHub:** [@larissahofer](https://github.com/larissahofer)  
 
-#### Mass spectrometry analysis
-**Thomas Berger**  
-University of Salzburg
-📧 **thomas.berger2@plus.ac.at**  
-
-#### Computational analysis
+#### Mass spectrometry analysis & Computational analysis
 **Veronika Schäpertöns**
 University of Salzburg
 📧 **veronika.schaepertoens@plus.ac.at**  
