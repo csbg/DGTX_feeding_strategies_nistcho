@@ -65,9 +65,9 @@ abundance_data_averaged <- abundance_data %>%
   mutate(modcom_name = factor(modcom_name, levels = modcom_levels)) %>%
   ungroup()
 
-#to remove repeated measurement
-abundance_data_averaged <- abundance_data_averaged %>%
-  rename(condition_br_tp)
+# #to remove repeated measurement
+# abundance_data_averaged <- abundance_data_averaged %>%
+#   rename(condition_br_tp)
 
 unique(abundance_data_averaged$condition_br_tp)
 #to rename wrong labels
@@ -81,9 +81,9 @@ unique(abundance_data_averaged$condition_br_tp)
 
 save(abundance_data,
      abundance_data_averaged,
-     file = paste0("analysis/abundance_data_",pngase,"_2.RData"))
+     file = paste0("analysis/abundance_data_",pngase,"_3.RData"))
 
-write_csv(abundance_data_averaged, "analysis/FB4_abundance_glycation.csv")
+# write_csv(abundance_data_averaged, "analysis/FB4_abundance_glycation.csv")
 
 # vertical bar plot -------------------------------------------------------
 plot_vertical_barplot <- function(data_to_plot,
