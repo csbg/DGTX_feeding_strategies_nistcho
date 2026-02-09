@@ -39,9 +39,9 @@ proteins <- define_proteins(
 
 # specify names of paths --------------------------------------------------
 
-df <- tibble(mzml_full_path = dir_ls(path = "data",regexp =  ".*\\.mzML"),) %>%
+df <- tibble(mzml_full_path = dir_ls(path = "data/mzml/qc",regexp =  ".*\\.mzML"),) %>%
   separate(mzml_full_path,
-           into = c("data", "filename"),
+           into = c("data", "subfolder1","subfolder2","filename"),
            sep = "/",
            remove = FALSE) %>%
   mutate(analysis_path = fs::path("analysis",
@@ -54,7 +54,7 @@ fs::dir_create(df$analysis_path)
 
 # load cs and rt data -----------------------------------------------------
 
-cs_rt_data <- read_csv("data/rt_seconds.csv") %>%
+cs_rt_data <- read_csv("data/mzml/qc/rt_seconds.csv") %>%
   # filter(pngase %in% !!pngase) %>% # !! operator (pronounced "bang-bang") to evaluate the variable pngase inside the filter() function
   select(sample_name, rt_start, rt_end, scan_number_start, scan_number_end, rt_start_sec, rt_end_sec)
 
@@ -175,12 +175,6 @@ calculate_abundance <- function(mzml_full_path,
 }
 
 ## apply custom function to dfr --------------------------------------------
-# data_merged_subset <- data_merged %>%
-#   filter(str_detect(sample_name, pattern = "_G_4_246"))
-# 
-# 
-# pwalk(data_merged_subset, calculate_abundance, .progress = TRUE)
-# pwalk(data_merged[67:72,], calculate_abundance, .progress = TRUE)
 
 pwalk(data_merged[4:5,], calculate_abundance, .progress = TRUE)
 
