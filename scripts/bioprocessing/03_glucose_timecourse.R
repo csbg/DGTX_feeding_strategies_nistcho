@@ -79,8 +79,8 @@ base_theme <- theme_bw() +
     panel.border = element_blank(),
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
-    axis.title.y = element_text(hjust = 0.5, size = 10),
-    axis.title.x = element_text(hjust = 0.5, size = 10),
+    axis.title.y = element_text(hjust = 0.5, size = 10, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, size = 10, face = "bold"),
     legend.position = "bottom",
     legend.title = element_text(face = "bold")
   )
@@ -112,7 +112,7 @@ high_glc_plt <- ggplot(high_glc, aes(x = Hour/24, y = mean_glucose, color = Cond
   base_theme +
   labs(
     x = "Culture duration [d]",
-    y = "Glucose [g/L]"
+    y = expression(bold("Glucose" ~ "[g/L]"))
   ) +
   scale_color_manual(
     values = c(

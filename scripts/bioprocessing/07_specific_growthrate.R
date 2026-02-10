@@ -70,8 +70,8 @@ base_theme <- theme_bw() +
     panel.border = element_blank(),
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
-    axis.title.y = element_text(hjust = 0.5, size = 10),
-    axis.title.x = element_text(hjust = 0.5, size = 10),
+    axis.title.y = element_text(hjust = 0.5, size = 10, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, size = 10, face = "bold"),
     legend.position = "bottom",
     legend.title = element_text(face = "bold")
   )
@@ -152,7 +152,7 @@ growth_plot <- ggplot(
   ) +
   labs(
     x = "Culture duration [d]",
-    y = expression("Specific growth rate" ~ mu ~ "[" * day^-1 * "]")
+    y = expression(bold("Specific growth rate") ~ mu ~ "[" * bold(day^-1) * "]")
   ) +
   geom_text_repel(
     data = filter(df_mu_summary, is_last),

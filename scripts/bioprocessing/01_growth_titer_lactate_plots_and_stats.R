@@ -130,7 +130,7 @@ vcd <- avg_df %>%
   ) +
   labs(
     x = "Culture duration [d]",
-    y = expression("Viable cell density" ~ "[10"^6 ~ "cells" %.% "mL"^-1 * "]")
+    y = expression(bold("Viable cell density" ~ "[10"^6 ~ "cells" %.% "mL"^-1 * "]"))
   ) +
   base_theme +
   scale_color_manual(
@@ -538,7 +538,7 @@ totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     position = position_dodge(0.9)
   ) +
   # Add the Global P-value as a text annotation
-  annotate("text", x = 0.5, y = 3, label = anova_lab, hjust = 0, size = 3) +
+  # annotate("text", x = 0.5, y = 3, label = anova_lab, hjust = 0, size = 3) +
   labs(
     x = "Condition",
     y = "Final cNISTmAb titer [g/L]") +
@@ -556,7 +556,7 @@ totaltiter_STD <- ggplot(titer_last, aes(x = Condition, y = mean_titer / 1000)) 
     tip.length = 0.01
   ) +
   scale_y_continuous(
-    limits = c(0, 3.0), # Increased slightly to make room for bars
+    limits = c(0, 2.6), # Increased slightly to make room for bars
     breaks = seq(0, 2.5, 0.5)
   )
 

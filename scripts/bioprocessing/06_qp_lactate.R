@@ -202,7 +202,7 @@ p_lactate_qp <- ggplot(
   ) +
   labs(
     x = "Culture duration [d]",
-    y = expression(q[Lac] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
+    y = expression(bold(q[Lac]) ~ "[" * bold(pmol) %.% bold(cell^-1) %.% bold(day^-1) * "]")
   ) +
   geom_text_repel(
     data = filter(lactate_qp_summary2, is_last),

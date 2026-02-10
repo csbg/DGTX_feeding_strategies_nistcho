@@ -370,14 +370,15 @@ IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD / 24)) +
   ) +
   labs(
     x = "Condition",
-    y = expression(IVCD ~ "[" * 10^6 ~ cells %.% day %.% mL^-1 * "]")) +
+    y = expression(bold("IVCD" ~ "[" * 10^6 ~ "cells" %.% "day" %.% "mL"^-1 * "]"))
+  ) +
   base_theme +
   scale_fill_manual(
     values = condition_colors,
     name   = "Feeding Strategy",
     guide  = guide_legend(nrow = 1)
   ) +
-    annotate("text", x = 0.7, y = 150, label = anova_lab, hjust = 0, size = 4) +
+    # annotate("text", x = 0.7, y = 150, label = anova_lab, hjust = 0, size = 4) +
   stat_pvalue_manual(
     tukey_df_STD_anno,
     label = "Significance",
@@ -386,7 +387,7 @@ IVCD_bar_STD <- ggplot(IVCD_last_cond, aes(x = Condition, y = mean_IVCD / 24)) +
     size = 1
   ) +
   scale_y_continuous(
-    limits = c(0, 150),
+    limits = c(0, 140),
     breaks = seq(0, 125, 25)
   )
 

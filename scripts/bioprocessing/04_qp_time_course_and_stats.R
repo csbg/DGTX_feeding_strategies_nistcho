@@ -46,8 +46,8 @@ base_theme <- theme_bw() +
     panel.border = element_blank(),
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
-    axis.title.y = element_text(hjust = 0.5, size = 10),
-    axis.title.x = element_text(hjust = 0.5, size = 10),
+    axis.title.y = element_text(hjust = 0.5, size = 10, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, size = 10, face = "bold"),
     legend.position = "bottom",
     legend.title = element_text(face = "bold")
   )
@@ -208,7 +208,7 @@ qp_timecourse <- ggplot(
   ) +
   labs(
     x = "Culture duration [d]",
-    y = expression(q[p] ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")
+    y = expression(bold(q[p] ~ "[" * bold(pg) %.% bold(cell^-1) %.% bold(day^-1) * "]"))
   ) +
   base_theme +
   scale_color_manual(
@@ -426,7 +426,7 @@ qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
   ) +
   labs(
     x = "Condition",
-    y = expression(q[p] ~ "[" * pg %.% cell^-1 %.% day^-1 * "]")
+    y = expression(bold(q[p] ~ "[" * "pg" %.% "cell"^-1 %.% "day"^-1 * "]"))
   )+
     base_theme +
   scale_fill_manual(
@@ -440,14 +440,14 @@ qp_bar_STD <- ggplot(qp_cond, aes(x = Condition, y = average_qp * 24)) +
     step.increase = 0.08,
     label.size    = 3,
     size          = 0.6
-  )+
-  annotate(
-    "text",
-    x = 0.7, y = 22,
-    label = qp_anova_lab,
-    hjust = 0,
-    size = 4
-  )
+   )#+
+  # annotate(
+  #   "text",
+  #   x = 0.7, y = 22,
+  #   label = qp_anova_lab,
+  #   hjust = 0,
+  #   size = 4
+  # )
 
 plot(qp_bar_STD)
 

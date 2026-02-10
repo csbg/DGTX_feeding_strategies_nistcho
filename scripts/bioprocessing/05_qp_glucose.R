@@ -70,8 +70,8 @@ base_theme <- theme_bw() +
     panel.border = element_blank(),
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
-    axis.title.y = element_text(hjust = 0.5, size = 10),
-    axis.title.x = element_text(hjust = 0.5, size = 10),
+    axis.title.y = element_text(hjust = 0.5, size = 10, face = "bold"),
+    axis.title.x = element_text(hjust = 0.5, size = 10, face = "bold"),
     legend.position = "bottom",
     legend.title = element_text(face = "bold")
   )
@@ -327,7 +327,7 @@ qp_gluc <- ggplot(
   labs(
     x = "Culture duration [d]",
     # Using the professional expression we created
-    y = expression(q[Glc] ~ "[" * pmol %.% cell^-1 %.% day^-1 * "]")
+    y = expression(bold(q[Glc]) ~ "[" * bold(pmol) %.% bold(cell^-1) %.% bold(day^-1) * "]")
   ) +
   base_theme +
   scale_color_manual(
