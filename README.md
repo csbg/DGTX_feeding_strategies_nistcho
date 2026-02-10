@@ -6,11 +6,10 @@ This repository contains the analysis scripts and figure-generation R codes for 
 In this study, we systematically investigate how distinct fed-batch feeding strategies modulate cellular performance
 and monoclonal antibody (mAb) critical quality attributes (CQAs) in the NISTCHO cell line. NISTCHO, developed by
 the National Institute of Standards and Technology (NIST), is a novel open-access reference cell line designed to
-standardize and accelerate biomanufacturing research. It is poised to become a benchmark system for bioprocess op-
-timization studies. However, systematic modeling and quantitative analyses of key process parameters in this cell line
+standardize and accelerate biomanufacturing research. It is poised to become a benchmark system for bioprocess optimization studies. However, systematic modeling and quantitative analyses of key process parameters in this cell line
 are still lacking. In particular, factors such as feeding frequency, nutrient composition, and co-factor supplementation
 are known to influence both culture performance and mAb glycosylation, yet their specific interrelationships remain
-poorly characterized
+poorly characterized.
 
 ## 🗂 Repository Structure
 
@@ -31,7 +30,7 @@ Below is an overview of the purpose and outputs of each script:
         - `/02_plot_abundances.R`: Collects N-glycan abundances from all files & plots as barplots for first glimpse of the data. Change line 7 to "pngase" to visualise & assemble glycation data from PNGaseF-digested samples.  
         - `/03_prepare_data_cafog.R`: Assembles all data required for the CAFOG analysis
           - `/subprocess_cafog.ipynb`: Uses the hexose bias correction algorithm [cafog](https://github.com/cdl-biosimilars/cafog) to correct N-glycan abundances for hexosylation bias.
-        - `/04_plot_abundance_cafog_corrected.R`:
+        - `/04_plot_abundance_cafog_corrected.R`: Plots the corrected N-glycan abundances for all feeding strategies and individual biological replicates and saves all corrected N-glycan abundances as corr_abundance_data.RData and matrix_meta_four_br.RData available for download on Zenodo.  
           - `/qc`: Quality control analysis for reference antibody NISTmAb RM8671. 
             - `/analyse_all_files_qc.R`: Using the package fragquaxi, quantifies the abundance of N-glycans in the input mzml files.
             - `/plot_abundances_qc.R`: Plots two most abundant N-glycans of the reference antibody NISTmAb RM8671 as a fractional abundance bar plot & calculates RSD.
