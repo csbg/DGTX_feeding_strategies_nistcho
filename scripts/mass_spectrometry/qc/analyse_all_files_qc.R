@@ -176,6 +176,6 @@ calculate_abundance <- function(mzml_full_path,
 
 ## apply custom function to dfr --------------------------------------------
 
-pwalk(data_merged[4:5,], calculate_abundance, .progress = TRUE)
+pwalk(data_merged, calculate_abundance, .progress = TRUE)
 
 
