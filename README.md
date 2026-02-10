@@ -61,8 +61,9 @@ BOKU University
 🔗 **GitHub:** [@larissahofer](https://github.com/larissahofer)  
 
 #### Mass spectrometry analysis & Computational analysis
-**Veronika Schäpertöns**
+**Veronika Schäpertöns**  
 University of Salzburg
 📧 **veronika.schaepertoens@plus.ac.at**  
 🔗 **GitHub:** [@VSchaepertoens](https://github.com/VSchaepertoens) 
+
 
