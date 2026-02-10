@@ -1,5 +1,4 @@
 library(tidyverse)
-#library("scales")    
 library(ComplexHeatmap)
 library(circlize)
 library(RColorBrewer)
@@ -91,7 +90,7 @@ meta <- tibble(sample_name = colnames(data.matrix)) %>%
            remove = FALSE
           )
 
-save(data.matrix, meta, file = "analysis/matrix_meta_four_br.RData") # NOTE! this could simply be saved with the above corr_abundance_data
+save(data.matrix, meta, file = "analysis/matrix_meta_four_br.RData") 
 
 # prepare data for mirror plots -------------------------------------------------
 
@@ -117,7 +116,6 @@ make_wider_table <- function(data,
     rename(modcom_name = glycoform1) %>%
     mutate(condition = factor(condition, levels = c("F","E","D","G","C","B","A")))
   
-  # return(table_wider)
   table_wider
   
 }
@@ -221,12 +219,6 @@ plot_mirror_plot <- function(data,
           ) +
     ggtitle(title) +
   NULL  
-
-  # ggsave(filename = paste0("figures/corrected_frac_ab_mirror_barplot_",condition,"_LH_colorscale_font16bold.pdf"),
-  #        height = 180,
-  #        width = 180,
-  #        units = "mm",
-  #        dpi = 600)
 }
 
 # Define the colors
@@ -301,7 +293,7 @@ plot_mirror_plot(data = cg_wider,
                  grouping_var = cg_wider$condition_br,
                  color_mapping = color_mapping_abcdef_br,
                  title = "Influence of Gal+, reduced glucose",
-                 sta_label = "240 hours") #should be renamed
+                 sta_label = "240 hours") 
 
 plot_mirror_plot(data = de_wider,
                  condition = "DE",
@@ -317,182 +309,4 @@ plot_mirror_plot(data = ef_wider,
                  color_mapping = color_mapping_abcdef_br,
                  title = "Gal+ effect on HIPDOG")
 
-# # plots conditions compare ------------------------------------------------
-# 
-# #-------------To only plot data of a single biological replicate---
-# # Filter rows where the second part of the string contains "2"
-# filtered_corr_abundance_data <- corr_abundance_data %>%
-#   filter(str_detect(condition_br_tp, "^[^_]*_2_"))
-# 
-# filt_abcdefg_wider <- make_wider_table(data = filtered_corr_abundance_data, 
-#                               condition = "[ABCDEFG]")
-# filt_abcg_wider <- make_wider_table(data = filtered_corr_abundance_data, 
-#                                 condition = "[ABCG]")
-# filt_def_wider <- make_wider_table(data = filtered_corr_abundance_data, 
-#                                 condition = "[DEF]")
-# 
-# # Define the colors
-# color_mapping_condition <- c(
-#   "A" = "#EE3377",
-#   "B" = "#56B4E9",
-#   "C" = "#009E73",
-#   "G" = "#ffd800",
-#   "D" = "#CC79A7",
-#   "E" = "#EE7631",
-#   "F" = "#0072B2"
-# )
-# 
-# plot_mirror_plot(data = filt_abcdefg_wider,
-#                  condition = "ABCDEFG_cond_comp",
-#                  grouping_var = condition,
-#                  legend_cols = 2,
-#                  color_mapping = color_mapping_condition,
-#                  title = "all conditions, biological replicate 2")
-# 
-# plot_mirror_plot(data = filt_abcg_wider,
-#                  condition = "ABCG_cond_comp",
-#                  grouping_var = condition,
-#                  legend_cols = 3,
-#                  color_mapping = color_mapping_condition,
-#                  title = "ABCG conditions, biological replicate 2")
-# 
-# plot_mirror_plot(data = filt_def_wider,
-#                  condition = "DEF_cond_comp",
-#                  grouping_var = filt_def_wider$condition,
-#                  legend_cols = 3,
-#                  color_mapping = color_mapping_condition,
-#                  title = "DEF conditions, biological replicate 2")
-# 
-# 
-# # plot data as a heatmap --------------------------------------------------
-# glycan_order_120 <- c(6,7, 8, 5, 9, 4, 1, 2, 10, 3)
-# glycan_order_264 <- c(6, 7, 5, 8, 1, 4, 9, 2, 10, 3)
-# 
-# plot_heatmap <-  function(data,
-#                           timepoint = "120",
-#                           glycan_order = c(6, 7, 8, 5, 9, 4, 1, 2, 10, 3)
-#                           ) {
-#   
-#   data.matrix <- data %>%
-#     select(glycoform1, corr_abundance, condition_br_tp) %>%
-#     filter(grepl(timepoint, condition_br_tp)) %>%
-#     pivot_wider(names_from = condition_br_tp, values_from = corr_abundance) %>%
-#     rename_with(~ str_replace(., paste0("_",timepoint), "")) %>%
-#     column_to_rownames("glycoform1") %>%
-#     arrange(glycan_order)  %>%
-#     as.matrix() 
-#   
-#   scaled.data.matrix = t(scale(t(data.matrix))) # for scaling by row 
-#   
-#   #heatmap settings
-#   BASE_TEXT_SIZE_PT <- 9
-#   ht_opt(
-#     simple_anno_size = unit(1.5, "mm"),
-#     COLUMN_ANNO_PADDING = unit(1, "pt"),
-#     DENDROGRAM_PADDING = unit(1, "pt"),
-#     HEATMAP_LEGEND_PADDING = unit(1, "mm"),
-#     ROW_ANNO_PADDING = unit(1, "pt"),
-#     TITLE_PADDING = unit(2, "mm"),
-#     heatmap_row_title_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-#     heatmap_row_names_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-#     heatmap_column_title_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-#     heatmap_column_names_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-#     legend_labels_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-#     legend_title_gp = gpar(fontsize = BASE_TEXT_SIZE_PT),
-#     legend_border = FALSE
-#   )
-#   #color scheme
-#   f1 = colorRamp2(seq(-max(abs(scaled.data.matrix)),
-#                       max(abs(scaled.data.matrix)),
-#                       length = 9),
-#                   c("seagreen4",
-#                     "seagreen3",
-#                     "seagreen2",
-#                     "seagreen1",
-#                     "gold",
-#                     "darkorchid1",
-#                     "darkorchid2",
-#                     "darkorchid3",
-#                     "darkorchid4"),
-#                   space = "RGB")
-#   safe_timepoint <- str_replace_all(timepoint, "\\|", "_")
-#   
-#   png(filename = paste0("figures/heatmap_",safe_timepoint,".png"),    
-#       height = 9,
-#       width = 13,
-#       units = "cm",
-#       res = 600)
-#   
-#   draw(Heatmap(scaled.data.matrix,
-#                col = f1,
-#                cluster_rows = FALSE,
-#                rect_gp = gpar(col = "white", lwd = 2),
-#                name = "z-score of fractional abundance",
-#                row_gap = unit(4, "pt"),
-#                column_gap = unit(4, "pt"),
-#                width = unit(4, "mm") * ncol(scaled.data.matrix) + 5 * unit(4, "pt"), # to make each cell a square
-#                height = unit(4, "mm") * nrow(scaled.data.matrix) + 5 * unit(4, "pt"), # to make each cell a square
-#                show_row_names = TRUE,
-#                heatmap_legend_param = list(direction = "horizontal")
-#   ),
-#   heatmap_legend_side = "bottom")
-#   
-#   dev.off()
-# }
-# 
-# data.matrix_120_func <- plot_heatmap(data = corr_abundance_data,
-#                                      glycan_order = glycan_order_264) 
-# 
-# data.matrix_264_func <- plot_heatmap(data = corr_abundance_data,
-#                                      timepoint = "264|240",
-#                                      glycan_order = glycan_order_264) 
-# 
-# 
-# # colorscheme for conditions ----------------------------------------------
-# 
-# # Define the colors
-# color_mapping <- c(
-#   "A" = "#EE3377",
-#   "B" = "#56B4E9",
-#   "C" = "#009E73",
-#   "D" = "#CC79A7",
-#   "E" = "#EE7631",
-#   "F" = "#0072B2",
-#   "G" = "#ffd800"
-# )
-# 
-# 
-# # plot glycans individually, bar plots ------------------------------------
-# 
-# filtered_tp_264 <- filtered_corr_abundance_data %>%
-#   filter(grepl("264|240", condition_br_tp)) %>%
-#   mutate(condition = str_extract(condition_br_tp, "([^_]+)")) 
-#  
-# filtered_tp_120 <- filtered_corr_abundance_data %>%
-#   filter(grepl("120", condition_br_tp)) %>%
-#   mutate(condition = str_extract(condition_br_tp, "([^_]+)")) 
-# 
-# 
-# plot_faceted <- function(data_to_plot){
-#   ggplot(data_to_plot, aes(x = condition)) +
-#     geom_col(aes(y = corr_abundance, fill = condition), 
-#              position = position_dodge(width = 0.9)) +
-#     geom_errorbar(
-#       aes(
-#         ymin = corr_abundance - corr_abundance_error,
-#         ymax = corr_abundance + corr_abundance_error,
-#         group = condition
-#       ),
-#       position = position_dodge(.9),
-#       width = .5,
-#       linewidth = .25
-#     ) + 
-#     facet_wrap(~glycoform1) +
-#     scale_fill_manual(values = color_mapping, 
-#                       breaks = names(color_mapping)) +
-#     xlab("")
-# 
-# }
-# 
-# plot_faceted(data_to_plot = filtered_tp_120)  
-# plot_faceted(data_to_plot = filtered_tp_264) 
+
