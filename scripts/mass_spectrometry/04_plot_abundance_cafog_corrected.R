@@ -55,8 +55,8 @@ unique(corr_abundance_data$glycoform1)
 unique(corr_abundance_data$condition_br_tp)
 
 
-save(corr_abundance_data, file = "analysis/corr_abundance_data_3.RData")
-load("analysis/corr_abundance_data_3.RData")
+save(corr_abundance_data, file = "analysis/corr_abundance_data.RData")
+load("analysis/corr_abundance_data.RData")
 
 # prepare data for differential analysis ----------------------------------
 #Add more meta information on biological and analytical batches
@@ -91,7 +91,7 @@ meta <- tibble(sample_name = colnames(data.matrix)) %>%
            remove = FALSE
           )
 
-save(data.matrix, meta, file = "analysis/matrix_meta_four_br_3.RData") # NOTE! this could simply be saved with the above corr_abundance_data
+save(data.matrix, meta, file = "analysis/matrix_meta_four_br.RData") # NOTE! this could simply be saved with the above corr_abundance_data
 
 # prepare data for mirror plots -------------------------------------------------
 

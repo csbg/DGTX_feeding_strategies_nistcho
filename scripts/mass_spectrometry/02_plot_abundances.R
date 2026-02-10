@@ -81,7 +81,7 @@ unique(abundance_data_averaged$condition_br_tp)
 
 save(abundance_data,
      abundance_data_averaged,
-     file = paste0("analysis/abundance_data_",pngase,"_3.RData"))
+     file = paste0("analysis/abundance_data_",pngase,".RData"))
 
 # write_csv(abundance_data_averaged, "analysis/FB4_abundance_glycation.csv")
 
