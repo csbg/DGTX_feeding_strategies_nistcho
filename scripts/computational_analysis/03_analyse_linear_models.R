@@ -5,21 +5,23 @@ library(limma)
 library(tidyverse)
 library(ComplexHeatmap)
 library(circlize)
+library(compositions)
 
 # load data ---------------------------------------------------------------
 
-input_file_path <- here::here("analysis", "matrix_meta_subset_vol2.RData")
-
+# input_file_path <- here::here("analysis/dataset_arch", "matrix_meta_subset_vol2.RData")
+input_file_path <- here::here("analysis", "matrix_meta_four_br.RData")
 load(file = input_file_path)
-
-# corr_abud_file_path <- here::here("analysis", "corr_abundance_data.RData")
-
-# load(file = corr_abud_file_path)
 
 data.matrix
 meta
-clr_data.matrix
 
+# Perform CLR transformation
+clr_data.matrix <- clr(t(data.matrix))
+# Convert the CLR-transformed data back to a matrix
+clr_data.matrix <- t(as.matrix(clr_data.matrix))
+
+clr_data.matrix
 
 # design model.matrix -----------------------------------------------------
 meta$condition_timepoint <- paste(meta$condition, meta$timepoint, sep = "_")
@@ -322,7 +324,7 @@ plot_dotplot <- function(indata = res_contr3_contr2,
   #        dpi = 600)
 }
 
-plot_dotplot()
+# plot_dotplot()
 
 plot_dotplot(indata = res_withinCondition_timepoint,
              plot_title = "The effect of timepoint stationary vs exponential phase, same condition",
@@ -388,138 +390,138 @@ plot_dotplot_facet_glycan <- function(indata = res_contr3_contr2,
   
   plot(q)
   
-  ggsave(filename = paste0("figures/br_4/statistical_analysis/dotplots/limma_dotplots_",figure_name,".png"),
-         plot = q,
-         height = 50,
-         width = 210,
-         units = "mm",
-         dpi = 600)
+  # ggsave(filename = paste0("figures/br_4/statistical_analysis/dotplots/limma_dotplots_",figure_name,".png"),
+  #        plot = q,
+  #        height = 50,
+  #        width = 210,
+  #        units = "mm",
+  #        dpi = 600)
 }
 
 plot_dotplot_facet_glycan(indata = res_contr3_contr2,
              figure_name = "ED_twoConditions")
-# plot heatmaps with all data --------------------------------------------------
-# Define the new row order
-new_glycan_order <- c(7,8,9,5,3,1,2,4,6,10)
-
-
-
-plot_heatmap <- function(data_mat, 
-                         glycan_order,
-                         zscore = FALSE) {
-  # Check if the order vector matches the number of rows
-  if (length(glycan_order) != nrow(data_mat)) {
-    stop("The length of glycan_order must match the number of rows in data_mat")
-  }
-  
-  # Reorder the matrix rows
-  reordered_data_mat <- data_mat[glycan_order, ] 
-  
-  if (zscore) {
-    # for scaling by row   
-    scaled.data.matrix <- t(scale(t(reordered_data_mat)))
-  }else{
-    scaled.data.matrix <- reordered_data_mat
-  }
-  
-  # Color scheme
-  f1 <- colorRamp2(seq(-max(abs(scaled.data.matrix)),
-                       max(abs(scaled.data.matrix)),
-                       length = 9),
-                   c("seagreen4",
-                     "seagreen3",
-                     "seagreen2",
-                     "seagreen1",
-                     "gold",
-                     "darkorchid1",
-                     "darkorchid2",
-                     "darkorchid3",
-                     "darkorchid4"),
-                   space = "RGB")
-  
-  # Draw the heatmap
-  draw(Heatmap(scaled.data.matrix,
-               col = f1,
-               cluster_rows = FALSE,
-               rect_gp = gpar(col = "white", lwd = 2),
-               name = "z-score of fractional abundance",
-               row_gap = unit(4, "pt"),
-               column_gap = unit(4, "pt"),
-               width = unit(4, "mm") * ncol(scaled.data.matrix) + 5 * unit(4, "pt"), # to make each cell a square
-               height = unit(4, "mm") * nrow(scaled.data.matrix) + 5 * unit(4, "pt"), # to make each cell a square
-               show_row_names = TRUE,
-               heatmap_legend_param = list(direction = "horizontal")),
-       heatmap_legend_side = "bottom")
-  
-  # Print the original and reordered matrices for verification
-  cat("Original data matrix:\n")
-  print(data_mat)
-  cat("Reordered data matrix:\n")
-  print(reordered_data_mat)
-}
-
-# # Run the function with original data
-# plot_heatmap(data_mat = data.matrix,
+# # plot heatmaps with all data --------------------------------------------------
+# # Define the new row order
+# new_glycan_order <- c(7,8,9,5,3,1,2,4,6,10)
+# 
+# 
+# 
+# plot_heatmap <- function(data_mat, 
+#                          glycan_order,
+#                          zscore = FALSE) {
+#   # Check if the order vector matches the number of rows
+#   if (length(glycan_order) != nrow(data_mat)) {
+#     stop("The length of glycan_order must match the number of rows in data_mat")
+#   }
+#   
+#   # Reorder the matrix rows
+#   reordered_data_mat <- data_mat[glycan_order, ] 
+#   
+#   if (zscore) {
+#     # for scaling by row   
+#     scaled.data.matrix <- t(scale(t(reordered_data_mat)))
+#   }else{
+#     scaled.data.matrix <- reordered_data_mat
+#   }
+#   
+#   # Color scheme
+#   f1 <- colorRamp2(seq(-max(abs(scaled.data.matrix)),
+#                        max(abs(scaled.data.matrix)),
+#                        length = 9),
+#                    c("seagreen4",
+#                      "seagreen3",
+#                      "seagreen2",
+#                      "seagreen1",
+#                      "gold",
+#                      "darkorchid1",
+#                      "darkorchid2",
+#                      "darkorchid3",
+#                      "darkorchid4"),
+#                    space = "RGB")
+#   
+#   # Draw the heatmap
+#   draw(Heatmap(scaled.data.matrix,
+#                col = f1,
+#                cluster_rows = FALSE,
+#                rect_gp = gpar(col = "white", lwd = 2),
+#                name = "z-score of fractional abundance",
+#                row_gap = unit(4, "pt"),
+#                column_gap = unit(4, "pt"),
+#                width = unit(4, "mm") * ncol(scaled.data.matrix) + 5 * unit(4, "pt"), # to make each cell a square
+#                height = unit(4, "mm") * nrow(scaled.data.matrix) + 5 * unit(4, "pt"), # to make each cell a square
+#                show_row_names = TRUE,
+#                heatmap_legend_param = list(direction = "horizontal")),
+#        heatmap_legend_side = "bottom")
+#   
+#   # Print the original and reordered matrices for verification
+#   cat("Original data matrix:\n")
+#   print(data_mat)
+#   cat("Reordered data matrix:\n")
+#   print(reordered_data_mat)
+# }
+# 
+# # # Run the function with original data
+# # plot_heatmap(data_mat = data.matrix,
+# #              glycan_order = new_glycan_order)
+# # 
+# # # Run the function with original data 120 timepoint
+# # plot_heatmap(data_mat = data.matrix[, grepl("120", colnames(data.matrix))],
+# #              glycan_order = new_glycan_order)
+# # 
+# # # Run the function with original data 240 timepoint
+# # plot_heatmap(data_mat = data.matrix[, grepl("264", colnames(data.matrix))],
+# #              glycan_order = new_glycan_order)
+# 
+# # Run the function with clr transformed data
+# plot_heatmap(data_mat = clr_data.matrix,
 #              glycan_order = new_glycan_order)
 # 
 # # Run the function with original data 120 timepoint
-# plot_heatmap(data_mat = data.matrix[, grepl("120", colnames(data.matrix))],
+# plot_heatmap(data_mat = clr_data.matrix[, grepl("120", colnames(clr_data.matrix))],
 #              glycan_order = new_glycan_order)
 # 
 # # Run the function with original data 240 timepoint
-# plot_heatmap(data_mat = data.matrix[, grepl("264", colnames(data.matrix))],
+# plot_heatmap(data_mat = clr_data.matrix[, grepl("264|240", colnames(clr_data.matrix))],
 #              glycan_order = new_glycan_order)
-
-# Run the function with clr transformed data
-plot_heatmap(data_mat = clr_data.matrix,
-             glycan_order = new_glycan_order)
-
-# Run the function with original data 120 timepoint
-plot_heatmap(data_mat = clr_data.matrix[, grepl("120", colnames(clr_data.matrix))],
-             glycan_order = new_glycan_order)
-
-# Run the function with original data 240 timepoint
-plot_heatmap(data_mat = clr_data.matrix[, grepl("264|240", colnames(clr_data.matrix))],
-             glycan_order = new_glycan_order)
-
-# Run the function with clr transformed data
-plot_heatmap(data_mat = clr_data.matrix,
-             glycan_order = new_glycan_order,
-             zscore = TRUE)
-
-# Run the function with original data 120 timepoint
-plot_heatmap(data_mat = clr_data.matrix[, grepl("120", colnames(clr_data.matrix))],
-             glycan_order = new_glycan_order,
-             zscore = TRUE)
-
-# Run the function with original data 240 timepoint
-plot_heatmap(data_mat = clr_data.matrix[, grepl("264|240", colnames(clr_data.matrix))],
-             glycan_order = new_glycan_order,
-             zscore = TRUE)
-
-# # Run the function with log2 transformed data
-# plot_heatmap(data_mat = log2_data.matrix,
-#              glycan_order = new_glycan_order)
+# 
+# # Run the function with clr transformed data
+# plot_heatmap(data_mat = clr_data.matrix,
+#              glycan_order = new_glycan_order,
+#              zscore = TRUE)
 # 
 # # Run the function with original data 120 timepoint
-# plot_heatmap(data_mat = log2_data.matrix[, grepl("120", colnames(log2_data.matrix))],
-#              glycan_order = new_glycan_order)
+# plot_heatmap(data_mat = clr_data.matrix[, grepl("120", colnames(clr_data.matrix))],
+#              glycan_order = new_glycan_order,
+#              zscore = TRUE)
 # 
 # # Run the function with original data 240 timepoint
-# plot_heatmap(data_mat = log2_data.matrix[, grepl("264", colnames(log2_data.matrix))],
-#              glycan_order = new_glycan_order)
-
-# # Run the function with ilr transformed data
-# plot_heatmap(data_mat = ilr_data.matrix,
-#              glycan_order = new_glycan_order)
+# plot_heatmap(data_mat = clr_data.matrix[, grepl("264|240", colnames(clr_data.matrix))],
+#              glycan_order = new_glycan_order,
+#              zscore = TRUE)
 # 
-# # Run the function with ilr data 120 timepoint
-# plot_heatmap(data_mat = ilr_data.matrix[, grepl("120", colnames(ilr_data.matrix))],
-#              glycan_order = new_glycan_order)
+# # # Run the function with log2 transformed data
+# # plot_heatmap(data_mat = log2_data.matrix,
+# #              glycan_order = new_glycan_order)
+# # 
+# # # Run the function with original data 120 timepoint
+# # plot_heatmap(data_mat = log2_data.matrix[, grepl("120", colnames(log2_data.matrix))],
+# #              glycan_order = new_glycan_order)
+# # 
+# # # Run the function with original data 240 timepoint
+# # plot_heatmap(data_mat = log2_data.matrix[, grepl("264", colnames(log2_data.matrix))],
+# #              glycan_order = new_glycan_order)
 # 
-# # Run the function with ilr data 240 timepoint
-# plot_heatmap(data_mat = ilr_data.matrix[, grepl("264", colnames(ilr_data.matrix))],
-#              glycan_order = new_glycan_order)
+# # # Run the function with ilr transformed data
+# # plot_heatmap(data_mat = ilr_data.matrix,
+# #              glycan_order = new_glycan_order)
+# # 
+# # # Run the function with ilr data 120 timepoint
+# # plot_heatmap(data_mat = ilr_data.matrix[, grepl("120", colnames(ilr_data.matrix))],
+# #              glycan_order = new_glycan_order)
+# # 
+# # # Run the function with ilr data 240 timepoint
+# # plot_heatmap(data_mat = ilr_data.matrix[, grepl("264", colnames(ilr_data.matrix))],
+# #              glycan_order = new_glycan_order)
 
 
 
