@@ -30,13 +30,16 @@ Below is an overview of the purpose and outputs of each script:
         - `/02_plot_abundances.R`: Collects N-glycan abundances from all files & plots as barplots for first glimpse of the data. Change line 7 to "pngase" to visualise & assemble glycation data from PNGaseF-digested samples.  
         - `/03_prepare_data_cafog.R`: Assembles all data required for the CAFOG analysis
           - `/subprocess_cafog.ipynb`: Uses the hexose bias correction algorithm [cafog](https://github.com/cdl-biosimilars/cafog) to correct N-glycan abundances for hexosylation bias.
-        - `/04_plot_abundance_cafog_corrected.R`: Plots the corrected N-glycan abundances for all feeding strategies and individual biological replicates and saves all corrected N-glycan abundances as corr_abundance_data.RData and matrix_meta_four_br.RData available for download on Zenodo.  
+        - `/04_plot_abundance_cafog_corrected.R`: Plots the corrected N-glycan abundances for all feeding strategies and individual biological replicates and saves all corrected N-glycan abundances as corr_abundance_data.RData and matrix_meta_four_br.R. Data available for download on Zenodo.
+        - `/05_gi_index.R`: Calculates and statistically evaluates galactosylation and glycation indices a plots Figures 5C-D.
+        - `/06_plot_abundance_after_transform.R`: Plots corrected N-glycan abundances which have been transformed using CLR. Plots supplementary figure 9 and individual plots for supplementary figures 10 & 11 (final assembly fo these in Inkscape).
           - `/qc`: Quality control analysis for reference antibody NISTmAb RM8671. 
             - `/analyse_all_files_qc.R`: Using the package fragquaxi, quantifies the abundance of N-glycans in the input mzml files.
             - `/plot_abundances_qc.R`: Plots two most abundant N-glycans of the reference antibody NISTmAb RM8671 as a fractional abundance bar plot & calculates RSD.
 
     - `/computational_analysis`: This directory contains all R scripts used for the exploratory data analysis & PERMANOVA, statistical analysis for the condition and the time effects & the visualization.
 Below is an overview of the purpose and outputs of each script:
+  - `/01_explore_abundance.R`: Performs PCA analysis and calculates pairwise Spearmann correlations per sample. Plots figures 3 A and 3 B. 
 
 **Note: Copy [subprocess_cafog.ipynb](subprocess_cafog.ipynb) to cafog folder to run directly from the source & base_folder in .ipynb must be changed to match the directory of `analysis/cafog`.
     
