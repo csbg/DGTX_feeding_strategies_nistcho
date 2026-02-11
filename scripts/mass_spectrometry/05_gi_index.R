@@ -7,7 +7,7 @@ library(broom)
 
 # load abundance data -----------------------------------------------------
 
-load("analysis/corr_abundance_data_2.RData")
+load("analysis/corr_abundance_data.RData")
 
 # calculate GI ---------------------------------------------------------
 
@@ -86,16 +86,6 @@ gi_stats$time_group <- factor(gi_stats$time_group, levels = c("exponential", "st
 gi_stats$condition <- factor(gi_stats$condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+"))
 print(gi_stats)
 
-# color_mapping_condition <- c(
-#   "STD" = "#EE3377",
-#   "STD+" = "#56B4E9",
-#   "LoG" = "#009E73",
-#   "LoG+" = "#ffd800",
-#   "HiF" = "#CC79A7",
-#   "HIP" = "#EE7631",
-#   "HIP+" = "#0072B2"
-# )
-
 color_mapping_condition <- c(
   "STD" = "grey50",
   "STD+" = "grey20",
@@ -106,8 +96,8 @@ color_mapping_condition <- c(
   "LoG" = "#a6cee3"
 )
 
-save(gi_summary, gi_stats, file = "analysis/galactosylation_index_br4.RData")
-load("analysis/galactosylation_index_br4.RData")
+# save(gi_summary, gi_stats, file = "analysis/galactosylation_index_br4.RData")
+# load("analysis/galactosylation_index_br4.RData")
 
 
 # statistics --------------------------------------------------------------
@@ -255,160 +245,160 @@ gal_ind_bar_sig <- ggplot(data = gal_index_stats, aes(x = condition, y = mean_GI
 plot(gal_ind_bar_sig)
 
 
-# plot as dotplots --------------------------------------------------------
+# # plot as dotplots --------------------------------------------------------
+# 
+# gal_ind <- ggplot(data = gi_stats) +
+#   # Points: color and linetype mapped to condition in one aes() call
+#   geom_point(
+#     aes(x = time_group, y = mean_GI, color = condition),
+#     size = 2.5,
+#     position = position_dodge(width = 0.3)
+#   ) +
+#   
+#   # Lines: same combined mapping
+#   geom_line(
+#     aes(x = time_group, y = mean_GI, color = condition, group = condition),
+#     linewidth = 1,
+#     position = position_dodge(width = 0.3)
+#   ) +
+#   
+#   # Error bars: also include linetype to ensure legend combines
+#   geom_errorbar(
+#     aes(
+#       x = time_group,
+#       ymin = mean_GI - sd_GI,
+#       ymax = mean_GI + sd_GI,
+#       color = condition
+#     ),
+#     width = 0.1,
+#     position = position_dodge(width = 0.3)
+#   ) +
+#   
+#   # Manual color and linetype mappings
+#   scale_color_manual(
+#     values = color_mapping_condition,
+#     breaks = names(color_mapping_condition)
+#   ) +
+#   
+#   # Unified legend title
+#   labs(
+#     x = "Bioprocess phase",
+#     y = "Galactosylation_index (%)",
+#     color = "Condition",
+#     linetype = "Condition"
+#   ) +
+#   
+#   scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
+#   
+#   guides(color = guide_legend(nrow = 1)) +
+#   
+#   # Styling
+#   theme_bw() +
+#   theme(
+#     axis.line = element_line(colour = "black"),
+#     axis.text = element_text(colour = "black"),
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.minor.y = element_blank(),
+#     panel.border = element_blank(),
+#     legend.position = "top",
+#     legend.title = element_text(face = "bold"),
+#     legend.text = element_text(size = 10),
+#     legend.box = "horizontal"
+#   )
+# 
+# plot(gal_ind)
+# # ggsave(filename = "figures/galactosylation_index.png",
+# #        width = 100,
+# #        height = 100,
+# #        units = "mm",
+# #        dpi = 600,
+# #        bg = "white")
 
-gal_ind <- ggplot(data = gi_stats) +
-  # Points: color and linetype mapped to condition in one aes() call
-  geom_point(
-    aes(x = time_group, y = mean_GI, color = condition),
-    size = 2.5,
-    position = position_dodge(width = 0.3)
-  ) +
-  
-  # Lines: same combined mapping
-  geom_line(
-    aes(x = time_group, y = mean_GI, color = condition, group = condition),
-    linewidth = 1,
-    position = position_dodge(width = 0.3)
-  ) +
-  
-  # Error bars: also include linetype to ensure legend combines
-  geom_errorbar(
-    aes(
-      x = time_group,
-      ymin = mean_GI - sd_GI,
-      ymax = mean_GI + sd_GI,
-      color = condition
-    ),
-    width = 0.1,
-    position = position_dodge(width = 0.3)
-  ) +
-  
-  # Manual color and linetype mappings
-  scale_color_manual(
-    values = color_mapping_condition,
-    breaks = names(color_mapping_condition)
-  ) +
-  
-  # Unified legend title
-  labs(
-    x = "Bioprocess phase",
-    y = "Galactosylation_index (%)",
-    color = "Condition",
-    linetype = "Condition"
-  ) +
-  
-  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
-  
-  guides(color = guide_legend(nrow = 1)) +
-  
-  # Styling
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    axis.text = element_text(colour = "black"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "top",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(size = 10),
-    legend.box = "horizontal"
-  )
-
-plot(gal_ind)
-ggsave(filename = "figures/galactosylation_index.png",
-       width = 100,
-       height = 100,
-       units = "mm",
-       dpi = 600,
-       bg = "white")
 
 
-
-# plot index as barplot ---------------------------------------------------
-
-gal_ind_bar <- ggplot(data = gi_stats, aes(x = condition, y = mean_GI)) +
-  geom_col(aes(fill = condition),
-           position = position_dodge(width = 0.9),
-           color = "black") +
-  geom_errorbar(
-    aes(
-      ymin = mean_GI - sd_GI,
-      ymax = mean_GI + sd_GI,
-      group = condition
-    ),
-    position = position_dodge(.9),
-    width = .5,
-    linewidth = .25
-  ) +
-  # geom_text(
-  #   aes(label = condition, fill = condition, y = 2),  # include fill here!
-  #   position = position_dodge(width = 0.9),
-  #   vjust = 0,
-  #   hjust = 0, 
-  #   angle = 90,
-  #   colour = "white",
-  #   size = 3
-  # ) +
-  facet_wrap(~time_group, 
-             labeller = labeller(time_group = c("exponential" = "Exponential",
-                                                "stationary" = "Stationary"))
-             ) +
-  # # Lines: same combined mapping
-  # geom_line(
-  #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
-  #   linewidth = 1,
-  #   position = position_dodge(width = 0.9)
-  # ) +
-scale_fill_manual(
-  values = color_mapping_condition,
-  breaks = levels(gi_stats$condition)
-) +
-  # scale_color_manual(
-  #   values = color_mapping_condition,
-  #   breaks = names(color_mapping_condition)
-  # ) 
-# Unified legend title
-labs(
-  x = "",
-  y = "Galactosylation_index (%)",
-  fill = "Strategy"
-) +
-  
-  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
-  theme_bw() +
-  theme(
-    text = element_text( 
-      size = 11,
-      family = "sans",
-      colour = "black"
-    ),
-    axis.line = element_line(),
-    axis.text = element_text(color = "black", size = 11),
-    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-    axis.title.y = element_text(hjust = 0.5, face = "bold"),
-    axis.title.x = element_text(hjust = 0.5, face = "bold"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(),
-    legend.box = "horizontal"
-  ) +
-  
-  guides(fill = guide_legend(nrow = 1)) 
-
-plot(gal_ind_bar)
-ggsave(filename = "figures/galactosylation_index_barplot_facet_time.png",
-       width = 150,
-       height = 100,
-       units = "mm",
-       dpi = 600,
-       bg = "white")
+# # plot index as barplot ---------------------------------------------------
+# 
+# gal_ind_bar <- ggplot(data = gi_stats, aes(x = condition, y = mean_GI)) +
+#   geom_col(aes(fill = condition),
+#            position = position_dodge(width = 0.9),
+#            color = "black") +
+#   geom_errorbar(
+#     aes(
+#       ymin = mean_GI - sd_GI,
+#       ymax = mean_GI + sd_GI,
+#       group = condition
+#     ),
+#     position = position_dodge(.9),
+#     width = .5,
+#     linewidth = .25
+#   ) +
+#   # geom_text(
+#   #   aes(label = condition, fill = condition, y = 2),  # include fill here!
+#   #   position = position_dodge(width = 0.9),
+#   #   vjust = 0,
+#   #   hjust = 0, 
+#   #   angle = 90,
+#   #   colour = "white",
+#   #   size = 3
+#   # ) +
+#   facet_wrap(~time_group, 
+#              labeller = labeller(time_group = c("exponential" = "Exponential",
+#                                                 "stationary" = "Stationary"))
+#              ) +
+#   # # Lines: same combined mapping
+#   # geom_line(
+#   #   aes(x = time_group, y = mean_GI, color = condition, group = condition),
+#   #   linewidth = 1,
+#   #   position = position_dodge(width = 0.9)
+#   # ) +
+# scale_fill_manual(
+#   values = color_mapping_condition,
+#   breaks = levels(gi_stats$condition)
+# ) +
+#   # scale_color_manual(
+#   #   values = color_mapping_condition,
+#   #   breaks = names(color_mapping_condition)
+#   # ) 
+# # Unified legend title
+# labs(
+#   x = "",
+#   y = "Galactosylation_index (%)",
+#   fill = "Strategy"
+# ) +
+#   
+#   scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, by = 5)) +
+#   theme_bw() +
+#   theme(
+#     text = element_text( 
+#       size = 11,
+#       family = "sans",
+#       colour = "black"
+#     ),
+#     axis.line = element_line(),
+#     axis.text = element_text(color = "black", size = 11),
+#     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+#     axis.title.y = element_text(hjust = 0.5, face = "bold"),
+#     axis.title.x = element_text(hjust = 0.5, face = "bold"),
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.minor.y = element_blank(),
+#     panel.border = element_blank(),
+#     legend.position = "bottom",
+#     legend.title = element_text(face = "bold"),
+#     legend.text = element_text(),
+#     legend.box = "horizontal"
+#   ) +
+#   
+#   guides(fill = guide_legend(nrow = 1)) 
+# 
+# plot(gal_ind_bar)
+# ggsave(filename = "figures/galactosylation_index_barplot_facet_time.png",
+#        width = 150,
+#        height = 100,
+#        units = "mm",
+#        dpi = 600,
+#        bg = "white")
 
 # make wider table --------------------------------------------------------
 gi_stats_wider <- gi_stats %>% 
@@ -416,15 +406,6 @@ gi_stats_wider <- gi_stats %>%
     across(starts_with("mean_GI"), ~ round(.x, 2)),
     across(starts_with("sd_GI"), ~ round(.x, 2))
   ) %>%
-  # mutate(condition = case_when(
-  #   condition == "A" ~ "STD",
-  #   condition == "B" ~ "STD+",
-  #   condition == "G" ~ "LoG",
-  #   condition == "C" ~ "LoG+",
-  #   condition == "D" ~ "HiF",
-  #   condition == "E" ~ "HIP",
-  #   condition == "F" ~ "HIP+")
-  # ) %>%
   select(condition,time_group, mean_GI, sd_GI) %>%
   pivot_wider(values_from = c(mean_GI, sd_GI), 
                          names_from = time_group,
@@ -433,12 +414,14 @@ gi_stats_wider <- gi_stats %>%
   arrange(condition)
 
 write_csv(gi_stats_wider,
-          file = "analysis/galactosylation_index.csv")
+          file = "analysis/results_galactosylation_index.csv")
   
 
 # glycation index ---------------------------------------------------------
-glycation_data <- read_csv("analysis/FB4_abundance_glycation.csv")
-
+# glycation_data <- read_csv("analysis/FB4_abundance_glycation.csv")
+load("analysis/abundance_data_pngase.RData")
+glycation_data <- abundance_data_averaged
+  
 # Check if frac_abundance sums to 1 for each replicate
 abundance_sums <- glycation_data %>%
   group_by(condition_br_tp) %>%
@@ -517,8 +500,8 @@ gi_stats <- gi_summary %>%
   mutate(time_group = if_else(tp == 120, "exponential", "stationary"),
          condition = factor(condition, levels = c("STD", "STD+", "LoG", "LoG+", "HiF", "HIP", "HIP+")))
 
-save(gi_summary, gi_stats, file = "analysis/glycation_index.RData")
-load("analysis/glycation_index.RData")
+# save(gi_summary, gi_stats, file = "analysis/glycation_index.RData")
+# load("analysis/glycation_index.RData")
 
 # make wider table --------------------------------------------------------
 gi_stats_wider <- gi_stats %>% 
@@ -545,120 +528,120 @@ gi_stats_wider <- gi_stats %>%
 write_csv(gi_stats_wider,
           file = "analysis/glycation_index.csv")
 
-# plot glycation index ----------------------------------------------------
-
-color_mapping_condition <- c(
-  "STD" = "#EE3377",
-  "STD+" = "#56B4E9",
-  "LoG+" = "#009E73",
-  "LoG" = "#ffd800",
-  "HiF" = "#CC79A7",
-  "HIP" = "#EE7631",
-  "HIP+" = "#0072B2"
-)
-
-# ggplot() +
-#   geom_jitter(data = gi_summary, aes(x = condition, y = glycation_index, color = condition), width = 0.2, size = 2.5) +
-#   geom_point(data = gi_stats, aes(x = condition, y = mean_GI), color = "black", size = 3, alpha = 0.5) +
-#   geom_errorbar(
-#     data = gi_stats,
-#     aes(x = condition, ymin = mean_GI - sd_GI, ymax = mean_GI + sd_GI),
-#     width = 0.2,
-#     color = "black", 
-#     alpha = 0.5
-#   ) +
-#   facet_wrap(~ time_group, ncol = 1) +
-#   scale_color_manual(values = color_mapping_condition, 
-#                      breaks = names(color_mapping_condition)) +
-#   ylim(0,7.5) +
-#   labs(x = "", y = "Glycation index (%)") +
-#   theme_minimal() +
-#   theme(
-#     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-#     panel.grid.minor = element_blank(),
-#     panel.grid.major.x = element_blank()
-#   )
-
-
-# ggplot(data = gi_stats) +
-#   geom_point(aes(x = as.numeric(tp), y = mean_GI, color = condition)) +
-#   geom_line(aes(x = as.numeric(tp), y = mean_GI, color = condition, group = condition)) +
-#   scale_color_manual(values = color_mapping_condition, 
-#                      breaks = names(color_mapping_condition)) +
-#   # ylim(0,7.5) +
-#   labs(x = "Time point [hours]", y = "Glycation index [%]") +
-#   xlim(100, 280) +
-#   theme_bw()
+# # plot glycation index ----------------------------------------------------
 # 
-# ggsave(filename = "figures/glycation_index.png",
-#        width = 100,
-#        height = 80,
-#        units = "mm",
-#        dpi = 600,
-#        bg = "white")
-
-glu_ind <-
-  ggplot(data = gi_stats) +
-  # Points: color and linetype mapped to condition in one aes() call
-  geom_point(
-    aes(x = time_group, y = mean_GI, color = condition),
-    size = 2.5,
-    position = position_dodge(width = 0.3)
-  ) +
-  
-  # Lines: same combined mapping
-  geom_line(
-    aes(x = time_group, y = mean_GI, color = condition, group = condition),
-    linewidth = 1,
-    position = position_dodge(width = 0.3)
-  ) +
-  
-  # Error bars: also include linetype to ensure legend combines
-  geom_errorbar(
-    aes(
-      x = time_group,
-      ymin = mean_GI - sd_GI,
-      ymax = mean_GI + sd_GI,
-      color = condition
-      # linetype = condition
-    ),
-    width = 0.1,
-    position = position_dodge(width = 0.3)
-  ) +
-  
-  # Manual color and linetype mappings
-  scale_color_manual(
-    values = color_mapping_condition,
-    breaks = names(color_mapping_condition)
-  ) +
-  
-  # Unified legend title
-  labs(
-    x = "Bioprocess phase",
-    y = "Glycation_index (%)",
-    color = "Condition"
-  ) +
-  
-  scale_y_continuous(limits = c(0, 6), breaks = seq(0, 6, by = 1)) +
-  
-  guides(color = guide_legend(nrow = 1)) +
-  
-  # Styling
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    axis.text = element_text(colour = "black"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "top",
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(size = 10),
-    legend.box = "horizontal"
-  )
-  
-plot(glu_ind)
+# # color_mapping_condition <- c(
+# #   "STD" = "#EE3377",
+# #   "STD+" = "#56B4E9",
+# #   "LoG+" = "#009E73",
+# #   "LoG" = "#ffd800",
+# #   "HiF" = "#CC79A7",
+# #   "HIP" = "#EE7631",
+# #   "HIP+" = "#0072B2"
+# # )
+# 
+# # ggplot() +
+# #   geom_jitter(data = gi_summary, aes(x = condition, y = glycation_index, color = condition), width = 0.2, size = 2.5) +
+# #   geom_point(data = gi_stats, aes(x = condition, y = mean_GI), color = "black", size = 3, alpha = 0.5) +
+# #   geom_errorbar(
+# #     data = gi_stats,
+# #     aes(x = condition, ymin = mean_GI - sd_GI, ymax = mean_GI + sd_GI),
+# #     width = 0.2,
+# #     color = "black", 
+# #     alpha = 0.5
+# #   ) +
+# #   facet_wrap(~ time_group, ncol = 1) +
+# #   scale_color_manual(values = color_mapping_condition, 
+# #                      breaks = names(color_mapping_condition)) +
+# #   ylim(0,7.5) +
+# #   labs(x = "", y = "Glycation index (%)") +
+# #   theme_minimal() +
+# #   theme(
+# #     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+# #     panel.grid.minor = element_blank(),
+# #     panel.grid.major.x = element_blank()
+# #   )
+# 
+# 
+# # ggplot(data = gi_stats) +
+# #   geom_point(aes(x = as.numeric(tp), y = mean_GI, color = condition)) +
+# #   geom_line(aes(x = as.numeric(tp), y = mean_GI, color = condition, group = condition)) +
+# #   scale_color_manual(values = color_mapping_condition, 
+# #                      breaks = names(color_mapping_condition)) +
+# #   # ylim(0,7.5) +
+# #   labs(x = "Time point [hours]", y = "Glycation index [%]") +
+# #   xlim(100, 280) +
+# #   theme_bw()
+# # 
+# # ggsave(filename = "figures/glycation_index.png",
+# #        width = 100,
+# #        height = 80,
+# #        units = "mm",
+# #        dpi = 600,
+# #        bg = "white")
+# 
+# glu_ind <-
+#   ggplot(data = gi_stats) +
+#   # Points: color and linetype mapped to condition in one aes() call
+#   geom_point(
+#     aes(x = time_group, y = mean_GI, color = condition),
+#     size = 2.5,
+#     position = position_dodge(width = 0.3)
+#   ) +
+#   
+#   # Lines: same combined mapping
+#   geom_line(
+#     aes(x = time_group, y = mean_GI, color = condition, group = condition),
+#     linewidth = 1,
+#     position = position_dodge(width = 0.3)
+#   ) +
+#   
+#   # Error bars: also include linetype to ensure legend combines
+#   geom_errorbar(
+#     aes(
+#       x = time_group,
+#       ymin = mean_GI - sd_GI,
+#       ymax = mean_GI + sd_GI,
+#       color = condition
+#       # linetype = condition
+#     ),
+#     width = 0.1,
+#     position = position_dodge(width = 0.3)
+#   ) +
+#   
+#   # Manual color and linetype mappings
+#   scale_color_manual(
+#     values = color_mapping_condition,
+#     breaks = names(color_mapping_condition)
+#   ) +
+#   
+#   # Unified legend title
+#   labs(
+#     x = "Bioprocess phase",
+#     y = "Glycation_index (%)",
+#     color = "Condition"
+#   ) +
+#   
+#   scale_y_continuous(limits = c(0, 6), breaks = seq(0, 6, by = 1)) +
+#   
+#   guides(color = guide_legend(nrow = 1)) +
+#   
+#   # Styling
+#   theme_bw() +
+#   theme(
+#     axis.line = element_line(colour = "black"),
+#     axis.text = element_text(colour = "black"),
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.minor.y = element_blank(),
+#     panel.border = element_blank(),
+#     legend.position = "top",
+#     legend.title = element_text(face = "bold"),
+#     legend.text = element_text(size = 10),
+#     legend.box = "horizontal"
+#   )
+#   
+# plot(glu_ind)
 
 
 # plot glycation index as barplot -----------------------------------------
@@ -736,32 +719,32 @@ gly_ind_bar <- ggplot(data = gi_stats, aes(x = condition, y = mean_GI)) +
   guides(fill = guide_legend(nrow = 1)) 
 
 plot(gly_ind_bar)
-ggsave(filename = "figures/glycation_index_barplot_facet_time.png",
-       width = 150,
-       height = 100,
-       units = "mm",
-       dpi = 600,
-       bg = "white")
+# ggsave(filename = "figures/glycation_index_barplot_facet_time.png",
+#        width = 150,
+#        height = 100,
+#        units = "mm",
+#        dpi = 600,
+#        bg = "white")
 
 # arrange both indices ----------------------------------------------------
 
-ggarrange(gal_ind,glu_ind, ncol = 2, common.legend = TRUE)  
-
-ggsave("figures/galactosyaltion_glycation_index.png",
-       width = 200,
-       height = 85,
-       units = "mm",
-       dpi = 600,
-       bg = "white")
-
-ggarrange(gal_ind_bar,gly_ind_bar, ncol = 2, common.legend = TRUE, legend = "bottom")  
-
-ggsave("figures/galactosylation_glycation_index_barplot_facet_time.png",
-       width = 210,
-       height = 85,
-       units = "mm",
-       dpi = 600,
-       bg = "white")
+# ggarrange(gal_ind,glu_ind, ncol = 2, common.legend = TRUE)  
+# 
+# ggsave("figures/galactosyaltion_glycation_index.png",
+#        width = 200,
+#        height = 85,
+#        units = "mm",
+#        dpi = 600,
+#        bg = "white")
+# 
+# ggarrange(gal_ind_bar,gly_ind_bar, ncol = 2, common.legend = TRUE, legend = "bottom")  
+# 
+# ggsave("figures/galactosylation_glycation_index_barplot_facet_time.png",
+#        width = 210,
+#        height = 85,
+#        units = "mm",
+#        dpi = 600,
+#        bg = "white")
 
 
 ggarrange(gal_ind_bar_sig,gly_ind_bar, ncol = 2, common.legend = TRUE, legend = "bottom")  
