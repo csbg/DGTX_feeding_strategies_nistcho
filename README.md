@@ -26,7 +26,7 @@ Below is an overview of the purpose and outputs of each script:
 
     - `/mass_spectrometry`: This directory contains all R scripts used for the analysis of CHO fed-batch mass spectrometry data, including N-glycans quantification, correction for hexosylation bias, galactosylation and glycation index calculation, and the quality control.
 Below is an overview of the purpose and outputs of each script:
-        - `/01_analyse_all_files.R`: Using the package fragquaxi, quantifies the abundance of N-glycans in the input mzml files. For quantification of glycation in PNGaseF-digested mzml files, change line 29 to "pngase". 
+        - `/01_analyse_all_files.R`: Using the package fragquaxi [fragquaxi](https://github.com/cdl-biosimilars/fragquaxi), quantifies the abundance of N-glycans in the input mzml files. For quantification of glycation in PNGaseF-digested mzml files, change line 29 to "pngase". 
         - `/02_plot_abundances.R`: Collects N-glycan abundances from all files & plots as barplots for first glimpse of the data. Change line 7 to "pngase" to visualise & assemble glycation data from PNGaseF-digested samples.  
         - `/03_prepare_data_cafog.R`: Assembles all data required for the CAFOG analysis
           - `/subprocess_cafog.ipynb`: Uses the hexose bias correction algorithm [cafog](https://github.com/cdl-biosimilars/cafog) to correct N-glycan abundances for hexosylation bias.
