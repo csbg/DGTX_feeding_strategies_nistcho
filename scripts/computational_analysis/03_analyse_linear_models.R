@@ -248,7 +248,7 @@ res_twoConditions_timepoint[res_twoConditions_timepoint$coef == "Dif_B_A" & res_
 save(res_twoConditions_oneTimepoint,
      res_twoConditions_timepoint, 
      res_withinCondition_timepoint, 
-     file = "analysis/limma_results_subset_arrw.RData")
+     file = "analysis/limma_results.RData")
 
 # plot vulcano & pval histogram ------------------------------------------------
 plot_vulcano_pval_histo <- function(results,
