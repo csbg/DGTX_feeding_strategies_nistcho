@@ -42,7 +42,7 @@ Below is an overview of the purpose and outputs of each script:
       - `/01_explore_abundance.R`: Performs PCA analysis and calculates pairwise Spearmann correlations per sample. Plots Figures 3A-B. 
       - `/02_permanova.R`: Performs PERMANOVA on N-glycan abundances to statistically test whether feeding strategy and the phase had an impact on N-glycan variability. 
       - `/03_analyse_linear_models.R`: To statistically compare strategies and sampling time points, linear models (R package limma, v3.58.1) were fitted on clr-transformed N-glycan abundances as responses and experimental feeding strategy and time point as predictors. Contrasts were specified to test differences between (i) time points within the same feeding strategy and feeding strategies at the same time point.
-      - `/04_plot_abundances_cafog_corrected_limma.R`: Plot corrected N-glycan abundances and the statistical results from limma (Figures 3 and 5).
+      - `/04_plot_abundances_cafog_corrected_limma.R`: Plots corrected N-glycan abundances and the statistical results from limma (Figures 4 and 5A-B).
 
 **Note: Copy [subprocess_cafog.ipynb](subprocess_cafog.ipynb) to cafog folder to run directly from the source & base_folder in .ipynb must be changed to match the directory of `analysis/cafog`.
     
