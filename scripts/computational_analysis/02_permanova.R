@@ -94,6 +94,14 @@ res2 <- adonis2(dist.eu ~ phase * condition_abrev, data = meta)
 res2
 
 
+res3 <- adonis2(
+  dist.eu ~ phase * condition_abrev,
+  data = meta,
+  permutations = 999,
+  by = "margin"
+)
+res3
+
 
 
 
