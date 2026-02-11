@@ -1,4 +1,3 @@
-# Script to analyse fractional abundances of glycan data using linear models
 
 library(here)
 library(limma)
@@ -11,7 +10,7 @@ library(ggforce)
 
 # load data ---------------------------------------------------------------
 
-input_file_path <- here::here("analysis", "matrix_meta_four_br_3.RData")
+input_file_path <- here::here("analysis", "matrix_meta_four_br.RData")
 
 load(file = input_file_path)
 data.matrix
@@ -299,7 +298,7 @@ hull_plot <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
 
 plot(hull_plot)
   
-ggsave("figures/br_4/explore_abundance/pca_clr_phase.png", 
+ggsave("figures/figure_3_a.png", 
          plot = hull_plot, 
          width = 5.5, height = 5, bg = "white", dpi = 300)
 
@@ -550,7 +549,7 @@ spearman_correlations <- function(data,
 #     units = "in",
 #     res = 600)
 
-png(filename = "figures/br_4/explore_abundance/figure_3b_phase.png",
+png(filename = "figures/figure_3b_phase.png",
     width = 130,
     height = 130,
     units = "mm",
@@ -588,7 +587,8 @@ dev.off()
 
 
 # save all data -----------------------------------------------------------
-
+# Is this necessary? It only creates new datafile and only adds clr transformed data
+#I should remove this and perhaps do clr transformation in the 04_plot_abundance_cafog_corrected.R
 save(data.matrix, 
      meta, 
      clr_data.matrix,
