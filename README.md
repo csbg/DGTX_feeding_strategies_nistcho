@@ -56,7 +56,7 @@ The processed data provided in this repository were generated entirely from the 
 
 ## 📝 Citation
 If you use the code or data, please cite:
-INSERT_CITATION_HERE
+Schäpertöns, V., Hofer, L., Berger, T. et al. Effects of feeding strategies on culture performance and product quality in NISTCHO. npj Syst Biol Appl (2026). https://doi.org/10.1038/s41540-026-00686-3
 
 ## 🤝 Contact
 
